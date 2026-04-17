@@ -1,0 +1,14 @@
+{
+  "name": "claude-boilerplate",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "node src/index.js",
+    "test": "jest --runInBand",
+    "lint": "eslint src"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}

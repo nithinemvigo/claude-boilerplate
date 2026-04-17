@@ -49,9 +49,13 @@ const server = http.createServer((req, res) => {
     }
 });
 
-server.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-    console.log(`\nYou can test it using these commands:`);
-    console.log(`1. Health check:  curl http://localhost:${PORT}/api/health`);
-    console.log(`2. Chat endpoint: curl -X POST -H "Content-Type: application/json" -d '{"message":"hello API"}' http://localhost:${PORT}/api/chat`);
-});
+if (require.main === module) {
+    server.listen(PORT, () => {
+        console.log(`Server is running at http://localhost:${PORT}`);
+        console.log(`\nYou can test it using these commands:`);
+        console.log(`1. Health check:  curl http://localhost:${PORT}/api/health`);
+        console.log(`2. Chat endpoint: curl -X POST -H "Content-Type: application/json" -d '{"message":"hello API"}' http://localhost:${PORT}/api/chat`);
+    });
+}
+
+module.exports = server;
