@@ -34,3 +34,8 @@ If you have a customized or forked repository containing multiple skills, you ca
    git clone <YOUR_FORK_URL> .claude/skills/<custom-skills-folder>
    ```
 2. Update the `CLAUDE.md` to reference the newly added skills so that your teammates can also use them.
+
+## Running Agents
+To instruct Claude to use a specific agent's instructions (like the Test Writer or Code Reviewer), simply ask directly in the chat interface:
+> *"Act as the test-writer agent and write tests for src/index.js"*
+> *"Follow the guidelines in .claude/agents/code-reviewer.md to review my changes"*
