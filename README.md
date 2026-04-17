@@ -36,6 +36,8 @@ If you have a customized or forked repository containing multiple skills, you ca
 2. Update the `CLAUDE.md` to reference the newly added skills so that your teammates can also use them.
 
 ## Running Agents
-To instruct Claude to use a specific agent's instructions (like the Test Writer or Code Reviewer), simply ask directly in the chat interface:
+To instruct Claude to use a specific agent's instructions, simply ask directly in the chat interface. Here are a few examples:
 > *"Act as the test-writer agent and write tests for src/index.js"*
 > *"Follow the guidelines in .claude/agents/code-reviewer.md to review my changes"*
+> *"Act as the doc-writer agent and generate README documentation for this folder"*
+> *"Run the security-auditor agent to check my latest changes for vulnerabilities"*
