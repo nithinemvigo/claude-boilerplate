@@ -2,7 +2,8 @@
   "name": "claude-boilerplate",
   "version": "1.0.0",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:hooks": "node scripts/test-hooks.js"
   },
   "devDependencies": {
     "jest": "^29.7.0",
