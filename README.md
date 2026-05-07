@@ -41,3 +41,27 @@ To instruct Claude to use a specific agent's instructions, simply ask directly i
 > *"Follow the guidelines in .claude/agents/code-reviewer.md to review my changes"*
 > *"Act as the doc-writer agent and generate README documentation for this folder"*
 > *"Run the security-auditor agent to check my latest changes for vulnerabilities"*
+
+## 🔍 Claude Code Reviewer (Auto on Commit)
+
+Every `git commit` automatically triggers a Claude-powered code review via a **post-commit hook**.
+
+### How It Works
+1. You commit normally → `git commit -m "your message"`
+2. The post-commit hook extracts the diff
+3. Claude CLI reviews it against `.claude/review-prompt.md`
+4. The review is printed to your terminal and saved to `.reviews/<sha>.md`
+
+### Manual Review
+```bash
+npm run review              # Review the last commit
+npm run review:commit -- abc1234   # Review a specific commit
+```
+
+### Customization
+Edit `.claude/review-prompt.md` to change review criteria, severity levels, or output format.
+
+### Prerequisites
+- [Claude CLI](https://docs.anthropic.com/claude-cli) installed and authenticated
+- Husky is set up automatically via `npm install`
+
