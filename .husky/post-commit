@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-# Deprecated — replaced by Claude hooks (.claude/settings.json)
-# Safe to delete: git rm -r .husky
-exit 0

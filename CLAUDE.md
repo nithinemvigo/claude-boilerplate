@@ -11,13 +11,13 @@ Hooks are configured in `.claude/settings.json` and fire automatically during Cl
 
 ### Pipeline (triggered on every `git commit`)
 1. **PreToolUse → `.claude/hooks/pre-commit-validate.sh`**
-   - Runs ESLint (`npx eslint .`) — blocks commit on errors
-   - Runs Prettier check (`npx prettier --check .`) — blocks commit on formatting issues
+   - `[1/3]` ESLint — blocks commit on lint errors
+   - `[2/3]` Prettier check — blocks commit on formatting issues
+   - `[3/3]` `/code-review` (Anthropic code-review plugin) on staged diff — blocks if verdict is "Request Changes" or critical issues found
    - Tip: `npm run lint:fix` and `npm run format` to auto-fix before committing
 
 2. **PostToolUse → `.claude/hooks/post-commit-review.sh`**
-   - Runs Claude code review on the committed diff
-   - Saves review to `.reviews/<commit-sha>.md`
+   - Saves a lightweight commit record to `.reviews/<commit-sha>.md` (review already ran pre-commit)
 
 ### Manual review
 - `npm run review` — review the last commit
