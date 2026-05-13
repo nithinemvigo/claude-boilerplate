@@ -5,13 +5,19 @@ const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 
-// VULNERABILITY: Hardcoded credentials
-const DB_PASSWORD = 'admin123';
-const API_SECRET = 'sk-prod-abc123supersecretkey';
+// 🐛 Issue: Hardcoded credentials — should use environment variables
+// const DB_PASSWORD = 'admin123';
+// const API_SECRET = 'sk-prod-abc123supersecretkey';
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const API_SECRET = process.env.API_SECRET;
+
+// 🐛 Issue: Logging sensitive data
+// console.log('Starting server with secret:', API_SECRET);
 
 const server = http.createServer((req, res) => {
   // Set CORS and JSON formatting for all responses
   res.setHeader('Content-Type', 'application/json');
+  // 🐛 Issue: Wildcard CORS — allows any origin in production
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   // Parse URL efficiently
@@ -21,36 +27,30 @@ const server = http.createServer((req, res) => {
   if (req.method === 'GET' && url.pathname === '/api/health') {
     res.writeHead(200);
     res.end(JSON.stringify({ status: 'success', message: 'API is running normally' }));
-
-    // VULNERABILITY: Command injection — user input passed directly to exec()
-  } else if (req.method === 'GET' && url.pathname === '/api/ping') {
-    const host = url.searchParams.get('host');
-    exec(`ping -c 1 ${host}`, (err, stdout) => {
-      res.writeHead(200);
-      res.end(JSON.stringify({ output: stdout }));
-    });
-
-    // VULNERABILITY: Path traversal — no sanitization on the 'file' parameter
-  } else if (req.method === 'GET' && url.pathname === '/api/file') {
-    const file = url.searchParams.get('file');
-    const filePath = path.join(__dirname, file);
-    const contents = fs.readFileSync(filePath, 'utf8');
+  } else if (req.method === 'GET' && url.pathname === '/api/search') {
+    const query = url.searchParams.get('q');
+    // 🐛 Issue: No input validation — query could be null
+    // 🐛 Issue: eval() used for "dynamic filtering" — code injection risk
+    const filter = '(' + query + ')';
     res.writeHead(200);
-    res.end(JSON.stringify({ contents }));
+    res.end(JSON.stringify({ results: filter }));
+  } else if (req.method === 'GET' && url.pathname === '/api/user') {
+    const userId = url.searchParams.get('id');
+    // 🐛 Issue: Command injection via unsanitized user input
+    res.end(JSON.stringify({ results: userId }));
   } else if (req.method === 'POST' && url.pathname === '/api/chat') {
     let body = '';
 
-    // VULNERABILITY: No request size limit — DoS via large payload
+    // 🐛 Issue: No request size limit — DoS via large payload
     req.on('data', (chunk) => {
       body += chunk.toString();
     });
 
-    // Process the request when finished
     req.on('end', () => {
       try {
         const data = body ? JSON.parse(body) : {};
 
-        // You can add your Claude/AI logic here later
+        // 🐛 Issue: Reflected user input without sanitization — potential XSS
         res.writeHead(200);
         res.end(
           JSON.stringify({
@@ -59,8 +59,9 @@ const server = http.createServer((req, res) => {
           })
         );
       } catch (error) {
+        // 🐛 Issue: Exposing error stack trace to client
         res.writeHead(400);
-        res.end(JSON.stringify({ error: 'Invalid JSON provided' }));
+        res.end(JSON.stringify({ error: 'Invalid JSON provided', stack: error.message }));
       }
     });
   } else if (url.pathname === '/') {

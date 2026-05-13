@@ -9,7 +9,11 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:coverage": "jest --coverage",
+    "deps:audit": "npm audit --production",
+    "deps:outdated": "npm outdated",
+    "validate": "npm run lint && npm run format:check && npm test"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

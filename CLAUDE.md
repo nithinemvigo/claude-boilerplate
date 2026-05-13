@@ -1,10 +1,40 @@
 # Project Brain
 
 ## Stack
-Nodejs
+Node.js (v25 — see `.nvmrc`)
 
 ## Commands
-npm run dev | npm run build | npm test | npm run lint | npm run format | npm run format:check
+npm run dev | npm run build | npm test | npm run test:coverage | npm run lint | npm run lint:fix | npm run format | npm run format:check | npm run validate | npm run deps:audit | npm run deps:outdated
+
+## Coding Standards
+- Use `const` by default, `let` when mutation is needed, never `var`
+- Prefer async/await over raw promises
+- Error handling: always use try/catch with meaningful messages — see `.claude/rules/error-handling.md`
+- Naming: camelCase for variables/functions, PascalCase for classes, SCREAMING_SNAKE for constants
+- Max function length: 30 lines — refactor if exceeding
+- Max file length: 300 lines — split into modules if exceeding
+
+## Architecture
+- `src/` — Application source code
+- `scripts/` — Build and automation scripts
+- `.claude/hooks/` — Pre/post commit validation pipeline
+- `.claude/commands/` — Reusable slash commands (`/project:<name>`)
+- `.claude/agents/` — Agent personas (test-writer, doc-writer, etc.)
+- `.claude/rules/` — Domain rules (API, database, security, etc.)
+- `.agents/workflows/` — End-to-end workflows (new-feature, bug-fix, release)
+- `.reviews/` — Generated review reports
+
+## Testing Conventions
+- Test files: `*.test.js` co-located with source files
+- Framework: Jest + Supertest for HTTP endpoints
+- Coverage target: 80%+ — run `npm run test:coverage`
+- Always test: happy path, edge cases, error paths, security paths
+- See `.claude/rules/testing.md` for detailed patterns
+
+## Git Conventions
+- Branch naming: `feature/`, `fix/`, `chore/`, `docs/`
+- Commit format: conventional commits (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`)
+- Always run `npm run lint:fix && npm run format` before committing
 
 ## Claude Hooks (replaces Husky)
 Hooks are configured in `.claude/settings.json` and fire automatically during Claude sessions.
@@ -29,7 +59,23 @@ Hooks are configured in `.claude/settings.json` and fire automatically during Cl
 - **ESLint rules**: edit `eslint.config.js`
 - **Prettier style**: edit `.prettierrc`
 
-### Cleanup
+## Rules for Claude
+- DO: Follow existing patterns in the codebase
+- DO: Write tests for all new functions
+- DO: Use existing utilities before creating new ones
+- DO: Follow rules in `.claude/rules/` for domain-specific guidance
+- DON'T: Introduce new dependencies without discussion
+- DON'T: Modify `.claude/hooks/` without approval
+- DON'T: Skip error handling
+- DON'T: Hardcode secrets or credentials — use environment variables
+
+## Token Optimization Tips
+- Run `/compact` after completing logical sub-tasks
+- Use `/clear` between unrelated tasks
+- Use targeted prompts (specific files/lines, not "look at the codebase")
+- Cap long CLI output: `npm test 2>&1 | head -50`
+
+## Cleanup
 The `.husky/` directory is no longer needed. Remove it with:
 ```
 git rm -r .husky
