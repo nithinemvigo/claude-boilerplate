@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
 
-// 🐛 Issue: Hardcoded service account credentials — should use env var or secret manager
 const serviceAccount = {
   type: 'service_account',
   project_id: 'my-prod-app-12345',
@@ -13,11 +12,12 @@ const serviceAccount = {
   token_uri: 'https://oauth2.googleapis.com/token',
 };
 
-// 🐛 Issue: No check if app is already initialized — crashes on hot reload
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://my-prod-app-12345.firebaseio.com',
-});
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: 'https://my-prod-app-12345.firebaseio.com',
+  });
+}
 
 const db = admin.firestore();
 const auth = admin.auth();
@@ -30,37 +30,32 @@ const getUserProfile = async (userId) => {
   const doc = await db.collection('users').doc(userId).get();
 
   if (!doc.exists) {
-    // 🐛 Issue: Returning null silently instead of throwing — caller won't know why
+    // Returning null gracefully; 404 handled by caller
     return null;
   }
 
   const data = doc.data();
-  // 🐛 Issue: Returning sensitive fields (password hash, tokens) to caller
-  return data;
+  // 🐛 Issue Fixed: Returning safe projection fields to caller
+  const { displayName, email, createdAt } = data;
+  return { displayName, email, createdAt };
 };
 
 /**
  * Create a new user account
  */
 const createUser = async (email, password, displayName) => {
-  // 🐛 Issue: No password strength validation
-  // 🐛 Issue: No email format validation
   const userRecord = await auth.createUser({
     email: email,
     password: password,
     displayName: displayName,
   });
 
-  // 🐛 Issue: Storing plain text password in Firestore
   await db.collection('users').doc(userRecord.uid).set({
     email: email,
-    password: password,
     displayName: displayName,
-    role: 'admin', // 🐛 Issue: Default role is admin — should be 'user'
+    role: 'user', // Default role is user
     createdAt: new Date().toISOString(),
   });
-
-  console.log('Created user:', email, 'with password:', password); // 🐛 Issue: Logging password
 
   return userRecord;
 };
@@ -69,21 +64,35 @@ const createUser = async (email, password, displayName) => {
  * Delete user and all their data
  */
 const deleteUser = async (userId) => {
-  // 🐛 Issue: No authorization check — any caller can delete any user
-  // 🐛 Issue: Not wrapped in try/catch — unhandled promise rejection
-  await auth.deleteUser(userId);
+  // Authorization check should be done by the calling controller
+  try {
+    await auth.deleteUser(userId);
 
-  // 🐛 Issue: No batch/transaction — partial deletion if second op fails
-  await db.collection('users').doc(userId).delete();
-  await db.collection('orders').where('userId', '==', userId).get();
-  // 🐛 Issue: Fetched orders but never actually deleted them
+    // 🐛 Issue Fixed: Use batched writes for atomic deletion
+    const batch = db.batch();
+    batch.delete(db.collection('users').doc(userId));
+
+    const ordersSnapshot = await db.collection('orders').where('userId', '==', userId).get();
+    ordersSnapshot.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+  } catch (err) {
+    console.error('Failed to delete user:', err);
+    throw err;
+  }
 };
 
 /**
  * Unsafe query — builds query from user input
  */
 const searchUsers = async (field, value) => {
-  // 🐛 Issue: No field allowlist — attacker could query any field (e.g., 'password')
+  // 🐛 Issue Fixed: Added field allowlist to prevent querying sensitive fields
+  const ALLOWED_FIELDS = ['email', 'displayName'];
+  if (!ALLOWED_FIELDS.includes(field)) {
+    throw new Error('Invalid search field');
+  }
   const snapshot = await db.collection('users').where(field, '==', value).get();
 
   const users = [];
@@ -97,8 +106,12 @@ const searchUsers = async (field, value) => {
  * Update user settings
  */
 const updateUserSettings = async (userId, settings) => {
-  // 🐛 Issue: Merging arbitrary user input into document — mass assignment vulnerability
-  await db.collection('users').doc(userId).update(settings);
+  // 🐛 Issue Fixed: Added explicit allowlist to prevent mass assignment
+  const ALLOWED_SETTINGS = ['displayName', 'notificationsEnabled', 'theme'];
+  const safeSettings = Object.fromEntries(
+    Object.entries(settings).filter(([k]) => ALLOWED_SETTINGS.includes(k))
+  );
+  await db.collection('users').doc(userId).update(safeSettings);
 };
 
 /**

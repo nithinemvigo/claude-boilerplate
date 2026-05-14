@@ -15,11 +15,12 @@ const API_SECRET = process.env.API_SECRET;
 // 🐛 Issue: Logging sensitive data
 // console.log('Starting server with secret:', API_SECRET);
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
   // Set CORS and JSON formatting for all responses
   res.setHeader('Content-Type', 'application/json');
-  // 🐛 Issue: Wildcard CORS — allows any origin in production
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // 🐛 Issue Fixed: Restrict CORS to allowed origins
+  const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+  res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
 
   // Parse URL efficiently
   const url = new URL(req.url, `http://${req.headers.host}`);
@@ -30,24 +31,37 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ status: 'success', message: 'API is running normally' }));
   } else if (req.method === 'GET' && url.pathname === '/api/search') {
     const query = url.searchParams.get('q');
-    // 🐛 Issue: No input validation — query could be null
-    // 🐛 Issue: eval() used for "dynamic filtering" — code injection risk
-    const filter = '(' + query + ')';
+    // 🐛 Issue Fixed: Validate and properly handle query
+    if (!query) {
+      res.writeHead(400);
+      return res.end(JSON.stringify({ error: 'Missing query parameter' }));
+    }
+    const filter = String(query).toLowerCase();
     res.writeHead(200);
     res.end(JSON.stringify({ results: filter }));
   } else if (req.method === 'GET' && url.pathname === '/api/user') {
     const userId = url.searchParams.get('id');
-    // 🐛 Issue: Using buggy service which doesn't check if app is initialized
-    firebaseService
-      .getUserProfile(userId)
-      .then((profile) => {
-        res.writeHead(200);
-        res.end(JSON.stringify({ data: profile }));
-      })
-      .catch((err) => {
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: err.message }));
-      });
+
+    // 🐛 Issue Fixed: Validate userId before hitting database
+    if (!userId || !/^[a-zA-Z0-9_-]{1,128}$/.test(userId)) {
+      res.writeHead(400);
+      return res.end(JSON.stringify({ status: 'error', message: 'Invalid user ID' }));
+    }
+
+    try {
+      const profile = await firebaseService.getUserProfile(userId);
+      if (!profile) {
+        res.writeHead(404);
+        return res.end(JSON.stringify({ error: 'User not found' }));
+      }
+      res.writeHead(200);
+      res.end(JSON.stringify({ data: profile }));
+    } catch (err) {
+      // 🐛 Issue Fixed: Don't leak error message to client
+      console.error('getUserProfile failed', { userId, error: err.message });
+      res.writeHead(500);
+      res.end(JSON.stringify({ status: 'error', message: 'Failed to retrieve user' }));
+    }
   } else if (req.method === 'POST' && url.pathname === '/api/chat') {
     let body = '';
 
@@ -69,9 +83,9 @@ const server = http.createServer((req, res) => {
           })
         );
       } catch (error) {
-        // 🐛 Issue: Exposing error stack trace to client
+        // 🐛 Issue Fixed: Return generic error message without stack trace
         res.writeHead(400);
-        res.end(JSON.stringify({ error: 'Invalid JSON provided', stack: error.message }));
+        res.end(JSON.stringify({ error: 'Invalid JSON provided' }));
       }
     });
   } else if (url.pathname === '/') {

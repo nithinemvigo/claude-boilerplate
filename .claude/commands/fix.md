@@ -1,0 +1,1 @@
+Run .agents/workflows/bug-fix.md with: $ARGUMENTS

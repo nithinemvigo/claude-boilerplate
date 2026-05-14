@@ -126,3 +126,4 @@ dist
 
 # Claude Code Reviews (output files)
 .reviews/*.md
+**/.DS_Store
