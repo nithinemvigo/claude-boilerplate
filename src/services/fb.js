@@ -1,74 +1,75 @@
 const admin = require('firebase-admin');
 
-const serviceAccount = {
-  type: 'service_account',
-  project_id: 'my-prod-app-12345',
-  private_key_id: 'abc123def456',
-  private_key:
-    '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA0Z3VS5JJcds3xfn/ygWelFkLAddQkl...\n-----END RSA PRIVATE KEY-----\n',
-  client_email: 'firebase-adminsdk@my-prod-app-12345.iam.gserviceaccount.com',
-  client_id: '123456789',
-  auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-  token_uri: 'https://oauth2.googleapis.com/token',
-};
+const REQUIRED_VARS = [
+  'FIREBASE_PROJECT_ID',
+  'FIREBASE_PRIVATE_KEY_ID',
+  'FIREBASE_PRIVATE_KEY',
+  'FIREBASE_CLIENT_EMAIL',
+  'FIREBASE_CLIENT_ID',
+  'FIREBASE_DATABASE_URL',
+];
+
+for (const v of REQUIRED_VARS) {
+  if (!process.env[v]) {
+    throw new Error(`Missing required environment variable: ${v}`);
+  }
+}
 
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://my-prod-app-12345.firebaseio.com',
+    credential: admin.credential.cert({
+      type: 'service_account',
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+      private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CLIENT_ID,
+      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+      token_uri: 'https://oauth2.googleapis.com/token',
+    }),
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
   });
 }
 
 const db = admin.firestore();
 const auth = admin.auth();
 
-/**
- * Get user profile from Firestore
- */
 const getUserProfile = async (userId) => {
-  // 🐛 Issue: No input validation — userId could be undefined/empty
+  if (!userId) {
+    throw new Error('userId is required');
+  }
   const doc = await db.collection('users').doc(userId).get();
 
   if (!doc.exists) {
-    // Returning null gracefully; 404 handled by caller
     return null;
   }
 
-  const data = doc.data();
-  // 🐛 Issue Fixed: Returning safe projection fields to caller
-  const { displayName, email, createdAt } = data;
+  const { displayName, email, createdAt } = doc.data();
   return { displayName, email, createdAt };
 };
 
-/**
- * Create a new user account
- */
 const createUser = async (email, password, displayName) => {
   const userRecord = await auth.createUser({
-    email: email,
-    password: password,
-    displayName: displayName,
+    email,
+    password,
+    displayName,
   });
 
   await db.collection('users').doc(userRecord.uid).set({
-    email: email,
-    displayName: displayName,
-    role: 'user', // Default role is user
+    email,
+    displayName,
+    role: 'user',
     createdAt: new Date().toISOString(),
   });
 
   return userRecord;
 };
 
-/**
- * Delete user and all their data
- */
 const deleteUser = async (userId) => {
-  // Authorization check should be done by the calling controller
+  // Authorization check must be done by the calling controller
   try {
     await auth.deleteUser(userId);
 
-    // 🐛 Issue Fixed: Use batched writes for atomic deletion
     const batch = db.batch();
     batch.delete(db.collection('users').doc(userId));
 
@@ -84,11 +85,7 @@ const deleteUser = async (userId) => {
   }
 };
 
-/**
- * Unsafe query — builds query from user input
- */
 const searchUsers = async (field, value) => {
-  // 🐛 Issue Fixed: Added field allowlist to prevent querying sensitive fields
   const ALLOWED_FIELDS = ['email', 'displayName'];
   if (!ALLOWED_FIELDS.includes(field)) {
     throw new Error('Invalid search field');
@@ -102,11 +99,7 @@ const searchUsers = async (field, value) => {
   return users;
 };
 
-/**
- * Update user settings
- */
 const updateUserSettings = async (userId, settings) => {
-  // 🐛 Issue Fixed: Added explicit allowlist to prevent mass assignment
   const ALLOWED_SETTINGS = ['displayName', 'notificationsEnabled', 'theme'];
   const safeSettings = Object.fromEntries(
     Object.entries(settings).filter(([k]) => ALLOWED_SETTINGS.includes(k))
@@ -114,19 +107,18 @@ const updateUserSettings = async (userId, settings) => {
   await db.collection('users').doc(userId).update(safeSettings);
 };
 
-/**
- * Send notification to user
- */
 const sendNotification = async (token, message) => {
-  // 🐛 Issue: No token validation
-  // 🐛 Issue: Error swallowed silently
+  if (!token) {
+    throw new Error('token is required');
+  }
   try {
     await admin.messaging().send({
-      token: token,
+      token,
       notification: { title: message.title, body: message.body },
     });
-  } catch (e) {
-    // silently ignored
+  } catch (err) {
+    console.error('Failed to send notification:', err);
+    throw err;
   }
 };
 
