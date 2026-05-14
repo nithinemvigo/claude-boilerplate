@@ -2,6 +2,7 @@ const http = require('http');
 const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const firebaseService = require('./services/fb');
 
 const PORT = process.env.PORT || 3000;
 
@@ -36,8 +37,17 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({ results: filter }));
   } else if (req.method === 'GET' && url.pathname === '/api/user') {
     const userId = url.searchParams.get('id');
-    // 🐛 Issue: Command injection via unsanitized user input
-    res.end(JSON.stringify({ results: userId }));
+    // 🐛 Issue: Using buggy service which doesn't check if app is initialized
+    firebaseService
+      .getUserProfile(userId)
+      .then((profile) => {
+        res.writeHead(200);
+        res.end(JSON.stringify({ data: profile }));
+      })
+      .catch((err) => {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: err.message }));
+      });
   } else if (req.method === 'POST' && url.pathname === '/api/chat') {
     let body = '';
 
