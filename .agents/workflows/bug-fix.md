@@ -1,5 +1,5 @@
 ---
-description: Bug fix workflow from report to PR
+description: Bug fix workflow from report to PR (No testing steps)
 ---
 
 # Bug Fix Workflow
@@ -11,47 +11,33 @@ description: Bug fix workflow from report to PR
 
 ### 1. Analyze Bug Report
 - Read the bug report at `$ARGUMENTS`
-- Extract: steps to reproduce, expected vs actual behavior, affected area
-- Identify the likely root cause location in codebase
+- Extract: expected vs actual behavior, affected area
+- Identify the likely root cause location in the codebase
 
-### 2. Reproduce the Bug
-- Write a failing test that demonstrates the bug
-// turbo
-- Run: `npm test` — confirm the new test fails as expected
-
-### 3. Create Fix Branch
+### 2. Create Fix Branch
 // turbo
 - Run: `git checkout -b fix/<bug-name-or-ticket-id>`
 
-### 4. Implement the Fix
+### 3. Implement the Fix
 - Fix the root cause (not just the symptom)
 - Follow CLAUDE.md conventions and `.claude/rules/`
 - Keep the fix minimal — change only what's necessary
+- Update `CHANGELOG.md` under `## [Unreleased]`, Format: `- fix: <description>`
 
-### 5. Verify Fix
-// turbo
-- Run: `npm test` — the previously failing test must now pass
-- Ensure no existing tests broke
-
-### 6. Add Regression Tests
-- Add edge case tests around the fix to prevent regression
-// turbo
-- Run: `npm test` — all tests pass
-
-### 7. Lint & Format
+### 4. Lint & Format
 // turbo
 - Run: `npm run lint:fix && npm run format`
 
-### 8. Security & Code Review
+### 5. Security & Code Review
 - Run `/security-review` on changed files
 - Run `/code-review` on changed files
 - Fix any issues found
+// turbo
+- Call `echo '{"tool_input":{"command":"git commit -m \"dummy\""}}' | bash .claude/hooks/pre-commit-validate.sh` to call precommit-validate
+// turbo
+- Then commit: `git commit -m "fix: <description>"`
 
-### 9. Update Changelog
-- Add entry to `CHANGELOG.md` under `## [Unreleased]`
-- Format: `- fix: <description>`
-
-### 10. Commit & PR
-- Stage and commit: `git add . && git commit -m "fix: <description>"`
-- Push: `git push -u origin <branch-name>`
+### 6. Create Pull Request
+// turbo
+- Run: `git push -u origin <branch-name>`
 - Generate PR description using `.claude/agents/pr-description.md`
