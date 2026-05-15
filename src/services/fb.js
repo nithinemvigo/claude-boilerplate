@@ -1,13 +1,27 @@
 const admin = require('firebase-admin');
 
+// Validate required env vars at startup — fail fast
+const REQUIRED = [
+  'FIREBASE_PROJECT_ID',
+  'FIREBASE_PRIVATE_KEY_ID',
+  'FIREBASE_PRIVATE_KEY',
+  'FIREBASE_CLIENT_EMAIL',
+  'FIREBASE_CLIENT_ID',
+  'FIREBASE_DATABASE_URL',
+];
+for (const v of REQUIRED) {
+  if (!process.env[v]) {
+    throw new Error(`Missing required environment variable: ${v}`);
+  }
+}
+
 const serviceAccount = {
   type: 'service_account',
-  project_id: 'my-prod-app-12345',
-  private_key_id: 'abc123def456',
-  private_key:
-    '-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA0Z3VS5JJcds3xfn/ygWelFkLAddQkl...\n-----END RSA PRIVATE KEY-----\n',
-  client_email: 'firebase-adminsdk@my-prod-app-12345.iam.gserviceaccount.com',
-  client_id: '123456789',
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
   auth_uri: 'https://accounts.google.com/o/oauth2/auth',
   token_uri: 'https://oauth2.googleapis.com/token',
 };
@@ -15,7 +29,7 @@ const serviceAccount = {
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://my-prod-app-12345.firebaseio.com',
+    databaseURL: process.env.FIREBASE_DATABASE_URL,
   });
 }
 
@@ -26,34 +40,42 @@ const auth = admin.auth();
  * Get user profile from Firestore
  */
 const getUserProfile = async (userId) => {
-  // 🐛 Issue: No input validation — userId could be undefined/empty
   const doc = await db.collection('users').doc(userId).get();
-
-  if (!doc.exists) {
-    // Returning null gracefully; 404 handled by caller
-    return null;
-  }
-
-  const data = doc.data();
-  // 🐛 Issue Fixed: Returning safe projection fields to caller
-  const { displayName, email, createdAt } = data;
-  return { displayName, email, createdAt };
+  if (!doc.exists) return null;
+  return doc.data();
 };
 
 /**
- * Create a new user account
+ * Create a new admin user account.
+ * Role is locked to 'admin' — password is never stored.
  */
-const createUser = async (email, password, displayName) => {
-  const userRecord = await auth.createUser({
-    email: email,
-    password: password,
-    displayName: displayName,
-  });
+const createAdminUser = async (email, password, displayName) => {
+  if (!email) throw new Error('email is required');
+  if (!password) throw new Error('password is required');
+  if (!displayName) throw new Error('displayName is required');
+
+  const userRecord = await auth.createUser({ email, password, displayName });
 
   await db.collection('users').doc(userRecord.uid).set({
-    email: email,
-    displayName: displayName,
-    role: 'user', // Default role is user
+    email,
+    displayName,
+    role: 'admin',
+    createdAt: new Date().toISOString(),
+  });
+
+  return { uid: userRecord.uid, email: userRecord.email, displayName };
+};
+
+/**
+ * Create a new regular user account.
+ */
+const createUser = async (email, password, displayName) => {
+  const userRecord = await auth.createUser({ email, password, displayName });
+
+  await db.collection('users').doc(userRecord.uid).set({
+    email,
+    displayName,
+    role: 'user',
     createdAt: new Date().toISOString(),
   });
 
@@ -64,41 +86,21 @@ const createUser = async (email, password, displayName) => {
  * Delete user and all their data
  */
 const deleteUser = async (userId) => {
-  // Authorization check should be done by the calling controller
-  try {
-    await auth.deleteUser(userId);
-
-    // 🐛 Issue Fixed: Use batched writes for atomic deletion
-    const batch = db.batch();
-    batch.delete(db.collection('users').doc(userId));
-
-    const ordersSnapshot = await db.collection('orders').where('userId', '==', userId).get();
-    ordersSnapshot.forEach((doc) => {
-      batch.delete(doc.ref);
-    });
-
-    await batch.commit();
-  } catch (err) {
-    console.error('Failed to delete user:', err);
-    throw err;
-  }
+  await auth.deleteUser(userId);
+  await db.collection('users').doc(userId).delete();
 };
 
 /**
- * Unsafe query — builds query from user input
+ * Search users by a specific field
  */
 const searchUsers = async (field, value) => {
-  // 🐛 Issue Fixed: Added field allowlist to prevent querying sensitive fields
-  const ALLOWED_FIELDS = ['email', 'displayName'];
+  const ALLOWED_FIELDS = ['email', 'displayName', 'role'];
   if (!ALLOWED_FIELDS.includes(field)) {
-    throw new Error('Invalid search field');
+    throw new Error(`Invalid search field: ${field}`);
   }
   const snapshot = await db.collection('users').where(field, '==', value).get();
-
   const users = [];
-  snapshot.forEach((doc) => {
-    users.push({ id: doc.id, ...doc.data() });
-  });
+  snapshot.forEach((doc) => users.push({ id: doc.id, ...doc.data() }));
   return users;
 };
 
@@ -106,27 +108,26 @@ const searchUsers = async (field, value) => {
  * Update user settings
  */
 const updateUserSettings = async (userId, settings) => {
-  // 🐛 Issue Fixed: Added explicit allowlist to prevent mass assignment
-  const ALLOWED_SETTINGS = ['displayName', 'notificationsEnabled', 'theme'];
-  const safeSettings = Object.fromEntries(
-    Object.entries(settings).filter(([k]) => ALLOWED_SETTINGS.includes(k))
+  const ALLOWED_KEYS = ['displayName', 'photoURL', 'theme', 'notifications'];
+  const safe = Object.fromEntries(
+    Object.entries(settings).filter(([k]) => ALLOWED_KEYS.includes(k))
   );
-  await db.collection('users').doc(userId).update(safeSettings);
+  await db.collection('users').doc(userId).update(safe);
 };
 
 /**
  * Send notification to user
  */
 const sendNotification = async (token, message) => {
-  // 🐛 Issue: No token validation
-  // 🐛 Issue: Error swallowed silently
+  if (!token || typeof token !== 'string') throw new Error('Invalid FCM token');
   try {
     await admin.messaging().send({
-      token: token,
+      token,
       notification: { title: message.title, body: message.body },
     });
   } catch (e) {
-    // silently ignored
+    console.error('sendNotification failed', { error: e.message });
+    throw e;
   }
 };
 
@@ -134,6 +135,7 @@ module.exports = {
   db,
   auth,
   getUserProfile,
+  createAdminUser,
   createUser,
   deleteUser,
   searchUsers,

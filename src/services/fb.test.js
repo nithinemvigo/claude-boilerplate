@@ -94,3 +94,76 @@ describe('fb (Firebase service)', () => {
     });
   });
 });
+
+// Mock must be declared at module scope — factory cannot reference outer variables
+jest.mock(
+  'firebase-admin',
+  () => ({
+    get apps() {
+      return [];
+    },
+    credential: { cert: jest.fn((obj) => obj) },
+    initializeApp: jest.fn(),
+    firestore: jest.fn(() => ({
+      collection: jest.fn(() => ({
+        doc: jest.fn(() => ({ set: jest.fn().mockResolvedValue({}) })),
+      })),
+    })),
+    auth: jest.fn(() => ({
+      createUser: jest.fn().mockResolvedValue({ uid: 'uid-123', email: 'admin@test.com' }),
+    })),
+  }),
+  { virtual: true }
+);
+
+describe('createAdminUser()', () => {
+  const REQUIRED_ENV_VARS = [
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_PRIVATE_KEY_ID',
+    'FIREBASE_PRIVATE_KEY',
+    'FIREBASE_CLIENT_EMAIL',
+    'FIREBASE_CLIENT_ID',
+    'FIREBASE_DATABASE_URL',
+  ];
+
+  beforeEach(() => {
+    jest.resetModules();
+    REQUIRED_ENV_VARS.forEach((v) => {
+      process.env[v] = `test-${v}`;
+    });
+  });
+
+  afterEach(() => {
+    REQUIRED_ENV_VARS.forEach((v) => delete process.env[v]);
+  });
+
+  it('should create a user with role locked to admin', async () => {
+    const { createAdminUser } = require('./fb');
+    const result = await createAdminUser('admin@test.com', 'SecurePass1!', 'Admin User');
+    expect(result.uid).toBe('uid-123');
+    expect(result.email).toBe('admin@test.com');
+  });
+
+  it('should NOT store password and role must be locked to admin (static)', () => {
+    // Static analysis: verify the createAdminUser function body
+    // does not pass password to .set() and always uses role: 'admin'
+    const src = require('fs').readFileSync(require('path').join(__dirname, 'fb.js'), 'utf8');
+    const fnStart = src.indexOf('const createAdminUser');
+    const fnEnd = src.indexOf('\nmodule.exports');
+    const fnBody = src.slice(fnStart, fnEnd);
+    // password must not appear in .set() call
+    expect(fnBody).not.toMatch(/set\(\s*\{[^}]*password/);
+    // role must be hardcoded to 'admin'
+    expect(fnBody).toMatch(/role:\s*'admin'/);
+  });
+
+  it('should throw if email is missing', async () => {
+    const { createAdminUser } = require('./fb');
+    await expect(createAdminUser('', 'pass', 'Name')).rejects.toThrow('email');
+  });
+
+  it('should throw if password is missing', async () => {
+    const { createAdminUser } = require('./fb');
+    await expect(createAdminUser('a@b.com', '', 'Name')).rejects.toThrow('password');
+  });
+});

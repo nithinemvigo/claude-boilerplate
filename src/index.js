@@ -3,6 +3,7 @@ const { exec } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const firebaseService = require('./services/fb');
+const { handleAdminRoutes } = require('./routes/admin');
 
 const PORT = process.env.PORT || 3000;
 
@@ -93,6 +94,8 @@ const server = http.createServer(async (req, res) => {
     res.end(
       JSON.stringify({ message: 'Welcome to the Node.js API. Visit /api/health to check status.' })
     );
+  } else if (handleAdminRoutes(req, res, url)) {
+    // handled by admin router
   } else {
     res.writeHead(404);
     res.end(JSON.stringify({ error: 'Endpoint not found' }));
