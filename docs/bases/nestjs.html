@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>nestjs — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="./index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="../presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All bases</a></p>
+    <h1><code>nestjs</code></h1>
+    <p class="lede">NestJS — opinionated backend framework with dependency injection, decorators, and modular architecture. TypeScript only.</p>
+
+    <p><span class="tag">TS</span><span class="tag">backend</span><span class="tag">enterprise</span><span class="tag">DI</span></p>
+
+    <h2>When to choose this base</h2>
+    <ul>
+      <li>You want batteries-included structure: modules, providers, controllers, guards</li>
+      <li>You're building a large API with multiple bounded contexts</li>
+      <li>You prefer Angular-style organisation on the server</li>
+      <li>You need first-class testability via constructor injection</li>
+    </ul>
+    <p>If you want a lighter-weight Express setup, see <a href="./express-ts.html"><code>express-ts</code></a>.</p>
+
+    <h2>Apply command</h2>
+<pre><code>bash scripts/apply.sh --base=nestjs ../my-api
+bash scripts/apply.sh --base=nestjs --integrations=prisma,supabase ../my-api</code></pre>
+    <div class="callout warn">
+      You still need to scaffold the NestJS project itself. Recommended flow:
+      <pre style="margin-top:0.5rem"><code>npx @nestjs/cli new my-api
+cd ..
+bash scripts/apply.sh --base=nestjs ./my-api</code></pre>
+    </div>
+
+    <h2>What lands</h2>
+    <table>
+      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>.claude/rules/api.md</code></td><td>REST conventions, controller/service boundary, DTOs</td></tr>
+        <tr><td><code>.claude/rules/typescript.md</code></td><td>Strict TS rules; decorator-heavy code patterns</td></tr>
+        <tr><td><code>.claude/rules/nestjs-conventions.md</code></td><td>Module boundaries, provider scopes, guards vs. interceptors vs. pipes, exception filters, validation pipes (<code>class-validator</code> + <code>class-transformer</code>)</td></tr>
+        <tr><td><code>eslint.config.js</code></td><td>Flat config with <code>typescript-eslint</code> + NestJS-aware rules (no-floating-promises on async controllers, etc.)</td></tr>
+        <tr><td><code>tsconfig.recommended.json</code></td><td>Matches NestJS CLI defaults plus <code>"strict": true</code>. <code>experimentalDecorators</code> + <code>emitDecoratorMetadata</code> on.</td></tr>
+        <tr><td><code>.nvmrc</code></td><td><code>25</code></td></tr>
+        <tr><td><code>package.scripts.json</code></td><td>Scripts: <code>build</code> (<code>nest build</code>), <code>dev</code> (<code>nest start --watch</code>), <code>test:e2e</code>. DevDeps: <code>@nestjs/cli</code>, <code>@nestjs/testing</code>, <code>jest</code>, <code>supertest</code>.</td></tr>
+        <tr><td><code>CLAUDE.fragment.md</code></td><td>Stack: Node 25 · NestJS · TypeScript · Commands · Architecture: <code>src/modules/</code>, <code>src/common/</code>, <code>src/main.ts</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Compatible integrations</h2>
+    <table>
+      <thead><tr><th>Integration</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><a href="../integrations/prisma.html"><code>prisma</code></a></td><td><span class="tag ok">✓</span></td><td>Wrap <code>PrismaClient</code> in a NestJS service for DI.</td></tr>
+        <tr><td><a href="../integrations/supabase.html"><code>supabase</code></a></td><td><span class="tag ok">✓</span></td><td>Wrap the JS client in a provider; share via a module.</td></tr>
+        <tr><td><a href="../integrations/firebase.html"><code>firebase</code></a></td><td><span class="tag ok">✓</span></td><td>Firebase Admin SDK wrapped in a provider.</td></tr>
+        <tr><td><code>tailwind</code></td><td><span class="tag no">—</span></td><td>Frontend-only.</td></tr>
+        <tr><td><code>nextauth</code></td><td><span class="tag no">—</span></td><td>Next.js-only.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Recommended <code>package.json</code> scripts after apply</h2>
+<pre><code>{
+  "scripts": {
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "dev": "nest start --watch",
+    "test": "jest",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "npm run lint &amp;&amp; npm run format:check &amp;&amp; npm run build &amp;&amp; npm test",
+    "review": "bash scripts/review.sh"
+  }
+}</code></pre>
+
+    <h2>Gotchas</h2>
+    <ul>
+      <li>NestJS has its own ESLint config out of the box. The base's <code>eslint.config.js</code> replaces it — review and merge if you've customised the original.</li>
+      <li>Decorator metadata requires <code>reflect-metadata</code>, which the NestJS scaffold already imports in <code>src/main.ts</code>. Don't remove it.</li>
+      <li>Avoid mixing <code>@Injectable()</code> singletons that hold per-request state. Use <code>Scope.REQUEST</code> deliberately.</li>
+      <li>The <code>code-review</code> hook will flag controllers with business logic — move logic into services.</li>
+    </ul>
+
+    <h2>Smoke test after apply</h2>
+<pre><code>cd ../my-api
+npm install
+npm run dev
+# in another terminal:
+curl http://localhost:3000
+# stop the server, then:
+npm run validate</code></pre>
+
+    <h2>See also</h2>
+    <ul>
+      <li><a href="./express-ts.html"><code>express-ts</code></a> — lighter alternative</li>
+      <li><a href="../integrations/prisma.html"><code>prisma</code></a> — recommended ORM</li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="./index.html">← All bases</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

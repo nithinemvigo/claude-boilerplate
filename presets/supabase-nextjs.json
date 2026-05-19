@@ -1,0 +1,9 @@
+{
+  "name": "supabase-nextjs",
+  "description": "Next.js App Router + TypeScript with Supabase as the data layer (Postgres + Auth + Storage + Realtime).",
+  "base": "nextjs-ts",
+  "integrations": ["supabase"],
+  "tags": ["fullstack", "typescript", "next.js", "supabase", "postgres"],
+  "homepage": "https://supabase.com/docs/guides/getting-started/quickstarts/nextjs",
+  "notes": "RLS policies are the source of truth — see overlays/integrations/supabase/.claude/rules/supabase.md after apply."
+}

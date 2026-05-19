@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Presets — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="../bases/index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="./index.html">Presets</a>
+      </nav>
+    </header>
+
+    <h1>Presets</h1>
+    <p class="lede">
+      A <strong>preset</strong> is a named alias for a base + list of integrations. Presets ship no new content of their
+      own — they just save you from typing the full combination on the command line. Drop a JSON file in
+      <code>presets/</code> to add a new one.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3><a href="./t3-stack.html">t3-stack</a></h3>
+        <p>The full T3 — Next.js + TypeScript + Tailwind + tRPC + Prisma + NextAuth + Zod.</p>
+        <p><span class="tag">fullstack</span><span class="tag">TS</span><span class="tag">opinionated</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./supabase-nextjs.html">supabase-nextjs</a></h3>
+        <p>Next.js App Router + TypeScript + Supabase. Postgres + Auth + Storage backed.</p>
+        <p><span class="tag">fullstack</span><span class="tag">supabase</span><span class="tag">postgres</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./firebase-react.html">firebase-react</a></h3>
+        <p>Vite + React + TypeScript + Firebase. Auth + Firestore + Storage for SPAs.</p>
+        <p><span class="tag">frontend</span><span class="tag">firebase</span><span class="tag">SPA</span></p>
+      </div>
+    </div>
+
+    <h2>How presets work</h2>
+    <p>A preset JSON looks like this:</p>
+<pre><code>{
+  "name": "supabase-nextjs",
+  "description": "Next.js App Router + TypeScript + Supabase",
+  "base": "nextjs-ts",
+  "integrations": ["supabase"],
+  "tags": ["fullstack", "supabase"]
+}</code></pre>
+    <p>When you run <code>apply.sh --preset=&lt;name&gt;</code>, the script:</p>
+    <ol>
+      <li>Reads <code>presets/&lt;name&gt;.json</code></li>
+      <li>Expands it to the equivalent <code>--base=&lt;base&gt; --integrations=&lt;a,b,c&gt;</code></li>
+      <li>Runs the normal apply flow (validation, copy core, copy base, copy integrations, merge, render)</li>
+    </ol>
+
+    <h2>Adding a new preset</h2>
+    <ol>
+      <li>Create <code>presets/&lt;your-name&gt;.json</code> with the schema above.</li>
+      <li>Run <code>bash scripts/apply.sh --preset=&lt;your-name&gt; --dry &lt;some-target&gt;</code> to verify the expansion.</li>
+      <li>Add a page in <code>docs/presets/&lt;your-name&gt;.html</code> if you want it documented (recommended for shared presets).</li>
+    </ol>
+    <div class="callout tip">
+      Presets are also a good place to encode team conventions. <em>"At ACME, every Next.js app uses Supabase + Tailwind"</em> → that's a preset.
+    </div>
+
+    <h2>v2 presets ideas</h2>
+    <p>Likely additions when v2 ships <code>trpc</code>, <code>nextauth</code>, <code>tanstack-query</code>, and <code>zod</code>:</p>
+    <ul>
+      <li><code>nestjs-prisma-postgres</code> — opinionated NestJS backend</li>
+      <li><code>react-firebase-tailwind</code> — extension of <code>firebase-react</code> with styling</li>
+      <li><code>nextjs-supabase-tailwind</code> — extension of <code>supabase-nextjs</code> with styling</li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="../index.html">← Home</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

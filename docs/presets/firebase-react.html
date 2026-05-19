@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>firebase-react preset — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="../bases/index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="./index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All presets</a></p>
+    <h1><code>firebase-react</code></h1>
+    <p class="lede">Vite + React + TypeScript + Firebase. Auth, Firestore, and Storage behind a fast SPA.</p>
+
+    <p><span class="tag">frontend</span><span class="tag">firebase</span><span class="tag">SPA</span><span class="tag">v1</span></p>
+
+    <h2>What it expands to</h2>
+<pre><code>bash scripts/apply.sh --preset=firebase-react ../my-app
+# equivalent to:
+bash scripts/apply.sh --base=react-vite-ts --integrations=firebase ../my-app</code></pre>
+
+    <h2>When to use this preset</h2>
+    <ul>
+      <li>You're shipping a client-heavy SPA with realtime data</li>
+      <li>You want Google sign-in and a NoSQL store in minutes</li>
+      <li>You don't need server-side rendering</li>
+      <li>You're prototyping and Firebase's free tier covers you</li>
+    </ul>
+    <p>If you need SSR, switch to <code>nextjs-ts + firebase</code> instead.</p>
+
+    <h2>What lands</h2>
+    <ul>
+      <li><strong>Base:</strong> <a href="../bases/react-vite-ts.html"><code>react-vite-ts</code></a> — Vite + React 18+, strict TS, jsx-a11y, react-hooks lint</li>
+      <li><strong>Integration:</strong> <a href="../integrations/firebase.html"><code>firebase</code></a> — <code>firebase.md</code> rule, env keys, Architecture paragraph</li>
+    </ul>
+
+    <h2>Environment variables</h2>
+<pre><code># Firebase Web SDK (browser-safe — security lives in firestore.rules)
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...</code></pre>
+
+    <h2>Recommended workflow</h2>
+    <ol>
+      <li>Scaffold Vite: <code>npm create vite@latest my-app -- --template react-ts</code></li>
+      <li>Apply the preset: <code>bash scripts/apply.sh --preset=firebase-react ../my-app</code></li>
+      <li>Install Firebase: <code>npm install firebase</code></li>
+      <li>Create a Firebase project and copy the Web SDK config into <code>.env.local</code></li>
+      <li>Write <code>firestore.rules</code> and <code>storage.rules</code> <em>before</em> shipping</li>
+      <li>Test rules with the Firebase emulator: <code>npx firebase emulators:start</code></li>
+    </ol>
+
+    <h2>Architecture sketch</h2>
+<pre><code>my-app/
+├── src/
+│   ├── lib/
+│   │   └── firebase.ts            App init + auth/firestore/storage getters
+│   ├── hooks/
+│   │   ├── useAuth.ts             Auth state + sign-in/out
+│   │   └── useCollection.ts       Wrapped Firestore queries with cleanup
+│   ├── components/
+│   └── App.tsx
+├── firestore.rules                Source of truth for read/write authorization
+├── storage.rules
+├── firebase.json                  CLI config (emulators, hosting)
+└── .claude/                       From core + react-vite-ts base + firebase integration</code></pre>
+
+    <h2>Add Tailwind for styling</h2>
+<pre><code>bash scripts/apply.sh --base=react-vite-ts --integrations=firebase,tailwind ../my-app</code></pre>
+    <p>This is a common shape — Firebase backend + Tailwind UI for fast prototyping.</p>
+
+    <h2>Reference</h2>
+    <ul>
+      <li><a href="https://firebase.google.com/docs/web/setup" target="_blank" rel="noopener">Firebase Web setup</a></li>
+      <li><a href="../bases/react-vite-ts.html">react-vite-ts base</a></li>
+      <li><a href="../integrations/firebase.html">firebase integration</a></li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="./index.html">← All presets</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

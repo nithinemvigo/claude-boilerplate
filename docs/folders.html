@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Folder structure — Claude Boilerplate</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="./index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="./index.html">Home</a>
+        <a href="./folders.html">Folders</a>
+        <a href="./apply.html">Apply</a>
+        <a href="./bases/index.html">Bases</a>
+        <a href="./integrations/index.html">Integrations</a>
+        <a href="./presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <h1>Folder structure</h1>
+    <p class="lede">Every top-level folder in the repo, what it contains, and when (if ever) you should edit it.</p>
+
+    <div class="toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#tree">Tree at a glance</a></li>
+        <li><a href="#core">core/</a></li>
+        <li><a href="#overlays">overlays/</a></li>
+        <li><a href="#presets">presets/</a></li>
+        <li><a href="#examples">examples/</a></li>
+        <li><a href="#docs">docs/</a></li>
+        <li><a href="#scripts">scripts/</a></li>
+        <li><a href="#root-files">Root files</a></li>
+      </ul>
+    </div>
+
+    <h2 id="tree">Tree at a glance</h2>
+<pre><code>claude-boilerplate/
+├── core/                          ← always copied to every target project
+│   ├── .claude/
+│   │   ├── agents/                 4 personas (test-writer, doc-writer, pr-description, onboarding-guide)
+│   │   ├── commands/               7 slash commands
+│   │   ├── hooks/                  pre/post commit + status line
+│   │   ├── rules/                  generic rules (error-handling, security, environment, testing)
+│   │   ├── skills/ui-ux-pro-max/   design intelligence skill (67 styles, 96 palettes…)
+│   │   ├── settings.json           Claude Code hook wiring
+│   │   └── review-prompt.md        prompt used by code-review hook
+│   ├── .agents/workflows/          new-feature.md, dependency-update.md
+│   ├── .editorconfig, .prettierrc, .prettierignore
+│   └── CLAUDE.template.md          template with {{STACK}}, {{COMMANDS}}, {{ARCHITECTURE}} placeholders
+│
+├── overlays/
+│   ├── bases/                     ← pick ONE per project
+│   │   ├── express-js/
+│   │   ├── express-ts/
+│   │   ├── nestjs/
+│   │   ├── react-vite-ts/
+│   │   └── nextjs-ts/
+│   └── integrations/              ← pick ZERO or MORE per project
+│       ├── supabase/
+│       ├── firebase/
+│       ├── tailwind/
+│       └── prisma/
+│
+├── presets/                       ← named bundles (base + integrations)
+│   ├── t3-stack.json
+│   ├── supabase-nextjs.json
+│   └── firebase-react.json
+│
+├── examples/                      ← runnable demos
+│   └── express-demo/              the old src/ — a demo API with deliberate bugs
+│
+├── docs/                          ← what you're reading right now
+│   ├── index.html, folders.html, apply.html
+│   ├── bases/                     one page per base
+│   ├── integrations/              one page per integration
+│   └── presets/                   one page per preset
+│
+├── scripts/
+│   └── apply.sh                   the composer (added in step 4)
+│
+├── CLAUDE.md                      about THIS repo (boilerplate itself, not the target)
+├── README.md, CHANGELOG.md
+└── .gitignore, .vscode/
+</code></pre>
+
+    <hr>
+
+    <h2 id="core">core/</h2>
+    <p>
+      <strong>The always-on layer.</strong> Every project bootstrapped from this boilerplate gets <em>all</em> of <code>core/</code>
+      copied into it, regardless of stack. This is what makes the agents, hooks, slash commands, skills,
+      and generic rules work everywhere.
+    </p>
+
+    <h3>core/.claude/agents/</h3>
+    <p>Four agent personas. Invoked with <em>"Act as the X agent…"</em> or by following the file directly.</p>
+    <table>
+      <thead><tr><th>File</th><th>Persona</th><th>Typical invocation</th></tr></thead>
+      <tbody>
+        <tr><td><code>test-writer.md</code></td><td>QA-minded test author — emphasises edge cases and error paths over happy paths</td><td><em>"Act as test-writer and write tests for src/components/Button.tsx"</em></td></tr>
+        <tr><td><code>doc-writer.md</code></td><td>Technical writer — JSDoc, README updates, clear examples</td><td><em>"Follow .claude/agents/doc-writer.md to document this module"</em></td></tr>
+        <tr><td><code>pr-description.md</code></td><td>PR author — structured descriptions from git diff</td><td>Auto-invoked by the <code>new-feature</code> workflow at step 11</td></tr>
+        <tr><td><code>onboarding-guide.md</code></td><td>New-developer guide — anticipates "where is X?" questions</td><td><em>"Run the onboarding-guide for a new developer"</em></td></tr>
+      </tbody>
+    </table>
+
+    <h3>core/.claude/commands/</h3>
+    <p>Seven slash commands. Available in Claude Code as <code>/&lt;name&gt;</code>.</p>
+    <table>
+      <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>/changelog</code></td><td>Generate a <code>CHANGELOG.md</code> entry from recent commits, grouped by conventional-commit type</td></tr>
+        <tr><td><code>/code-review</code></td><td>On-demand multi-agent review — security, performance, accessibility, doc quality</td></tr>
+        <tr><td><code>/doc &lt;file&gt;</code></td><td>Add or update JSDoc on every exported function/class/constant</td></tr>
+        <tr><td><code>/explain &lt;file&gt;</code></td><td>Explain a file: purpose, data flow, dependencies, side-effects, edge cases</td></tr>
+        <tr><td><code>/feature &lt;prd&gt;</code></td><td>Run the <code>new-feature</code> workflow against a PRD path</td></tr>
+        <tr><td><code>/pr</code></td><td>Draft a PR description from the current branch</td></tr>
+        <tr><td><code>/test &lt;file&gt;</code></td><td>Generate or update tests for the target file</td></tr>
+      </tbody>
+    </table>
+
+    <h3>core/.claude/hooks/</h3>
+    <p>Three shell scripts wired up by <code>core/.claude/settings.json</code>.</p>
+    <table>
+      <thead><tr><th>Hook</th><th>Trigger</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr><td><code>pre-commit-validate.sh</code></td><td>PreToolUse on Bash <code>git commit</code></td><td>4-step pipeline: ESLint → Prettier → <code>/security-review</code> → <code>/code-review</code>. Blocks the commit on failure.</td></tr>
+        <tr><td><code>post-commit-review.sh</code></td><td>PostToolUse on Bash <code>git commit</code></td><td>Writes a lightweight commit record to <code>.reviews/&lt;sha&gt;.md</code></td></tr>
+        <tr><td><code>statusline.sh</code></td><td>Status-line renderer</td><td>Shows project context in the Claude Code status line</td></tr>
+      </tbody>
+    </table>
+
+    <h3>core/.claude/rules/</h3>
+    <p>Generic, stack-agnostic rules. Every target gets these. Stack-specific rules ship with bases (<code>frontend.md</code>, <code>api.md</code>, etc.) and integrations (<code>supabase.md</code>, <code>firebase.md</code>, etc.).</p>
+    <ul>
+      <li><code>error-handling.md</code> — try/catch idioms, meaningful messages, when to bubble vs. swallow</li>
+      <li><code>security.md</code> — input validation, no hardcoded secrets, injection guards, dangerous APIs</li>
+      <li><code>environment.md</code> — env-var conventions, <code>.env</code> hygiene</li>
+      <li><code>testing.md</code> — happy/edge/error/security test buckets, coverage discipline</li>
+    </ul>
+
+    <h3>core/.claude/skills/ui-ux-pro-max/</h3>
+    <p>
+      Design-intelligence skill: 67 styles, 96 color palettes, 57 font pairings, 99 UX guidelines, 25 chart types,
+      13 technology stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui…).
+      Auto-triggers on UI-related work (<em>"design a landing page"</em>, <em>"build a dashboard"</em>, <em>"choose a color palette"</em>).
+    </p>
+
+    <h3>core/.agents/workflows/</h3>
+    <p>End-to-end playbooks Claude can execute step by step.</p>
+    <table>
+      <thead><tr><th>Workflow</th><th>What it covers</th><th>How to run</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>new-feature.md</code></td>
+          <td>11 steps, PRD → PR. Uses <code>/office-hours</code>, <code>/plan-ceo-review</code>, <code>/brainstorm</code>, <code>/plan-eng-review</code>, <code>/write-plan</code>, <code>/execute-plan</code>, <code>/ship</code> (gstack + superpowers plugins), with <code>pr-description.md</code> as fallback.</td>
+          <td><code>/feature path/to/prd.md</code> or <em>"Follow .agents/workflows/new-feature.md to implement &lt;X&gt;"</em></td>
+        </tr>
+        <tr>
+          <td><code>dependency-update.md</code></td>
+          <td>Audit → fix vulns → update outdated → run tests → commit. Branch-based.</td>
+          <td><em>"Follow .agents/workflows/dependency-update.md"</em></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>core/.editorconfig, .prettierrc, .prettierignore</h3>
+    <p>Stack-agnostic editor and formatting defaults. Every target gets these as a starting point.</p>
+
+    <hr>
+
+    <h2 id="overlays">overlays/</h2>
+    <p>
+      <strong>The pick-and-mix layer.</strong> Every target chooses exactly one base and zero or more integrations.
+      Overlays are <em>not</em> copied automatically; <code>apply.sh</code> selects them based on flags.
+    </p>
+
+    <h3>overlays/bases/</h3>
+    <p>Framework-specific files. One per project. See <a href="./bases/index.html">Bases</a> for full per-base detail.</p>
+    <ul>
+      <li><a href="./bases/express-js.html"><code>express-js/</code></a> — Node + Express, plain JavaScript</li>
+      <li><a href="./bases/express-ts.html"><code>express-ts/</code></a> — Node + Express, TypeScript</li>
+      <li><a href="./bases/nestjs.html"><code>nestjs/</code></a> — NestJS (TS-only)</li>
+      <li><a href="./bases/react-vite-ts.html"><code>react-vite-ts/</code></a> — React + Vite + TypeScript</li>
+      <li><a href="./bases/nextjs-ts.html"><code>nextjs-ts/</code></a> — Next.js App Router + TypeScript</li>
+    </ul>
+    <p>Each base contains:</p>
+    <ul>
+      <li><code>.claude/rules/</code> — framework-specific rules layered on top of <code>core/.claude/rules/</code></li>
+      <li><code>eslint.config.js</code> — flat config tailored to the framework</li>
+      <li><code>tsconfig.recommended.json</code> (TS bases only) — sane TS defaults</li>
+      <li><code>.nvmrc</code> — Node version</li>
+      <li><code>package.scripts.json</code> — scripts and devDeps to deep-merge into the target's <code>package.json</code></li>
+      <li><code>CLAUDE.fragment.md</code> — text that fills <code>{{STACK}}</code> / <code>{{COMMANDS}}</code> / <code>{{ARCHITECTURE}}</code> in the template</li>
+      <li><code>compatible-integrations.txt</code> — whitelist of integrations <code>apply.sh</code> permits with this base</li>
+    </ul>
+
+    <h3>overlays/integrations/</h3>
+    <p>Additive layers. Zero or more per project. See <a href="./integrations/index.html">Integrations</a> for full detail.</p>
+    <ul>
+      <li><a href="./integrations/supabase.html"><code>supabase/</code></a> — Postgres + Auth + Storage + Realtime</li>
+      <li><a href="./integrations/firebase.html"><code>firebase/</code></a> — Auth + Firestore + Storage</li>
+      <li><a href="./integrations/tailwind.html"><code>tailwind/</code></a> — Utility-first CSS</li>
+      <li><a href="./integrations/prisma.html"><code>prisma/</code></a> — Type-safe ORM</li>
+    </ul>
+    <p>Each integration contains <em>only additive content</em>:</p>
+    <ul>
+      <li><code>.claude/rules/&lt;name&gt;.md</code> — team idioms and pitfalls for this integration</li>
+      <li><code>env.snippet</code> — env-var keys to append to <code>.env.example</code></li>
+      <li><code>architecture.md</code> — paragraph appended to <code>CLAUDE.md</code></li>
+      <li><code>package.snippet.json</code> — devDeps and scripts to merge</li>
+      <li><code>compatible-with.txt</code> — bases this integration supports</li>
+    </ul>
+    <div class="callout warn">
+      <strong>Critical constraint:</strong> integrations <em>never</em> overwrite a file already owned by <code>core/</code> or the base.
+      <code>apply.sh</code> aborts on file conflicts. This is what keeps composition safe.
+    </div>
+
+    <hr>
+
+    <h2 id="presets">presets/</h2>
+    <p>Named base + integrations bundles. Three v1 presets:</p>
+    <table>
+      <thead><tr><th>Preset</th><th>Expands to</th></tr></thead>
+      <tbody>
+        <tr><td><a href="./presets/t3-stack.html"><code>t3-stack.json</code></a></td><td><code>--base=nextjs-ts --integrations=tailwind,trpc,prisma,nextauth,zod</code></td></tr>
+        <tr><td><a href="./presets/supabase-nextjs.html"><code>supabase-nextjs.json</code></a></td><td><code>--base=nextjs-ts --integrations=supabase</code></td></tr>
+        <tr><td><a href="./presets/firebase-react.html"><code>firebase-react.json</code></a></td><td><code>--base=react-vite-ts --integrations=firebase</code></td></tr>
+      </tbody>
+    </table>
+    <p>Add a new preset by dropping a JSON file in this folder. Schema is small:</p>
+<pre><code>{
+  "name": "my-preset",
+  "description": "Short blurb",
+  "base": "&lt;base name&gt;",
+  "integrations": ["a", "b"],
+  "tags": ["fullstack", "..."]
+}</code></pre>
+
+    <hr>
+
+    <h2 id="examples">examples/</h2>
+    <p>Runnable demos. Used to show the pre-commit pipeline in action.</p>
+    <h3>examples/express-demo/</h3>
+    <p>
+      The original Express API (formerly <code>src/</code> at the repo root). Contains <em>deliberate</em> bugs — SQL
+      injection in the admin route, hardcoded secret in the FB service — so the security and code-review hooks have
+      something to catch. <code>.reviews/</code> beside it stores historical review reports from past commits.
+    </p>
+    <div class="callout tip">
+      Run <code>cd examples/express-demo &amp;&amp; npm install &amp;&amp; npm test</code> to see the demo green-light, then try
+      <code>git commit</code> on a deliberate vuln to see the pre-commit pipeline block it.
+    </div>
+
+    <hr>
+
+    <h2 id="docs">docs/</h2>
+    <p>This documentation site. Plain HTML, no build step.</p>
+    <ul>
+      <li><code>index.html</code> — landing page</li>
+      <li><code>folders.html</code> — this page</li>
+      <li><code>apply.html</code> — <code>apply.sh</code> contract, combinations, compatibility matrix</li>
+      <li><code>bases/</code> — one HTML page per base</li>
+      <li><code>integrations/</code> — one HTML page per integration</li>
+      <li><code>presets/</code> — one HTML page per preset</li>
+      <li><code>assets/styles.css</code> — shared stylesheet</li>
+      <li><code>apply-composition.md</code> — Markdown version of the apply contract (for GitHub rendering)</li>
+    </ul>
+
+    <hr>
+
+    <h2 id="scripts">scripts/</h2>
+    <p>Repo-level tooling.</p>
+    <ul>
+      <li><code>apply.sh</code> — the composer (the script every section above keeps referencing). Validates the combo, copies core, copies the base, copies integrations, merges <code>package.json</code>, renders <code>CLAUDE.md</code>, appends <code>.env.example</code>. See <a href="./apply.html">Apply</a> for the full contract.</li>
+    </ul>
+    <p>The demo's <code>review.sh</code> lives at <code>examples/express-demo/scripts/review.sh</code> — it's part of the demo, not a repo-level tool.</p>
+
+    <hr>
+
+    <h2 id="root-files">Root files</h2>
+    <table>
+      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>CLAUDE.md</code></td><td>Instructions for Claude when editing <em>this boilerplate repo itself</em> (not the target project). The template that becomes the target's <code>CLAUDE.md</code> lives at <code>core/CLAUDE.template.md</code>.</td></tr>
+        <tr><td><code>README.md</code></td><td>High-level pitch, quick start, links to docs. Rewritten in step 5 of the build plan.</td></tr>
+        <tr><td><code>CHANGELOG.md</code></td><td>Boilerplate version history.</td></tr>
+        <tr><td><code>.gitignore</code></td><td>Repo-level ignore. <code>__pycache__/</code> and <code>*.pyc</code> should be added (from the UI skill restore).</td></tr>
+        <tr><td><code>.vscode/</code></td><td>Recommended VS Code settings.</td></tr>
+      </tbody>
+    </table>
+
+    <footer class="site">
+      <div><a href="./index.html">← Home</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

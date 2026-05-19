@@ -1,0 +1,9 @@
+{
+  "name": "t3-stack",
+  "description": "T3 Stack — Next.js + TypeScript + Tailwind + tRPC + Prisma + NextAuth + Zod. Opinionated full-stack TypeScript app on Next.js App Router.",
+  "base": "nextjs-ts",
+  "integrations": ["tailwind", "trpc", "prisma", "nextauth", "zod"],
+  "tags": ["fullstack", "typescript", "next.js", "trpc", "prisma"],
+  "homepage": "https://create.t3.gg",
+  "notes": "tRPC, NextAuth, and Zod integrations are v2 — apply.sh will error cleanly if this preset is invoked before they exist. Tailwind + Prisma are v1."
+}

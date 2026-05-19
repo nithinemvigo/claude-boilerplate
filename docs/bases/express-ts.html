@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>express-ts — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="./index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="../presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All bases</a></p>
+    <h1><code>express-ts</code></h1>
+    <p class="lede">Node.js + Express + TypeScript. The typed Express setup.</p>
+
+    <p><span class="tag">TS</span><span class="tag">backend</span><span class="tag">REST</span><span class="tag">Node 25</span></p>
+
+    <h2>When to choose this base</h2>
+    <ul>
+      <li>You want type safety on request/response shapes</li>
+      <li>You're sharing types between server and a TypeScript client</li>
+      <li>You need refactor confidence on a growing API</li>
+    </ul>
+    <p>If TypeScript is overkill, see <a href="./express-js.html"><code>express-js</code></a>. If you want batteries-included structure (DI, decorators, modules), see <a href="./nestjs.html"><code>nestjs</code></a>.</p>
+
+    <h2>Apply command</h2>
+<pre><code>bash scripts/apply.sh --base=express-ts ../my-api
+bash scripts/apply.sh --base=express-ts --integrations=prisma,supabase ../my-api</code></pre>
+
+    <h2>What lands</h2>
+    <table>
+      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>.claude/rules/api.md</code></td><td>REST conventions, typed request/response, error envelopes</td></tr>
+        <tr><td><code>.claude/rules/database.md</code></td><td>SQL safety, parameterised queries, transactions</td></tr>
+        <tr><td><code>.claude/rules/typescript.md</code></td><td>No <code>any</code>, prefer <code>unknown</code> + narrowing, exhaustive switches, branded types where helpful</td></tr>
+        <tr><td><code>eslint.config.js</code></td><td>Flat config with <code>typescript-eslint</code>, strict rules, Prettier-compatible</td></tr>
+        <tr><td><code>tsconfig.recommended.json</code></td><td><code>"strict": true</code>, <code>"noUncheckedIndexedAccess": true</code>, <code>"target": "ES2022"</code>, <code>"module": "NodeNext"</code></td></tr>
+        <tr><td><code>.nvmrc</code></td><td><code>25</code></td></tr>
+        <tr><td><code>package.scripts.json</code></td><td>Scripts include <code>build</code> (<code>tsc</code>), <code>dev</code> (<code>tsx watch</code>). DevDeps add <code>typescript</code>, <code>tsx</code>, <code>ts-jest</code>, <code>@types/express</code>, <code>@types/node</code>.</td></tr>
+        <tr><td><code>CLAUDE.fragment.md</code></td><td>Stack: Node 25 · Express · TypeScript · Commands · Architecture: <code>src/routes/</code>, <code>src/middleware/</code>, <code>src/services/</code>, <code>src/types/</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Compatible integrations</h2>
+    <table>
+      <thead><tr><th>Integration</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><a href="../integrations/supabase.html"><code>supabase</code></a></td><td><span class="tag ok">✓</span></td><td>Use <code>@supabase/supabase-js</code> with generated types via <code>supabase gen types typescript</code>.</td></tr>
+        <tr><td><a href="../integrations/firebase.html"><code>firebase</code></a></td><td><span class="tag ok">✓</span></td><td>Firebase Admin SDK.</td></tr>
+        <tr><td><a href="../integrations/prisma.html"><code>prisma</code></a></td><td><span class="tag ok">✓</span></td><td>Recommended ORM for this base — type-safe queries pair well with strict TS.</td></tr>
+        <tr><td><code>tailwind</code></td><td><span class="tag no">—</span></td><td>Frontend-only.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Recommended <code>package.json</code> scripts after apply</h2>
+<pre><code>{
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "npm run lint &amp;&amp; npm run format:check &amp;&amp; npm run build &amp;&amp; npm test",
+    "review": "bash scripts/review.sh",
+    "deps:audit": "npm audit --production",
+    "deps:outdated": "npm outdated"
+  }
+}</code></pre>
+
+    <h2>Gotchas</h2>
+    <ul>
+      <li><code>npm run validate</code> includes a <code>tsc</code> build step — this is intentional. Type errors block commits via the pre-commit hook.</li>
+      <li><code>jest</code> uses <code>ts-jest</code>; tests live alongside source as <code>*.test.ts</code>. The generic <code>testing.md</code> rule says <code>*.test.js</code> — override that locally in your <code>CLAUDE.md</code> if you want.</li>
+      <li><code>tsconfig.recommended.json</code> is a recommendation, not the file. After apply, copy values into your project's <code>tsconfig.json</code> (or rename).</li>
+    </ul>
+
+    <h2>Smoke test after apply</h2>
+<pre><code>cd ../my-api
+npm install express @types/express
+mkdir -p src
+cat &gt; src/index.ts &lt;&lt; 'EOF'
+import express from "express";
+const app = express();
+app.get("/", (_req, res) =&gt; res.send("ok"));
+app.listen(3000);
+EOF
+npm run validate</code></pre>
+
+    <footer class="site">
+      <div><a href="./index.html">← All bases</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

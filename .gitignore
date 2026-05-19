@@ -131,3 +131,4 @@ dist
 # Claude Code local overrides (machine-specific, never commit)
 .claude/settings.local.json
 .claude/.DS_Store
+.reviews

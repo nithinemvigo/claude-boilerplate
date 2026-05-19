@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tailwind — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="../bases/index.html">Bases</a>
+        <a href="./index.html">Integrations</a>
+        <a href="../presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All integrations</a></p>
+    <h1><code>tailwind</code></h1>
+    <p class="lede">Utility-first CSS. The integration adds team conventions for class organisation, theme tokens, and where to break out of utilities into components.</p>
+
+    <p><span class="tag">styling</span><span class="tag">frontend</span><span class="tag">utility-first</span></p>
+
+    <h2>Compatible bases</h2>
+    <table>
+      <thead><tr><th>Base</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>react-vite-ts</code></td><td><span class="tag ok">✓</span></td><td>Install Tailwind via <code>npm install -D tailwindcss @tailwindcss/vite</code> + Vite plugin</td></tr>
+        <tr><td><code>nextjs-ts</code></td><td><span class="tag ok">✓</span></td><td><code>create-next-app --tailwind</code> already sets this up. The integration just adds the <code>tailwind.md</code> rule.</td></tr>
+        <tr><td><code>express-*</code>, <code>nestjs</code></td><td><span class="tag no">—</span></td><td>Backend bases. Hard error.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Apply command</h2>
+<pre><code>bash scripts/apply.sh --base=react-vite-ts --integrations=tailwind ../my-app
+bash scripts/apply.sh --base=nextjs-ts --integrations=tailwind,supabase ../my-app</code></pre>
+
+    <h2>What lands</h2>
+    <table>
+      <thead><tr><th>File / change</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td><code>.claude/rules/tailwind.md</code></td><td>Class organisation (layout → spacing → typography → color → state), responsive prefix order, when to <code>@apply</code> vs. component, design tokens via theme</td></tr>
+        <tr><td><code>CLAUDE.md</code> Architecture paragraph</td><td>"Tailwind config in <code>tailwind.config.js</code>. Theme tokens (colors, spacing, fonts) live there — extend, don't override. Global styles in <code>src/styles/globals.css</code>."</td></tr>
+        <tr><td><code>package.json</code> devDeps appended</td><td><code>tailwindcss</code>, <code>autoprefixer</code> (or the Vite plugin), <code>prettier-plugin-tailwindcss</code> for class sorting</td></tr>
+        <tr><td><code>.env.example</code></td><td>No env vars added</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Rule file highlights (<code>tailwind.md</code>)</h2>
+    <ul>
+      <li><strong>Class order matters for readability.</strong> Use <code>prettier-plugin-tailwindcss</code> to auto-sort. The pre-commit Prettier check enforces this.</li>
+      <li><strong>Extend the theme, don't override.</strong> <code>theme: { extend: { colors: {...} } }</code> keeps Tailwind's defaults; overriding loses them.</li>
+      <li><strong>Avoid arbitrary values.</strong> <code>h-[37px]</code> is a code smell — add the value to the theme if it appears more than twice.</li>
+      <li><strong>Don't <code>@apply</code> reflexively.</strong> If you find yourself wrapping utilities in custom classes, the right answer is usually a component, not a class.</li>
+      <li><strong>Responsive prefixes go in mobile-first order:</strong> <code>w-full md:w-1/2 lg:w-1/3</code>.</li>
+      <li><strong>Dark mode: use <code>class</code> strategy</strong> (not <code>media</code>) so users can toggle.</li>
+      <li><strong>Don't fight the UI/UX Pro Max skill.</strong> The <code>ui-ux-pro-max</code> skill in <code>core/</code> ships 96 palettes and 57 font pairings — check it before inventing your own.</li>
+    </ul>
+
+    <h2>Combined with other integrations</h2>
+    <ul>
+      <li>+ <a href="./supabase.html"><code>supabase</code></a> on <code>nextjs-ts</code> — common SaaS shape, server-rendered UI with auth-gated data.</li>
+      <li>+ <a href="./firebase.html"><code>firebase</code></a> on <code>react-vite-ts</code> — covered by the <a href="../presets/firebase-react.html"><code>firebase-react</code></a> preset.</li>
+      <li>+ <a href="./prisma.html"><code>prisma</code></a> on <code>nextjs-ts</code> — half of T3 stack.</li>
+    </ul>
+
+    <h2>Gotchas</h2>
+    <ul>
+      <li><strong>Tailwind v4 vs v3.</strong> v4 ships with a new config style (CSS-first). The rule file targets v4 by default but flags both.</li>
+      <li><strong>JIT scanning.</strong> If your content paths are wrong in <code>tailwind.config.js</code>, classes silently won't generate. Verify by checking the output CSS in dev.</li>
+      <li><strong>Plugin order.</strong> If using <code>@tailwindcss/forms</code> + <code>@tailwindcss/typography</code>, register both before your own plugins.</li>
+      <li><strong>PurgeCSS isn't needed</strong> — Tailwind's JIT engine handles unused-class removal.</li>
+    </ul>
+
+    <h2>Smoke test after apply</h2>
+<pre><code>cd ../my-app
+# For Vite:
+npm install -D tailwindcss @tailwindcss/vite
+# Add the Vite plugin to vite.config.ts, then:
+echo '@import "tailwindcss";' &gt; src/styles/globals.css
+npm run dev
+# Add `&lt;div className="text-3xl text-sky-400"&gt;hi&lt;/div&gt;` and verify it renders styled.</code></pre>
+
+    <footer class="site">
+      <div><a href="./index.html">← All integrations</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

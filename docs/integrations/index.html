@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Integrations — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="../bases/index.html">Bases</a>
+        <a href="./index.html">Integrations</a>
+        <a href="../presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <h1>Integrations</h1>
+    <p class="lede">
+      Integrations are <strong>additive overlays</strong> — they layer on top of a base, adding a rule file,
+      env vars, and an Architecture paragraph. They <em>never</em> overwrite anything the base already wrote.
+      Pick zero or more per project.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3><a href="./supabase.html">supabase</a></h3>
+        <p>Postgres + Auth + Storage + Realtime. RLS is the source of truth.</p>
+        <p><span class="tag">database</span><span class="tag">auth</span><span class="tag">backend</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./firebase.html">firebase</a></h3>
+        <p>Auth + Firestore + Storage. Security rules in <code>firestore.rules</code>.</p>
+        <p><span class="tag">database</span><span class="tag">auth</span><span class="tag">BaaS</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./tailwind.html">tailwind</a></h3>
+        <p>Utility-first CSS. Frontend bases only.</p>
+        <p><span class="tag">styling</span><span class="tag">frontend</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./prisma.html">prisma</a></h3>
+        <p>Type-safe ORM with migrations. Server bases only.</p>
+        <p><span class="tag">ORM</span><span class="tag">backend</span></p>
+      </div>
+    </div>
+
+    <h2>The additive-only contract</h2>
+    <p>Every integration must follow this rule: <strong>only add new files, never overwrite</strong>. If an integration ships a file with the same path as a base or core file, <code>apply.sh</code> aborts with exit code <code>3</code>. This guarantee is what lets you mix integrations safely.</p>
+
+    <p>What an integration <em>can</em> ship:</p>
+    <ul>
+      <li>A new rule file at <code>.claude/rules/&lt;name&gt;.md</code> (never overlaps with core or base rule names)</li>
+      <li>An <code>env.snippet</code> with env-var keys to append to <code>.env.example</code></li>
+      <li>An <code>architecture.md</code> paragraph appended to the project's <code>CLAUDE.md</code></li>
+      <li>A <code>package.snippet.json</code> with new devDeps / scripts to merge into <code>package.json</code></li>
+      <li>A <code>compatible-with.txt</code> listing the bases it supports</li>
+      <li>(Optional, v2) A <code>starter/</code> directory with scaffolding code, applied only when <code>--starter</code> is passed</li>
+    </ul>
+
+    <h2>Compatibility matrix</h2>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th><a href="./supabase.html">supabase</a></th>
+          <th><a href="./firebase.html">firebase</a></th>
+          <th><a href="./tailwind.html">tailwind</a></th>
+          <th><a href="./prisma.html">prisma</a></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>express-js</code></td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
+        <tr><td><code>express-ts</code></td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
+        <tr><td><code>nestjs</code></td><td>✓</td><td>✓</td><td>—</td><td>✓</td></tr>
+        <tr><td><code>react-vite-ts</code></td><td>✓</td><td>✓</td><td>✓</td><td>—</td></tr>
+        <tr><td><code>nextjs-ts</code></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Common combinations</h2>
+    <ul>
+      <li><a href="./supabase.html"><code>supabase</code></a> + <a href="./tailwind.html"><code>tailwind</code></a> on <code>nextjs-ts</code> — fast Supabase-backed SaaS UI</li>
+      <li><a href="./firebase.html"><code>firebase</code></a> + <a href="./tailwind.html"><code>tailwind</code></a> on <code>react-vite-ts</code> — see the <a href="../presets/firebase-react.html"><code>firebase-react</code></a> preset</li>
+      <li><a href="./prisma.html"><code>prisma</code></a> + <a href="./supabase.html"><code>supabase</code></a> on <code>nestjs</code> — Prisma as the ORM, Supabase Postgres as the database</li>
+      <li><a href="./tailwind.html"><code>tailwind</code></a> + <a href="./prisma.html"><code>prisma</code></a> on <code>nextjs-ts</code> — half of the T3 stack</li>
+    </ul>
+
+    <h2>v2 integrations</h2>
+    <p>Coming in v2: <code>trpc</code>, <code>nextauth</code>, <code>tanstack-query</code>, <code>zod</code>. The <a href="../presets/t3-stack.html">T3 Stack preset</a> references these — <code>apply.sh</code> will error cleanly if you invoke the preset before they exist.</p>
+
+    <footer class="site">
+      <div><a href="../index.html">← Home</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

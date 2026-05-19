@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>t3-stack preset — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="../bases/index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="./index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All presets</a></p>
+    <h1><code>t3-stack</code></h1>
+    <p class="lede">The full T3 Stack — Next.js + TypeScript + Tailwind + tRPC + Prisma + NextAuth + Zod. Opinionated, type-safe, full-stack.</p>
+
+    <p><span class="tag">fullstack</span><span class="tag">TS</span><span class="tag">opinionated</span></p>
+
+    <h2>What it expands to</h2>
+<pre><code>bash scripts/apply.sh --preset=t3-stack ../my-app
+# equivalent to:
+bash scripts/apply.sh \
+  --base=nextjs-ts \
+  --integrations=tailwind,trpc,prisma,nextauth,zod \
+  ../my-app</code></pre>
+
+    <div class="callout warn">
+      <strong>v2 status.</strong> <code>trpc</code>, <code>nextauth</code>, and <code>zod</code> ship in v2. v1 has <code>tailwind</code> and <code>prisma</code>.
+      Running this preset before v2 lands will produce a clean error from <code>apply.sh</code> listing the missing integrations.
+      For a partial T3 in v1, use:
+      <pre style="margin-top:0.5rem"><code>bash scripts/apply.sh --base=nextjs-ts --integrations=tailwind,prisma ../my-app</code></pre>
+    </div>
+
+    <h2>When to use this preset</h2>
+    <ul>
+      <li>You want the canonical T3 setup with zero decisions</li>
+      <li>You need end-to-end type safety from database to UI</li>
+      <li>You're building a SaaS-shaped app: auth, data, server actions, styling</li>
+      <li>Your team has agreed on this stack and wants to stop relitigating it</li>
+    </ul>
+
+    <h2>What lands</h2>
+    <p>The result is the union of everything from <a href="../bases/nextjs-ts.html"><code>nextjs-ts</code></a> plus each integration. In short:</p>
+    <ul>
+      <li><strong>Base:</strong> <a href="../bases/nextjs-ts.html"><code>nextjs-ts</code></a> — Next.js App Router, strict TS, frontend rules, API route rules, ESLint with <code>next/core-web-vitals</code></li>
+      <li><strong>Tailwind:</strong> <a href="../integrations/tailwind.html"><code>tailwind</code></a> — utility CSS, class organisation rule</li>
+      <li><strong>tRPC (v2):</strong> end-to-end typed RPC, procedure structure, error handling rule</li>
+      <li><strong>Prisma:</strong> <a href="../integrations/prisma.html"><code>prisma</code></a> — schema, migrations, singleton client</li>
+      <li><strong>NextAuth (v2):</strong> Auth.js v5 for Next.js — providers, callbacks, JWT vs. database sessions</li>
+      <li><strong>Zod (v2):</strong> runtime validation as the contract between layers</li>
+    </ul>
+
+    <h2>Environment variables (all combined)</h2>
+<pre><code># Database (Prisma)
+DATABASE_URL=postgresql://...
+DIRECT_URL=postgresql://...
+
+# NextAuth (v2)
+AUTH_SECRET=&lt;random 32 bytes&gt;
+AUTH_URL=https://your.app
+AUTH_GITHUB_ID=...
+AUTH_GITHUB_SECRET=...
+# (or whichever provider)
+
+# Tailwind: no env vars
+# tRPC: no env vars
+# Zod: no env vars</code></pre>
+
+    <h2>Recommended workflow</h2>
+    <ol>
+      <li>Scaffold Next.js: <code>npx create-next-app@latest my-app --typescript --app --tailwind --eslint</code></li>
+      <li>Apply the preset: <code>bash scripts/apply.sh --preset=t3-stack ../my-app</code> (in v2)</li>
+      <li>Initialise Prisma: <code>npx prisma init</code> then write your schema</li>
+      <li>Set up tRPC: create <code>src/server/api/</code> with your router</li>
+      <li>Configure NextAuth: <code>src/server/auth.ts</code> with providers</li>
+      <li>Build features using Zod schemas as the source of truth for shapes</li>
+    </ol>
+
+    <h2>Equivalent manual command</h2>
+    <p>If you want to deviate (e.g. swap Tailwind for vanilla extract):</p>
+<pre><code>bash scripts/apply.sh \
+  --base=nextjs-ts \
+  --integrations=trpc,prisma,nextauth,zod \
+  ../my-app</code></pre>
+
+    <h2>Reference</h2>
+    <ul>
+      <li><a href="https://create.t3.gg" target="_blank" rel="noopener">create.t3.gg</a> — the original T3 Stack</li>
+      <li><a href="../bases/nextjs-ts.html">nextjs-ts base</a></li>
+      <li><a href="../integrations/tailwind.html">tailwind</a> · <a href="../integrations/prisma.html">prisma</a></li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="./index.html">← All presets</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>
