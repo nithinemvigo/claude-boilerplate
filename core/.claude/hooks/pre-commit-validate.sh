@@ -161,10 +161,36 @@ if ! command -v "$CLAUDE_CMD" &>/dev/null; then
   print_tip "Claude CLI not found — skipping AI checks."; echo ""; exit 0
 fi
 
+# ── Plugin availability probe ─────────────────────────────────────
+# Missing plugins downgrade to a loud warning instead of blocking.
+# Set CLAUDE_BOILERPLATE_STRICT=1 to make them hard failures.
+PROBE="$REPO_ROOT/.claude/hooks/plugin-probe.sh"
+STRICT="${CLAUDE_BOILERPLATE_STRICT:-0}"
+probe_plugin() {
+  [ -x "$PROBE" ] && bash "$PROBE" "$1" >/dev/null 2>&1
+}
+plugin_missing_handler() {
+  # $1 = plugin name, $2 = step label (e.g. "security-review")
+  local name="$1" step="$2"
+  if [ "$STRICT" = "1" ]; then
+    print_fail "$name plugin not installed (STRICT mode)."
+    echo -e "  ${DIM}Install: claude /plugins install https://claude.com/plugins/${name}${NC}"
+    print_blocked; exit 2
+  fi
+  print_tip "$name plugin not installed — SKIPPING $step gate."
+  echo -e "  ${DIM}Install: claude /plugins install https://claude.com/plugins/${name}${NC}"
+  echo -e "  ${DIM}Set CLAUDE_BOILERPLATE_STRICT=1 to make this fail-hard.${NC}"
+  print_divider
+}
+
+
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 
 # ── [3/4] Security Scan ───────────────────────────────────────────
 print_step "3" "Security Scan  (security-guidance plugin)"
+if ! probe_plugin "security-guidance"; then
+  plugin_missing_handler "security-guidance" "security-review"
+else
 echo -e "  ${DIM}Scanning staged diff for dangerous patterns…${NC}\n"
 
 SEC_PROMPT="/security-review
@@ -213,9 +239,13 @@ fi
 
 print_pass "Security scan passed"
 print_divider
+fi
 
 # ── [4/4] Code Review ─────────────────────────────────────────────
 print_step "4" "Code Review  (code-review plugin)"
+if ! probe_plugin "code-review"; then
+  plugin_missing_handler "code-review" "code-review"
+else
 echo -e "  ${DIM}Running /code-review on staged diff…${NC}\n"
 
 CR_PROMPT="/code-review
@@ -264,5 +294,6 @@ fi
 
 print_pass "Code review passed"
 print_divider
+fi
 print_approved
 exit 0

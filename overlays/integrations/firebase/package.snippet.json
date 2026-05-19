@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "firebase:emulators": "firebase emulators:start",
+    "firebase:deploy": "firebase deploy",
+    "firebase:rules": "firebase deploy --only firestore:rules,storage:rules"
+  },
+  "devDependencies": {
+    "firebase-tools": "^13.20.0"
+  }
+}

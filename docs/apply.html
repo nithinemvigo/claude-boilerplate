@@ -133,12 +133,22 @@
 
     <h3>8. Print a summary</h3>
 <pre><code>✓ Applied base `nextjs-ts` + integrations [`supabase`, `tailwind`]
-  Files added: 23  ·  Files modified: 3
-  Next steps:
-    1. cd ../my-app
-    2. npm install
-    3. Fill in Supabase keys in .env
-    4. Run npm run validate</code></pre>
+  Files written: 38
+  Target:        ../my-app
+
+Next steps
+  1. cd ../my-app
+  2. npm install
+  3. Install required Claude Code plugins (one-time, per machine):
+       claude /plugins install https://claude.com/plugins/security-guidance
+       claude /plugins install https://claude.com/plugins/code-review
+  4. cp .env.example .env  # then fill in real values
+  5. Review CLAUDE.md and fill in any project-specific TODOs
+  6. npm run check-setup   # verify everything is wired
+  7. npm run validate      # lint + format + build + test</code></pre>
+    <div class="callout">
+      The pre-commit hook calls <code>/security-review</code> and <code>/code-review</code> — both plugins are required for full coverage. If a plugin is missing, that gate is skipped with a warning rather than blocking the commit. Set <code>CLAUDE_BOILERPLATE_STRICT=1</code> to fail hard on missing plugins.
+    </div>
 
     <h3>9. Dry-run mode (<code>--dry</code>)</h3>
     <p><code>--dry</code> runs steps 1–8 in plan-only mode: nothing is written to disk. The summary lists every file the real run would create, modify, or leave alone. Use this before applying to an existing project.</p>
