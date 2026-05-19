@@ -1,160 +1,878 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Claude Boilerplate — Documentation</title>
-    <link rel="stylesheet" href="./assets/styles.css" />
-  </head>
-  <body>
-    <header class="site">
-      <div class="brand">Claude Boilerplate</div>
-      <nav>
-        <a href="./index.html">Home</a>
-        <a href="./folders.html">Folders</a>
-        <a href="./apply.html">Apply</a>
-        <a href="./bases/index.html">Bases</a>
-        <a href="./integrations/index.html">Integrations</a>
-        <a href="./presets/index.html">Presets</a>
-      </nav>
-    </header>
 
-    <h1>Claude Boilerplate</h1>
-    <p class="lede">
-      A composable Claude Code starter. One <code>core/</code> of agents, commands, hooks and skills,
-      plus stack-specific <strong>bases</strong> (Express, NestJS, React, Next.js…) and additive
-      <strong>integrations</strong> (Supabase, Firebase, Tailwind, Prisma…). One command stitches them
-      into any new project.
-    </p>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claude Boilerplate — Universal Claude Code Starter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    <div class="card">
-      <h3 style="margin-top:0">Quick start</h3>
-<pre><code>bash scripts/apply.sh --base=nextjs-ts --integrations=supabase,tailwind ../my-app</code></pre>
-      <p style="margin-bottom:0">
-        Or pick a preset — <code>--preset=t3-stack</code>, <code>--preset=supabase-nextjs</code>,
-        <code>--preset=firebase-react</code>. See <a href="./apply.html">Apply</a> for the full contract.
-      </p>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2235;
+      --border: #1f2d47;
+      --accent: #38bdf8;
+      --accent2: #818cf8;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --text: #f1f5f9;
+      --muted: #64748b;
+      --subtle: #94a3b8;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(10, 14, 26, .85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -.02em;
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .nav-links a {
+      color: var(--subtle);
+      text-decoration: none;
+      font-size: .88rem;
+      transition: color .2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 5rem 2rem 3rem;
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(56, 189, 248, .12), transparent);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .3rem .8rem;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, .1);
+      border: 1px solid rgba(56, 189, 248, .25);
+      font-size: .78rem;
+      color: var(--accent);
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      letter-spacing: -.04em;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      color: var(--subtle);
+      font-size: 1.1rem;
+      max-width: 560px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .65rem 1.4rem;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0e1a;
+    }
+
+    .btn-primary:hover {
+      background: #7dd3fc;
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    /* ── SECTION ── */
+    section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: .5rem;
+      letter-spacing: -.02em;
+    }
+
+    .section-sub {
+      color: var(--subtle);
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── STACK BUILDER ── */
+    .builder-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .builder-title {
+      padding: 1.2rem 1.8rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: .92rem;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .builder-body {
+      padding: 2rem 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .picker-label {
+      font-size: .82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: .75rem;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
+    }
+
+    .chip {
+      padding: .45rem 1rem;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      font-size: .85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .chip:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    .chip.selected {
+      border-color: var(--accent);
+      background: rgba(56, 189, 248, .1);
+      color: var(--accent);
+    }
+
+    .chip.selected-green {
+      border-color: var(--green);
+      background: rgba(52, 211, 153, .08);
+      color: var(--green);
+    }
+
+    .chip.disabled {
+      opacity: .3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* ── OUTPUT TERMINAL ── */
+    .terminal {
+      background: #020817;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .7rem 1rem;
+      background: #0d1526;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .dot.red {
+      background: #ef4444;
+    }
+
+    .dot.yellow {
+      background: #f59e0b;
+    }
+
+    .dot.green {
+      background: #10b981;
+    }
+
+    .terminal-label {
+      margin-left: .5rem;
+      font-size: .8rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .terminal-body {
+      padding: 1.2rem 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .85rem;
+      line-height: 1.8;
+    }
+
+    .t-comment {
+      color: #4b5e7e;
+    }
+
+    .t-cmd {
+      color: var(--accent);
+    }
+
+    .t-arg {
+      color: var(--accent2);
+    }
+
+    .t-path {
+      color: var(--green);
+    }
+
+    .t-flag {
+      color: var(--yellow);
+    }
+
+    .copy-btn {
+      display: block;
+      width: 100%;
+      padding: .7rem;
+      text-align: center;
+      background: var(--surface2);
+      color: var(--subtle);
+      font-size: .82rem;
+      cursor: pointer;
+      border: none;
+      border-top: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      transition: all .2s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(56, 189, 248, .1);
+      color: var(--accent);
+    }
+
+    /* ── WHAT YOU GET ── */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: border-color .2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--accent2);
+    }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: .8rem;
+    }
+
+    .feature-title {
+      font-weight: 600;
+      margin-bottom: .4rem;
+    }
+
+    .feature-desc {
+      font-size: .88rem;
+      color: var(--subtle);
+    }
+
+    /* ── COMPAT TABLE ── */
+    .compat-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .88rem;
+    }
+
+    .compat-table th {
+      text-align: left;
+      padding: .75rem 1rem;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .compat-table td {
+      padding: .75rem 1rem;
+      border-bottom: 1px solid rgba(31, 45, 71, .5);
+      color: var(--subtle);
+    }
+
+    .compat-table td:first-child {
+      color: var(--text);
+      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .82rem;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: .15rem .5rem;
+      border-radius: 4px;
+      font-size: .75rem;
+      font-weight: 600;
+    }
+
+    .tag-js {
+      background: rgba(251, 191, 36, .1);
+      color: var(--yellow);
+    }
+
+    .tag-ts {
+      background: rgba(129, 140, 248, .1);
+      color: var(--accent2);
+    }
+
+    .check {
+      color: var(--green);
+    }
+
+    .x {
+      color: var(--muted);
+    }
+
+    /* ── PIPELINE STEPS ── */
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .pipe-step {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+      padding: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .pipe-step:first-child {
+      border-radius: 12px 12px 0 0;
+    }
+
+    .pipe-step:last-child {
+      border-radius: 0 0 12px 12px;
+    }
+
+    .pipe-step+.pipe-step {
+      border-top: none;
+    }
+
+    .pipe-num {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, .1);
+      border: 1.5px solid rgba(56, 189, 248, .3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: .85rem;
+      color: var(--accent);
+    }
+
+    .pipe-content h3 {
+      font-size: .95rem;
+      font-weight: 600;
+      margin-bottom: .3rem;
+    }
+
+    .pipe-content p {
+      font-size: .86rem;
+      color: var(--subtle);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    footer a {
+      color: var(--subtle);
+    }
+
+    @media (max-width: 640px) {
+      nav {
+        padding: 1rem;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <div class="logo"><span>claude</span>-boilerplate</div>
+    <div class="nav-links">
+      <a href="#builder">Builder</a>
+      <a href="#features">Features</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#stacks">Stacks</a>
+      <a href="apply.html">CLI Docs</a>
+      <a href="https://github.com" target="_blank">GitHub ↗</a>
     </div>
+  </nav>
 
-    <div class="toc">
-      <h4>Documentation map</h4>
-      <ul>
-        <li><a href="./folders.html">Folders</a> — every directory in this repo and its purpose</li>
-        <li><a href="./apply.html">Apply</a> — <code>scripts/apply.sh</code> contract, combinations, compatibility matrix</li>
-        <li><a href="./bases/index.html">Bases</a> — the five framework starting points (Express JS/TS, NestJS, React+Vite, Next.js)</li>
-        <li><a href="./integrations/index.html">Integrations</a> — additive layers (Supabase, Firebase, Tailwind, Prisma)</li>
-        <li><a href="./presets/index.html">Presets</a> — named base + integrations combos (T3 Stack, Supabase+Next.js, Firebase+React)</li>
-      </ul>
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="badge">🤖 Claude Code Boilerplate</div>
+    <h1>Scaffold any project with<br><em>Claude Code superpowers</em></h1>
+    <p class="hero-sub">Agents, hooks, slash commands, and rules that snap into any Node, Express, NestJS, React, or
+      Next.js project — composable by design.</p>
+    <div class="hero-cta">
+      <a href="#builder" class="btn btn-primary">⚡ Build my command</a>
+      <a href="apply.html" class="btn btn-ghost">📖 Read the docs</a>
     </div>
+  </div>
 
-    <h2>The composition model</h2>
-    <p>
-      Every project bootstrapped from this boilerplate is built from three layers, applied in order:
-    </p>
+  <!-- ── INTERACTIVE BUILDER ── -->
+  <section id="builder">
+    <h2>Build your command</h2>
+    <p class="section-sub">Pick your stack and integrations. We'll generate the exact command to run.</p>
 
-    <table>
-      <thead>
-        <tr><th>Layer</th><th>How many</th><th>Owns</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>core/</code></td>
-          <td>always one</td>
-          <td>Stack-agnostic agents, commands, hooks, skills, generic rules, the <code>CLAUDE.md</code> template, and editor configs.</td>
-        </tr>
-        <tr>
-          <td>Base <span class="tag">overlays/bases/&lt;name&gt;</span></td>
-          <td>exactly one per project</td>
-          <td>Framework files: ESLint config, tsconfig, <code>.nvmrc</code>, package.json scripts, framework-specific rules, and the <code>CLAUDE.md</code> fragment.</td>
-        </tr>
-        <tr>
-          <td>Integrations <span class="tag">overlays/integrations/&lt;name&gt;</span></td>
-          <td>zero or more</td>
-          <td><strong>Additive only.</strong> A rule file, env-var keys for <code>.env.example</code>, and an Architecture paragraph appended to <code>CLAUDE.md</code>. Never overwrites base files.</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="builder-card">
+      <div class="builder-title">🛠 Interactive Stack Builder</div>
+      <div class="builder-body">
 
-    <p>
-      <strong>Presets</strong> (<code>presets/&lt;name&gt;.json</code>) are named aliases that expand to a base
-      plus a list of integrations. They add no new content of their own.
-    </p>
+        <!-- Step 1: Base -->
+        <div>
+          <div class="picker-label">Step 1 — Choose your base framework</div>
+          <div class="chip-row" id="base-picker">
+            <div class="chip" data-base="express-js" onclick="selectBase(this)">🟨 Express.js <span
+                style="font-size:.75rem;opacity:.6">JS</span></div>
+            <div class="chip" data-base="express-ts" onclick="selectBase(this)">🟦 Express.ts <span
+                style="font-size:.75rem;opacity:.6">TS</span></div>
+            <div class="chip" data-base="nestjs" onclick="selectBase(this)">🔴 NestJS <span
+                style="font-size:.75rem;opacity:.6">TS</span></div>
+            <div class="chip" data-base="react-vite-ts" onclick="selectBase(this)">⚛️ React + Vite <span
+                style="font-size:.75rem;opacity:.6">TS</span></div>
+            <div class="chip" data-base="nextjs-ts" onclick="selectBase(this)">▲ Next.js <span
+                style="font-size:.75rem;opacity:.6">TS</span></div>
+          </div>
+        </div>
 
-    <h2>What's in v1</h2>
-    <div class="card-grid">
-      <div class="card">
-        <h3>5 bases</h3>
-        <p><code>express-js</code> · <code>express-ts</code> · <code>nestjs</code> · <code>react-vite-ts</code> · <code>nextjs-ts</code></p>
-        <p><a href="./bases/index.html">Browse bases →</a></p>
-      </div>
-      <div class="card">
-        <h3>4 integrations</h3>
-        <p><code>supabase</code> · <code>firebase</code> · <code>tailwind</code> · <code>prisma</code></p>
-        <p><a href="./integrations/index.html">Browse integrations →</a></p>
-      </div>
-      <div class="card">
-        <h3>3 presets</h3>
-        <p><code>t3-stack</code> · <code>supabase-nextjs</code> · <code>firebase-react</code></p>
-        <p><a href="./presets/index.html">Browse presets →</a></p>
-      </div>
-      <div class="card">
-        <h3>Always-on core</h3>
-        <p>4 agents · 7 commands · 3 hooks · 1 skill (UI/UX Pro Max) · 2 workflows · 4 generic rules.</p>
-        <p><a href="./folders.html#core">See core/ →</a></p>
+        <!-- Step 2: Integrations -->
+        <div>
+          <div class="picker-label">Step 2 — Add integrations <span
+              style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional, pick
+              multiple)</span></div>
+          <div class="chip-row" id="integ-picker">
+            <div class="chip" data-integ="supabase" data-bases="express-js express-ts nestjs react-vite-ts nextjs-ts"
+              onclick="toggleInteg(this)">🟢 Supabase</div>
+            <div class="chip" data-integ="firebase" data-bases="express-js express-ts nestjs react-vite-ts nextjs-ts"
+              onclick="toggleInteg(this)">🔥 Firebase</div>
+            <div class="chip" data-integ="tailwind" data-bases="react-vite-ts nextjs-ts" onclick="toggleInteg(this)">🎨
+              Tailwind CSS</div>
+            <div class="chip" data-integ="prisma" data-bases="express-js express-ts nestjs nextjs-ts"
+              onclick="toggleInteg(this)">🔷 Prisma</div>
+          </div>
+        </div>
+
+        <!-- Step 3: Target dir -->
+        <div>
+          <div class="picker-label">Step 3 — Name your project directory</div>
+          <input id="target-input" type="text" placeholder="my-project" value="my-project" oninput="renderCommand()"
+            style="padding:.55rem 1rem;border-radius:8px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);font-size:.9rem;width:260px;font-family:'JetBrains Mono',monospace;outline:none;">
+        </div>
+
+        <!-- Generated command -->
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-label">Terminal</span>
+          </div>
+          <div class="terminal-body" id="cmd-output">
+            <span class="t-comment"># Select a base above to generate your command</span>
+          </div>
+          <button class="copy-btn" onclick="copyCmd()">📋 Copy command</button>
+        </div>
+
       </div>
     </div>
+  </section>
 
-    <h2>How combinations work</h2>
+  <!-- ── WHAT YOU GET ── -->
+  <section id="features">
+    <h2>What every project gets</h2>
+    <p class="section-sub">Everything is wired up automatically after <code
+        style="color:var(--accent);font-family:'JetBrains Mono',monospace">apply.sh</code> runs — no manual setup
+      needed.</p>
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">4 Agent Personas</div>
+        <div class="feature-desc">test-writer, doc-writer, pr-description, onboarding-guide — invoke by name in Claude
+          Code.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">7 Slash Commands</div>
+        <div class="feature-desc">/feature, /pr, /test, /doc, /explain, /changelog, /code-review — ready in Claude Code.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <div class="feature-title">Pre-commit Pipeline</div>
+        <div class="feature-desc">Every commit auto-runs: ESLint → Prettier → Security Review → Code Review. No Husky
+          needed.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <div class="feature-title">Layered Rules</div>
+        <div class="feature-desc">error-handling, security, environment, testing from core. Framework rules from your
+          base. Integration-specific rules added per integration.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗺️</div>
+        <div class="feature-title">Populated CLAUDE.md</div>
+        <div class="feature-desc">Stack, Commands, Architecture — all filled in from your base fragment. Integration
+          paragraphs appended automatically.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-title">UI/UX Skill</div>
+        <div class="feature-desc">67 design styles, 96 palettes, 99 UX guidelines — auto-triggers when Claude does UI
+          work.</div>
+      </div>
+    </div>
+  </section>
 
-    <h3>Example 1 — React TS + Supabase</h3>
-<pre><code>bash scripts/apply.sh --base=react-ts --integrations=supabase ../my-app</code></pre>
-    <p><strong>What lands:</strong></p>
-    <ul>
-      <li><code>core/</code> — everything stack-agnostic</li>
-      <li><code>overlays/bases/react-ts/</code> — <code>frontend.md</code>, <code>typescript.md</code>, React ESLint config, tsconfig, scripts</li>
-      <li><code>overlays/integrations/supabase/</code> — <code>supabase.md</code> rule, env keys, Architecture paragraph in <code>CLAUDE.md</code>, optional <code>src/lib/supabase.ts</code> starter</li>
-    </ul>
-    <div class="callout"><code>react-ts</code> is v2 — use <code>react-vite-ts</code> for v1.</div>
+  <!-- ── PRE-COMMIT PIPELINE ── -->
+  <section id="pipeline">
+    <h2>The pre-commit pipeline</h2>
+    <p class="section-sub">Every <code
+        style="color:var(--accent);font-family:'JetBrains Mono',monospace">git commit</code> in applied projects
+      triggers 4 gates — the commit is rejected if any fail.</p>
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-num">1</div>
+        <div class="pipe-content">
+          <h3>ESLint</h3>
+          <p>Checks for syntax and lint errors. Blocks the commit and prints the exact errors. Run <code
+              style="color:var(--accent)">npm run lint:fix</code> to auto-fix.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">2</div>
+        <div class="pipe-content">
+          <h3>Prettier Check</h3>
+          <p>Ensures consistent code formatting. Run <code style="color:var(--accent)">npm run format</code> to auto-fix
+            any formatting drift.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">3</div>
+        <div class="pipe-content">
+          <h3>🛡️ Security Review <code style="color:var(--muted);font-size:.78rem">/security-review plugin</code></h3>
+          <p>Scans the staged diff for injections, XSS, hardcoded secrets, path traversal, and SSRF. Blocks on any
+            finding.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">4</div>
+        <div class="pipe-content">
+          <h3>🔍 Code Review <code style="color:var(--muted);font-size:.78rem">/code-review plugin</code></h3>
+          <p>Runs a focused code review on the diff using your ensemble of security, performance, a11y, and docs agents.
+            Blocks if verdict is "Request Changes".</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <h3>Example 2 — Next.js TS + Firebase + Tailwind</h3>
-<pre><code>bash scripts/apply.sh --base=nextjs-ts --integrations=firebase,tailwind ../my-app</code></pre>
-    <p>Two integrations layered in the order listed. Order only affects the rendered <code>CLAUDE.md</code> Architecture section.</p>
+  <!-- ── STACKS ── -->
+  <section id="stacks">
+    <h2>Supported stacks & integrations</h2>
+    <p class="section-sub">Compatibility matrix — ✓ supported, · not applicable.</p>
+    <div style="overflow-x:auto;">
+      <table class="compat-table">
+        <thead>
+          <tr>
+            <th>Base</th>
+            <th>Lang</th>
+            <th>Supabase</th>
+            <th>Firebase</th>
+            <th>Tailwind</th>
+            <th>Prisma</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>express-js</td>
+            <td><span class="tag tag-js">JS</span></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="x">·</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td>express-ts</td>
+            <td><span class="tag tag-ts">TS</span></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="x">·</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td>nestjs</td>
+            <td><span class="tag tag-ts">TS</span></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="x">·</td>
+            <td class="check">✓</td>
+          </tr>
+          <tr>
+            <td>react-vite-ts</td>
+            <td><span class="tag tag-ts">TS</span></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="x">·</td>
+          </tr>
+          <tr>
+            <td>nextjs-ts</td>
+            <td><span class="tag tag-ts">TS</span></td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+            <td class="check">✓</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-    <h3>Example 3 — T3 Stack (a preset)</h3>
-<pre><code>bash scripts/apply.sh --preset=t3-stack ../my-app
-# equivalent to:
-# --base=nextjs-ts --integrations=tailwind,trpc,prisma,nextauth,zod</code></pre>
-    <p>Presets are just named aliases for base + integrations.</p>
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>Built with ❤️ for Claude Code users · <a href="apply.html">CLI Docs</a> · <a href="folders.html">Repo
+        Structure</a> · <a href="https://github.com/nithinemvigo/claude-boilerplate">GitHub</a></p>
+  </footer>
 
-    <h3>Example 4 — NestJS + Prisma + Supabase</h3>
-<pre><code>bash scripts/apply.sh --base=nestjs --integrations=prisma,supabase ../my-app</code></pre>
+  <script>
+    let selectedBase = null;
+    let selectedIntegs = new Set();
 
-    <h2>The apply.sh contract</h2>
-    <p>For the full step-by-step contract, compatibility matrix, error model, and FAQ, see <a href="./apply.html">Apply</a>. Short version:</p>
-    <ol>
-      <li>Validate the combo (hard error on impossible pairs, warn on unusual ones).</li>
-      <li>Copy <code>core/</code> to the target.</li>
-      <li>Copy <code>overlays/bases/&lt;base&gt;/</code> on top.</li>
-      <li>Copy each integration in order — aborting if any tries to overwrite a base file.</li>
-      <li>Deep-merge <code>package.json</code> scripts and devDependencies.</li>
-      <li>Render <code>CLAUDE.md</code> from the template + base fragment + integration paragraphs.</li>
-      <li>Append <code>.env.example</code> keys.</li>
-      <li>Print a summary.</li>
-      <li><code>--dry</code> shows the plan without writing anything.</li>
-    </ol>
+    const COMPAT = {
+      'express-js': ['supabase', 'firebase', 'prisma'],
+      'express-ts': ['supabase', 'firebase', 'prisma'],
+      'nestjs': ['supabase', 'firebase', 'prisma'],
+      'react-vite-ts': ['supabase', 'firebase', 'tailwind'],
+      'nextjs-ts': ['supabase', 'firebase', 'tailwind', 'prisma'],
+    };
 
-    <h2>Where to go next</h2>
-    <ul>
-      <li>I want to see what files this repo contains → <a href="./folders.html">Folders</a></li>
-      <li>I want to apply this to a new project → <a href="./apply.html">Apply</a></li>
-      <li>I'm starting an Express / NestJS / React / Next.js project → <a href="./bases/index.html">Bases</a></li>
-      <li>I'm adding Supabase / Firebase / Tailwind / Prisma → <a href="./integrations/index.html">Integrations</a></li>
-      <li>I want a turnkey combo (T3, Supabase+Next.js, Firebase+React) → <a href="./presets/index.html">Presets</a></li>
-    </ul>
+    function selectBase(el) {
+      document.querySelectorAll('#base-picker .chip').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedBase = el.dataset.base;
+      selectedIntegs.clear();
 
-    <footer class="site">
-      <div>Claude Boilerplate — composable Claude Code starter</div>
-      <div>Last updated 2026-05-19</div>
-    </footer>
-  </body>
+      // Update integration availability
+      document.querySelectorAll('#integ-picker .chip').forEach(chip => {
+        chip.classList.remove('selected', 'selected-green', 'disabled');
+        const allowed = COMPAT[selectedBase] || [];
+        if (!allowed.includes(chip.dataset.integ)) {
+          chip.classList.add('disabled');
+        }
+      });
+
+      renderCommand();
+    }
+
+    function toggleInteg(el) {
+      if (el.classList.contains('disabled')) return;
+      const integ = el.dataset.integ;
+      if (selectedIntegs.has(integ)) {
+        selectedIntegs.delete(integ);
+        el.classList.remove('selected-green');
+      } else {
+        selectedIntegs.add(integ);
+        el.classList.add('selected-green');
+      }
+      renderCommand();
+    }
+
+    function renderCommand() {
+      const out = document.getElementById('cmd-output');
+      const target = document.getElementById('target-input').value.trim() || 'my-project';
+
+      if (!selectedBase) {
+        out.innerHTML = '<span class="t-comment"># Select a base above to generate your command</span>';
+        return;
+      }
+
+      let integPart = '';
+      if (selectedIntegs.size > 0) {
+        integPart = ` <span class="t-flag">--integrations=${[...selectedIntegs].join(',')}</span>`;
+      }
+
+      out.innerHTML =
+        `<span class="t-comment"># 1. Clone the boilerplate (once)</span>\n` +
+        `<span class="t-cmd">git</span> clone &lt;repo-url&gt; ~/tools/claude-boilerplate\n\n` +
+        `<span class="t-comment"># 2. Scaffold your framework</span>\n` +
+        getScaffoldCmd(selectedBase, target) + `\n\n` +
+        `<span class="t-comment"># 3. Apply Claude superpowers on top</span>\n` +
+        `<span class="t-cmd">bash</span> ~/tools/claude-boilerplate/scripts/apply.sh <span class="t-arg">--base=${selectedBase}</span>${integPart} <span class="t-path">${target}/</span>\n\n` +
+        `<span class="t-comment"># 4. Install and validate</span>\n` +
+        `<span class="t-cmd">cd</span> ${target} <span class="t-comment">&&</span> <span class="t-cmd">npm</span> install <span class="t-comment">&&</span> <span class="t-cmd">npm</span> run validate`;
+    }
+
+    function getScaffoldCmd(base, target) {
+      switch (base) {
+        case 'express-js':
+          return `<span class="t-cmd">mkdir</span> <span class="t-path">${target}</span> <span class="t-comment">&&</span> <span class="t-cmd">cd</span> ${target} <span class="t-comment">&&</span> <span class="t-cmd">npm</span> init -y`;
+        case 'express-ts':
+          return `<span class="t-cmd">mkdir</span> <span class="t-path">${target}</span> <span class="t-comment">&&</span> <span class="t-cmd">cd</span> ${target} <span class="t-comment">&&</span> <span class="t-cmd">npm</span> init -y`;
+        case 'nestjs':
+          return `<span class="t-cmd">npx</span> @nestjs/cli new <span class="t-path">${target}</span>`;
+        case 'react-vite-ts':
+          return `<span class="t-cmd">npm</span> create vite@latest <span class="t-path">${target}</span> -- --template react-ts`;
+        case 'nextjs-ts':
+          return `<span class="t-cmd">npx</span> create-next-app@latest <span class="t-path">${target}</span> <span class="t-flag">--typescript --app</span>`;
+        default:
+          return `<span class="t-cmd">mkdir</span> <span class="t-path">${target}</span>`;
+      }
+    }
+
+    function copyCmd() {
+      if (!selectedBase) return;
+      const target = document.getElementById('target-input').value.trim() || 'my-project';
+      let integPart = selectedIntegs.size > 0 ? ` --integrations=${[...selectedIntegs].join(',')}` : '';
+      const cmd = `bash ~/tools/claude-boilerplate/scripts/apply.sh --base=${selectedBase}${integPart} ${target}/`;
+      navigator.clipboard.writeText(cmd).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.textContent = '📋 Copy command', 2000);
+      });
+    }
+  </script>
+
+</body>
+
 </html>
