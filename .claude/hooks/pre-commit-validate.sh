@@ -1,0 +1,268 @@
+#!/usr/bin/env bash
+# Claude PreToolUse hook — full pre-commit validation pipeline
+#
+#   [1/4] ESLint           — blocks on lint errors
+#   [2/4] Prettier         — blocks on formatting issues
+#   [3/4] /security-review — blocks on injection, XSS, eval, secrets, traversal…
+#   [4/4] /code-review     — blocks if verdict is "Request Changes"
+
+set -euo pipefail
+
+# ── Read JSON payload ─────────────────────────────────────────────
+INPUT=$(cat)
+COMMAND=$(echo "$INPUT" | python3 -c \
+  "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('command',''))" \
+  2>/dev/null || echo "")
+
+if ! echo "$COMMAND" | grep -qE '(^|&&[[:space:]]*|;[[:space:]]*)git commit'; then
+  exit 0
+fi
+
+# ── Anchor all paths to repo root ─────────────────────────────────
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+REVIEW_DIR="$REPO_ROOT/.reviews"
+mkdir -p "$REVIEW_DIR"
+
+# ── Colors ────────────────────────────────────────────────────────
+CYAN='\033[0;36m';  GREEN='\033[0;32m';  RED='\033[0;31m'
+YELLOW='\033[1;33m'; MAGENTA='\033[0;35m'; BLUE='\033[0;34m'
+BOLD='\033[1m';  DIM='\033[2m';  NC='\033[0m'
+
+# ── Helpers ───────────────────────────────────────────────────────
+print_header() {
+  echo ""
+  echo -e "${CYAN}${BOLD}┌─────────────────────────────────────────────┐${NC}"
+  echo -e "${CYAN}${BOLD}│  🔍  Pre-Commit Validation                  │${NC}"
+  echo -e "${CYAN}${BOLD}└─────────────────────────────────────────────┘${NC}"
+  echo ""
+}
+print_step()    { echo -e "${BOLD}  [${1}/4]  ${2}${NC}"; }
+print_pass()    { echo -e "  ${GREEN}✔  ${1}${NC}"; }
+print_fail()    { echo -e "  ${RED}✖  ${1}${NC}"; }
+print_tip()     { echo -e "  ${YELLOW}⚠  ${1}${NC}"; }
+print_divider() { echo -e "\n  ${DIM}────────────────────────────────────────────${NC}\n"; }
+
+print_blocked() {
+  echo -e "  ${RED}${BOLD}┌─────────────────────────────────────────────┐${NC}"
+  echo -e "  ${RED}${BOLD}│  🚫  Commit Blocked                         │${NC}"
+  echo -e "  ${RED}${BOLD}│  Fix the issues above, then try again.      │${NC}"
+  echo -e "  ${RED}${BOLD}└─────────────────────────────────────────────┘${NC}\n"
+}
+print_approved() {
+  echo -e "  ${GREEN}${BOLD}┌─────────────────────────────────────────────┐${NC}"
+  echo -e "  ${GREEN}${BOLD}│  ✅  All checks passed — commit approved     │${NC}"
+  echo -e "  ${GREEN}${BOLD}└─────────────────────────────────────────────┘${NC}\n"
+}
+
+# ── Findings table + stats line ───────────────────────────────────
+# Claude emits: FINDING:<SEV>:<FILE>:<LINE>:<DESC>
+render_findings_table() {
+  local color="$1" header="$2" output="$3"
+  local findings
+  findings=$(echo "$output" | grep "^FINDING:" || true)
+  [ -z "$findings" ] && return
+
+  local C_SEV=10 C_FILE=22 C_LINE=6 C_DESC=33
+  local bar_h bar_m bar_b
+  bar_h="  ┌$(printf '─%.0s' $(seq 1 $((C_SEV+2))))┬$(printf '─%.0s' $(seq 1 $((C_FILE+2))))┬$(printf '─%.0s' $(seq 1 $((C_LINE+2))))┬$(printf '─%.0s' $(seq 1 $((C_DESC+2))))┐"
+  bar_m="  ├$(printf '─%.0s' $(seq 1 $((C_SEV+2))))┼$(printf '─%.0s' $(seq 1 $((C_FILE+2))))┼$(printf '─%.0s' $(seq 1 $((C_LINE+2))))┼$(printf '─%.0s' $(seq 1 $((C_DESC+2))))┤"
+  bar_b="  └$(printf '─%.0s' $(seq 1 $((C_SEV+2))))┴$(printf '─%.0s' $(seq 1 $((C_FILE+2))))┴$(printf '─%.0s' $(seq 1 $((C_LINE+2))))┴$(printf '─%.0s' $(seq 1 $((C_DESC+2))))┘"
+
+  echo -e "\n  ${BOLD}${color}${header}${NC}"
+  echo -e "${color}${bar_h}${NC}"
+  printf "  ${color}│ %-${C_SEV}s │ %-${C_FILE}s │ %-${C_LINE}s │ %-${C_DESC}s │${NC}\n" \
+    "Severity" "File" "Line" "Issue"
+  echo -e "${color}${bar_m}${NC}"
+
+  while IFS= read -r line; do
+    local sev file lineno desc row_color
+    sev=$(   echo "$line" | cut -d: -f2)
+    file=$(  echo "$line" | cut -d: -f3)
+    lineno=$(echo "$line" | cut -d: -f4)
+    desc=$(  echo "$line" | cut -d: -f5-)
+    file="${file:0:$C_FILE}"
+    desc="${desc:0:$C_DESC}"
+    case "$sev" in
+      CRITICAL) row_color="$RED"    ;;
+      HIGH)     row_color="$YELLOW" ;;
+      MEDIUM)   row_color="$BLUE"   ;;
+      *)        row_color="$DIM"    ;;
+    esac
+    printf "  ${row_color}│ %-${C_SEV}s │ %-${C_FILE}s │ %-${C_LINE}s │ %-${C_DESC}s │${NC}\n" \
+      "$sev" "$file" "$lineno" "$desc"
+  done <<< "$findings"
+
+  echo -e "${color}${bar_b}${NC}"
+
+  # ── Stats line ────────────────────────────────────────────────────
+  local total critical high medium low
+  total=$(   echo "$findings" | wc -l                                  | tr -d ' ')
+  critical=$(echo "$findings" | grep "^FINDING:CRITICAL" | wc -l | tr -d ' ')
+  high=$(    echo "$findings" | grep "^FINDING:HIGH"     | wc -l | tr -d ' ')
+  medium=$(  echo "$findings" | grep "^FINDING:MEDIUM"   | wc -l | tr -d ' ')
+  low=$(     echo "$findings" | grep -E "^FINDING:(LOW|NIT)" | wc -l | tr -d ' ')
+
+  local plural=""; [ "$total" -ne 1 ] && plural="s"
+  printf "\n  ${BOLD}%s finding%s${NC}  " "$total" "$plural"
+  [ "$critical" -gt 0 ] \
+    && printf "${RED}${BOLD}● %s critical${NC}  " "$critical" \
+    || printf "${DIM}● 0 critical${NC}  "
+  [ "$high" -gt 0 ] \
+    && printf "${YELLOW}${BOLD}● %s high${NC}  " "$high" \
+    || printf "${DIM}● 0 high${NC}  "
+  [ "$medium" -gt 0 ] \
+    && printf "${BLUE}${BOLD}● %s medium${NC}  " "$medium" \
+    || printf "${DIM}● 0 medium${NC}  "
+  [ "$low" -gt 0 ] \
+    && printf "${DIM}● %s low/nit${NC}" "$low" \
+    || printf "${DIM}● 0 low${NC}"
+  echo -e "\n"
+}
+
+# ═════════════════════════════════════════════════════════════════
+print_header
+
+# ── [1/4] ESLint ──────────────────────────────────────────────────
+print_step "1" "ESLint"
+cd "$REPO_ROOT"
+ESLINT_OUT=$(npx eslint . 2>&1) && ESLINT_EXIT=0 || ESLINT_EXIT=$?
+if [ $ESLINT_EXIT -ne 0 ]; then
+  echo -e "\n${ESLINT_OUT}\n"
+  print_fail "ESLint failed — fix errors before committing."
+  print_tip  "Run:  npm run lint:fix"
+  echo ""; exit 2
+fi
+print_pass "ESLint passed"
+print_divider
+
+# ── [2/4] Prettier ────────────────────────────────────────────────
+print_step "2" "Prettier"
+PRETTIER_OUT=$(npx prettier --check . 2>&1) && PRETTIER_EXIT=0 || PRETTIER_EXIT=$?
+if [ $PRETTIER_EXIT -ne 0 ]; then
+  echo -e "\n${PRETTIER_OUT}\n"
+  print_fail "Prettier check failed — files need formatting."
+  print_tip  "Run:  npm run format"
+  echo ""; exit 2
+fi
+print_pass "Prettier passed"
+print_divider
+
+# ── Shared: staged diff ────────────────────────────────────────────
+CLAUDE_CMD="claude"
+STAGED_DIFF=$(git diff --cached 2>/dev/null || echo "")
+FILES_STAGED=$(git diff --cached --name-only | head -20)
+
+if [ -z "$STAGED_DIFF" ]; then
+  print_tip "No staged changes — skipping AI checks."; echo ""; exit 0
+fi
+STAGED_DIFF=$(echo "$STAGED_DIFF" | head -8000)
+
+if ! command -v "$CLAUDE_CMD" &>/dev/null; then
+  print_tip "Claude CLI not found — skipping AI checks."; echo ""; exit 0
+fi
+
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+
+# ── [3/4] Security Scan ───────────────────────────────────────────
+print_step "3" "Security Scan  (security-guidance plugin)"
+echo -e "  ${DIM}Scanning staged diff for dangerous patterns…${NC}\n"
+
+SEC_PROMPT="/security-review
+
+Scan the staged diff below for security vulnerabilities across these categories:
+command injection, XSS, eval/new Function, path traversal, hardcoded secrets,
+insecure deserialization, SSRF, GitHub Actions injection.
+
+### Files Staged
+$FILES_STAGED
+
+### Staged Diff
+\`\`\`diff
+$STAGED_DIFF
+\`\`\`
+
+## Output format (strictly follow this)
+
+For every vulnerability found, output one line:
+FINDING:<SEVERITY>:<FILE>:<LINE>:<DESCRIPTION_MAX_33_CHARS>
+
+SEVERITY must be one of: CRITICAL / HIGH / MEDIUM / LOW
+
+Then write a detailed section with code snippets and remediation for each finding.
+End with exactly: SECURITY: Pass  OR  SECURITY: Fail"
+
+SEC_FILE="$REVIEW_DIR/security-${TIMESTAMP}.md"
+SEC_OUTPUT=$(echo "$SEC_PROMPT" | $CLAUDE_CMD --print 2>&1) || SEC_OUTPUT=""
+
+if [ -n "$SEC_OUTPUT" ]; then
+  { echo "# Security Scan Report"
+    echo "**Date:** $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "**Files:** $FILES_STAGED"
+    echo ""; echo "---"; echo ""
+    echo "$SEC_OUTPUT"
+  } > "$SEC_FILE"
+
+  render_findings_table "$MAGENTA" "🛡️  Security Findings" "$SEC_OUTPUT"
+  echo -e "  ${DIM}Full report → $SEC_FILE${NC}\n"
+
+  if echo "$SEC_OUTPUT" | grep -qiE "SECURITY:[[:space:]]*Fail"; then
+    print_fail "Security scan failed — vulnerabilities detected."
+    print_blocked; exit 2
+  fi
+fi
+
+print_pass "Security scan passed"
+print_divider
+
+# ── [4/4] Code Review ─────────────────────────────────────────────
+print_step "4" "Code Review  (code-review plugin)"
+echo -e "  ${DIM}Running /code-review on staged diff…${NC}\n"
+
+CR_PROMPT="/code-review
+
+Review the staged changes for bugs, security issues, performance problems, and code quality.
+
+### Files Staged
+$FILES_STAGED
+
+### Staged Diff
+\`\`\`diff
+$STAGED_DIFF
+\`\`\`
+
+## Output format (strictly follow this)
+
+For every issue found, output one line:
+FINDING:<TYPE>:<FILE>:<LINE>:<DESCRIPTION_MAX_33_CHARS>
+
+TYPE must be one of: CRITICAL / HIGH / MEDIUM / LOW / NIT
+
+Then write a detailed explanation section with context, impact, and suggested fix for each.
+End with exactly: VERDICT: Approve  OR  VERDICT: Request Changes  OR  VERDICT: Needs Discussion"
+
+CR_FILE="$REVIEW_DIR/review-${TIMESTAMP}.md"
+CR_OUTPUT=$(echo "$CR_PROMPT" | $CLAUDE_CMD --print 2>&1) || CR_OUTPUT=""
+
+if [ -n "$CR_OUTPUT" ]; then
+  { echo "# Code Review Report"
+    echo "**Date:** $(date '+%Y-%m-%d %H:%M:%S')"
+    echo "**Files:** $FILES_STAGED"
+    echo ""; echo "---"; echo ""
+    echo "$CR_OUTPUT"
+  } > "$CR_FILE"
+
+  render_findings_table "$BLUE" "📋  Code Review Findings" "$CR_OUTPUT"
+  echo -e "  ${DIM}Full report → $CR_FILE${NC}\n"
+
+  if echo "$CR_OUTPUT" | grep -qiE "VERDICT:[[:space:]]*(Request Changes|Needs Discussion)"; then
+    print_blocked; exit 2
+  fi
+  if echo "$CR_OUTPUT" | grep -qE "^FINDING:CRITICAL:"; then
+    print_blocked; exit 2
+  fi
+fi
+
+print_pass "Code review passed"
+print_divider
+print_approved
+exit 0

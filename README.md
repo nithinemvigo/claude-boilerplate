@@ -1,43 +1,85 @@
-# claude-boilerplate
-skelton
+# Claude Code Universal Boilerplate
 
+A production-ready Claude Code project skeleton with automated code review, security scanning, end-to-end agents, and workflow playbooks.
 
-intsall plugins
-1. Superpowers — [github.com/obra/superpowers](http://github.com/obra/superpowers) 
-2. Frontend Design — [claude.com/plugins/frontend-design](http://claude.com/plugins/frontend-design) 
-3. Code Review — https://claude.com/plugins/code-review
-4. Security Review — https://claude.com/plugins/security-guidance
-5. claude-mem — [github.com/nicholasgasior/claude-mem](http://github.com/nicholasgasior/claude-mem) 
-6. gstack — [github.com/garrytan/gstack](http://github.com/garrytan/gstack)
+**This boilerplate works for Node.js, Express, React, Next.js, and TypeScript projects.** It establishes a "brain" for Claude Code to understand your specific rules and automatically enforce code quality.
 
-## Plugin Testing
-These core plugins are now installed and enabled:
-- **Superpowers**: Test with `Ask to search all logs or explore the system comprehensively`.
-- **Frontend Design**: Test with `Ask Claude to design a minimalist button component`.
-- **Code Review**: Test with `Ask Claude to perform a code review on a source file`.
-- **Security Guidance**: Test with `Ask Claude to audit a specific module for security`.
-- **Claude Mem**: Test with `Note down this project's preferred styling framework for next time`.
+*(Note: The `src/` directory and `src/index.js` file provided here are solely for demonstrating the automated code review pipeline catching vulnerabilities. They are NOT required for your actual project).*
 
-## Custom Skills Installation
-If you have a customized or forked repository containing multiple skills, you can easily install them globally or strictly for this project.
+---
 
-### Step 1: Global Installation (All Projects)
-1. Clone your forked repo:
-   ```bash
-   git clone <YOUR_FORK_URL> ~/.claude/skills/<custom-skills-folder>
-   ```
-2. Any setup scripts available in your fork should be run here.
+## 🚀 How to Apply This Boilerplate to YOUR Project
 
-### Step 2: Local Installation (This Project Only)
-1. Clone into the project's local tools folder:
-   ```bash
-   git clone <YOUR_FORK_URL> .claude/skills/<custom-skills-folder>
-   ```
-2. Update the `CLAUDE.md` to reference the newly added skills so that your teammates can also use them.
+1. **Copy the brain:** Copy the `.claude/` and `.agents/` folders, and the `CLAUDE.md` file from this repo into the root folder of your project (React, Next.js, TS, etc.).
+2. **Update the Brain (if needed):** Open `CLAUDE.md` in your project and update the "Stack" and "Architecture" sections to match your actual framework (e.g., mention Next.js App Router, or React components folder structure).
+3. **Copy configurations (Optional):** We recommend copying `.nvmrc`, `.editorconfig`, and `.env.example`.
+4. **Trigger the hooks:** Our validation pipeline intercepts `git commit`. Ensure you are using Claude Code to commit, or manually configure the scripts in your `package.json`.
 
-## Running Agents
-To instruct Claude to use a specific agent's instructions, simply ask directly in the chat interface. Here are a few examples:
-> *"Act as the test-writer agent and write tests for src/index.js"*
-> *"Follow the guidelines in .claude/agents/code-reviewer.md to review my changes"*
-> *"Act as the doc-writer agent and generate README documentation for this folder"*
-> *"Run the security-auditor agent to check my latest changes for vulnerabilities"*
+**For TypeScript or Frontend Frameworks:** No deep structural changes are required! The AI agents and rules are entirely Markdown-based, so Claude natively reads them and applies the rules perfectly whether you write Node.js endpoints or React components.
+
+---
+
+## 🤖 Workflows & Agents
+
+Workflows are heavily structured, automated step-by-step playbooks guiding Claude from ideation to pull request.
+
+### How to run an agent workflow
+You can run a workflow inside the Claude Code terminal by explicitly telling Claude to follow the playbook.
+```text
+Follow the workflow in .agents/workflows/new-feature.md to implement a user login page...
+```
+*(Tip: In supported editors, you can also use slash commands like `/new-feature path/to/prd.md`)*
+
+### Available Workflows & Agents Leveraged
+
+| Workflow Playbook | Trigger | What It Does & Which Agents It Uses |
+|----------|---------|-------------|
+| **New Feature** | `.agents/workflows/new-feature.md` | PRD → plan → branch → implement → test → review → PR. Uses: `pr-description.md` agent. |
+| **Dependency Update** | `.agents/workflows/dependency-update.md` | Audit → update → test → commit |
+
+### Agents (Personas)
+Invoke specialized agent personas by telling Claude to "Act as...":
+- **Test Writer:** *"Act as the test-writer agent and write tests for src/components/Button.tsx"*
+- **Doc Writer:** *"Follow .claude/agents/doc-writer.md to document this module"*
+
+---
+
+## 🛡️ Pre-Commit Validation Pipeline (Hooks)
+
+Every time Claude Code (or you, if configured) attempts a `git commit`, the `.claude/hooks/pre-commit-validate.sh` hook intercepts it.
+
+**The Pipeline:**
+1. **ESLint** — blocks on syntax/lint issues
+2. **Prettier** — blocks on formatting drift
+3. **Security Scan** — Analyzes the diff using Claude's security plugins for injections, hardcoded secrets, XSS.
+4. **Code Review** — Analyzes the diff for logical bugs, perf problems, and code quality.
+
+*(You can also run this manually before committing by directly referencing the script!).*
+
+---
+
+## 📚 Core Plugins Used
+To get maximum value, install these core plugins in your Claude CLI:
+1. **Frontend Design** — `claude.com/plugins/frontend-design`
+2. **Code Review** — `claude.com/plugins/code-review`
+3. **Security Review** — `claude.com/plugins/security-guidance`
+4. **Gstack** — `github.com/garrytan/gstack`
+
+*(The security and code review hooks automatically rely on the plugin models to grade your commits!).*
+
+---
+
+## 🛠 Project Structure Overview
+
+```text
+├── .claude/
+│   ├── hooks/              # Pre/post commit validation scripts
+│   ├── commands/           # Slash commands (/project:<name>)
+│   ├── agents/             # Agent personas
+│   ├── rules/              # Domain-specific coding rules
+│   └── settings.json       # Hook configuration
+├── .agents/workflows/      # End-to-end master playbooks
+├── CLAUDE.md               # Essential instructions & context
+├── example/                # HTML tutorial on boilerplate usage
+└── src/                    # Demo API with deliberate bugs to test the hooks!
+```

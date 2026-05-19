@@ -123,3 +123,11 @@ dist
 
 # Claude Artifacts
 .claude/artifacts/
+
+# Claude Code Reviews (output files)
+.reviews/*.md
+**/.DS_Store
+
+# Claude Code local overrides (machine-specific, never commit)
+.claude/settings.local.json
+.claude/.DS_Store

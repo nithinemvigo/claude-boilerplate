@@ -2,10 +2,26 @@
   "name": "claude-boilerplate",
   "version": "1.0.0",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:hooks": "node scripts/test-hooks.js",
+    "review": "bash scripts/review.sh",
+    "review:commit": "bash scripts/review.sh",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:coverage": "jest --coverage",
+    "deps:audit": "npm audit --production",
+    "deps:outdated": "npm outdated",
+    "validate": "npm run lint && npm run format:check && npm test"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
     "jest": "^29.7.0",
+    "prettier": "^3.8.3",
     "supertest": "^7.2.2"
   },
   "description": "skelton",
