@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bases — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="./index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="../presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <h1>Bases</h1>
+    <p class="lede">
+      A <strong>base</strong> is the framework starting point. You pick exactly one per project. The base owns
+      ESLint, tsconfig, the Node version, framework-specific rules, and the <code>CLAUDE.md</code> Stack/Commands/Architecture fragment.
+    </p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3><a href="./express-js.html">express-js</a></h3>
+        <p>Node.js + Express, plain JavaScript. Classic REST API setup.</p>
+        <p><span class="tag">JS</span><span class="tag">backend</span><span class="tag">REST</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./express-ts.html">express-ts</a></h3>
+        <p>Node.js + Express + TypeScript. Typed REST APIs.</p>
+        <p><span class="tag">TS</span><span class="tag">backend</span><span class="tag">REST</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./nestjs.html">nestjs</a></h3>
+        <p>NestJS framework — DI, decorators, modular architecture. TypeScript only.</p>
+        <p><span class="tag">TS</span><span class="tag">backend</span><span class="tag">enterprise</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./react-vite-ts.html">react-vite-ts</a></h3>
+        <p>React + Vite + TypeScript. Modern SPA frontend.</p>
+        <p><span class="tag">TS</span><span class="tag">frontend</span><span class="tag">SPA</span></p>
+      </div>
+      <div class="card">
+        <h3><a href="./nextjs-ts.html">nextjs-ts</a></h3>
+        <p>Next.js App Router + TypeScript. Full-stack React with RSC, route handlers.</p>
+        <p><span class="tag">TS</span><span class="tag">fullstack</span><span class="tag">SSR</span></p>
+      </div>
+    </div>
+
+    <h2>What every base ships</h2>
+    <p>The folder layout inside any <code>overlays/bases/&lt;base&gt;/</code> is consistent:</p>
+<pre><code>overlays/bases/&lt;base&gt;/
+├── .claude/rules/                  framework-specific rules layered on core
+│   ├── frontend.md   | api.md     (depending on base)
+│   ├── typescript.md              (TS bases only)
+│   └── &lt;framework&gt;-conventions.md (NestJS, Next.js)
+├── eslint.config.js               flat config tailored to the framework
+├── tsconfig.recommended.json      TS bases only
+├── .nvmrc                         Node version recommendation
+├── package.scripts.json           scripts + devDeps to deep-merge into the target's package.json
+├── CLAUDE.fragment.md             fills {{STACK}} / {{COMMANDS}} / {{ARCHITECTURE}} in core/CLAUDE.template.md
+└── compatible-integrations.txt    whitelist of integrations apply.sh permits with this base</code></pre>
+
+    <h2>Choosing a base</h2>
+    <table>
+      <thead><tr><th>If you're building…</th><th>Pick</th></tr></thead>
+      <tbody>
+        <tr><td>A REST API in plain Node + Express</td><td><a href="./express-js.html"><code>express-js</code></a></td></tr>
+        <tr><td>A typed REST API on Express</td><td><a href="./express-ts.html"><code>express-ts</code></a></td></tr>
+        <tr><td>An enterprise-style backend (DI, modules, decorators)</td><td><a href="./nestjs.html"><code>nestjs</code></a></td></tr>
+        <tr><td>A frontend-only SPA</td><td><a href="./react-vite-ts.html"><code>react-vite-ts</code></a></td></tr>
+        <tr><td>A full-stack app with server components and route handlers</td><td><a href="./nextjs-ts.html"><code>nextjs-ts</code></a></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <strong>Don't see your stack?</strong> v2 will add <code>node-js</code>, <code>node-ts</code>, <code>react-js</code>, <code>react-ts</code>, <code>nextjs-js</code>.
+      For now, the v1 bases cover the most common modern setups.
+    </div>
+
+    <footer class="site">
+      <div><a href="../index.html">← Home</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

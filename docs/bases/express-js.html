@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>express-js — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="./index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="../presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All bases</a></p>
+    <h1><code>express-js</code></h1>
+    <p class="lede">Node.js + Express, plain JavaScript. Classic REST API setup. This is also the base used by <code>examples/express-demo/</code>.</p>
+
+    <p><span class="tag">JS</span><span class="tag">backend</span><span class="tag">REST</span><span class="tag">Node 25</span></p>
+
+    <h2>When to choose this base</h2>
+    <ul>
+      <li>You're building a REST API and don't need TypeScript</li>
+      <li>You want fast iteration with no compile step</li>
+      <li>You're migrating an existing Express service and need the Claude brain on top</li>
+    </ul>
+    <p>If you want types, jump to <a href="./express-ts.html"><code>express-ts</code></a>. If you want DI and modules, see <a href="./nestjs.html"><code>nestjs</code></a>.</p>
+
+    <h2>Apply command</h2>
+<pre><code>bash scripts/apply.sh --base=express-js ../my-api</code></pre>
+    <p>With integrations:</p>
+<pre><code>bash scripts/apply.sh --base=express-js --integrations=supabase ../my-api
+bash scripts/apply.sh --base=express-js --integrations=firebase,prisma ../my-api</code></pre>
+
+    <h2>What lands</h2>
+    <p>On top of everything in <code>core/</code>, this base adds:</p>
+    <table>
+      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>.claude/rules/api.md</code></td><td>REST API conventions — route structure, error responses, validation, status codes</td></tr>
+        <tr><td><code>.claude/rules/database.md</code></td><td>SQL safety, parameterised queries, transaction patterns, migrations</td></tr>
+        <tr><td><code>eslint.config.js</code></td><td>Flat ESLint config, Node globals, ECMAScript 2024, Prettier-compatible</td></tr>
+        <tr><td><code>.nvmrc</code></td><td><code>25</code> — Node v25</td></tr>
+        <tr><td><code>package.scripts.json</code></td><td>Scripts: <code>test</code>, <code>lint</code>, <code>lint:fix</code>, <code>format</code>, <code>validate</code>, <code>review</code>, <code>deps:audit</code>, <code>deps:outdated</code>. DevDeps: <code>eslint</code>, <code>prettier</code>, <code>jest</code>, <code>supertest</code>.</td></tr>
+        <tr><td><code>CLAUDE.fragment.md</code></td><td>Stack: Node.js v25, Express, JavaScript · Commands listed · Architecture: <code>src/routes/</code>, <code>src/middleware/</code>, <code>src/services/</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Compatible integrations</h2>
+    <table>
+      <thead><tr><th>Integration</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><a href="../integrations/supabase.html"><code>supabase</code></a></td><td><span class="tag ok">✓</span></td><td>Use the JS client. RLS still applies.</td></tr>
+        <tr><td><a href="../integrations/firebase.html"><code>firebase</code></a></td><td><span class="tag ok">✓</span></td><td>Use Firebase Admin SDK server-side.</td></tr>
+        <tr><td><a href="../integrations/prisma.html"><code>prisma</code></a></td><td><span class="tag ok">✓</span></td><td>Schema in <code>prisma/</code>, client in <code>src/lib/db.js</code> (you write it).</td></tr>
+        <tr><td><code>tailwind</code></td><td><span class="tag no">—</span></td><td>Frontend-only; hard error.</td></tr>
+        <tr><td><code>nextauth</code></td><td><span class="tag no">—</span></td><td>Next.js-only; hard error.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Recommended <code>package.json</code> scripts after apply</h2>
+<pre><code>{
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "npm run lint &amp;&amp; npm run format:check &amp;&amp; npm test",
+    "review": "bash scripts/review.sh",
+    "deps:audit": "npm audit --production",
+    "deps:outdated": "npm outdated"
+  }
+}</code></pre>
+
+    <h2>Gotchas</h2>
+    <ul>
+      <li>The pre-commit hook expects <code>npm run lint</code> and <code>npm run format:check</code> to exit non-zero on issues. If you swap ESLint or Prettier, keep those exit semantics.</li>
+      <li><code>src/</code> is convention, not enforced. The Claude rules assume routes/middleware/services live there — adjust <code>CLAUDE.md</code> Architecture if you reorganise.</li>
+      <li>This base does not bundle Express itself. You install it (<code>npm i express</code>) — the base ships only Claude tooling and dev dependencies.</li>
+    </ul>
+
+    <h2>Smoke test after apply</h2>
+<pre><code>cd ../my-api
+npm install express
+echo 'const app = require("express")(); app.get("/", (_, r) =&gt; r.send("ok")); app.listen(3000)' &gt; src/index.js
+npm run lint
+npm run validate</code></pre>
+
+    <h2>See also</h2>
+    <ul>
+      <li><a href="./express-ts.html"><code>express-ts</code></a> — TypeScript variant</li>
+      <li><a href="./nestjs.html"><code>nestjs</code></a> — opinionated alternative with DI</li>
+      <li><a href="../../examples/express-demo/"><code>examples/express-demo/</code></a> — runnable demo using this base</li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="./index.html">← All bases</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

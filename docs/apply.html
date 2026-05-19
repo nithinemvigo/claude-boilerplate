@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Apply — Claude Boilerplate</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="./index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="./index.html">Home</a>
+        <a href="./folders.html">Folders</a>
+        <a href="./apply.html">Apply</a>
+        <a href="./bases/index.html">Bases</a>
+        <a href="./integrations/index.html">Integrations</a>
+        <a href="./presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <h1>Apply — <code>scripts/apply.sh</code></h1>
+    <p class="lede">
+      How the composer stitches a project from a <strong>base</strong> stack plus zero or more
+      <strong>integrations</strong>, what lands on disk, and how invalid combinations are caught.
+    </p>
+
+    <div class="toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#model">The composition model</a></li>
+        <li><a href="#combinations">How combinations work</a></li>
+        <li><a href="#contract">The apply.sh contract</a></li>
+        <li><a href="#matrix">Compatibility matrix</a></li>
+        <li><a href="#flags">Flags and modes</a></li>
+        <li><a href="#errors">Conflict &amp; error model</a></li>
+        <li><a href="#anatomy">Anatomy of a target project after apply</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </div>
+
+    <h2 id="model">The composition model</h2>
+    <p>Every project bootstrapped from this boilerplate is built from three layers, applied in this order:</p>
+
+    <table>
+      <thead><tr><th>Layer</th><th>How many</th><th>Owns</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>core/</code></td>
+          <td>always exactly one</td>
+          <td>Stack-agnostic agents, commands, hooks, skills, generic rules (error-handling, security, environment, testing), the <code>CLAUDE.md</code> template, and editor/prettier configs.</td>
+        </tr>
+        <tr>
+          <td><strong>Base</strong> <span class="tag">overlays/bases/&lt;base&gt;</span></td>
+          <td>exactly one per project</td>
+          <td>Framework files: ESLint config, tsconfig, <code>.nvmrc</code>, <code>package.json</code> scripts, framework-specific rules, and the <code>CLAUDE.md</code> fragment for Stack / Commands / Architecture.</td>
+        </tr>
+        <tr>
+          <td><strong>Integrations</strong> <span class="tag">overlays/integrations/&lt;name&gt;</span></td>
+          <td>zero or more per project</td>
+          <td><strong>Additive only.</strong> A new rule file in <code>.claude/rules/</code>, env-var keys for <code>.env.example</code>, and an Architecture paragraph appended to <code>CLAUDE.md</code>. Integrations never overwrite files the base wrote.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      <strong>Presets</strong> (<code>presets/&lt;name&gt;.json</code>) are simply named aliases that expand to a base
+      plus a list of integrations. They add no new content of their own.
+    </p>
+
+    <h2 id="combinations">How combinations work</h2>
+
+    <h3>Example 1 — React TS + Supabase</h3>
+<pre><code>bash scripts/apply.sh --base=react-ts --integrations=supabase ../my-app</code></pre>
+    <p><strong>What lands in <code>../my-app</code>:</strong></p>
+    <ul>
+      <li><code>core/</code> — every stack-agnostic file (agents, commands, hooks, skills, generic rules, <code>CLAUDE.template.md</code>)</li>
+      <li><code>overlays/bases/react-ts/</code> — <code>frontend.md</code> rule, <code>typescript.md</code> rule, React-flavored <code>eslint.config.js</code>, recommended <code>tsconfig.json</code>, scripts merged into <code>package.json</code></li>
+      <li><code>overlays/integrations/supabase/</code> — <code>supabase.md</code> rule, Supabase env keys appended to <code>.env.example</code>, an Architecture paragraph appended to <code>CLAUDE.md</code>, and (optionally, behind <code>--starter</code>) a <code>src/lib/supabase.ts</code> starter</li>
+    </ul>
+    <div class="callout"><code>react-ts</code> is v2 — for v1 use <code>react-vite-ts</code> instead.</div>
+
+    <h3>Example 2 — Next.js TS + Firebase + Tailwind</h3>
+<pre><code>bash scripts/apply.sh --base=nextjs-ts --integrations=firebase,tailwind ../my-app</code></pre>
+    <p>Two integrations layered in the order listed. Firebase first, Tailwind second. Order matters only for the rendered <code>CLAUDE.md</code> Architecture section (paragraphs append in order).</p>
+
+    <h3>Example 3 — T3 Stack (a preset, expanded by the script)</h3>
+<pre><code>bash scripts/apply.sh --preset=t3-stack ../my-app</code></pre>
+    <p>A preset is just a named expansion. The command above is equivalent to:</p>
+<pre><code>bash scripts/apply.sh \
+  --base=nextjs-ts \
+  --integrations=tailwind,trpc,prisma,nextauth,zod \
+  ../my-app</code></pre>
+    <p>Presets live in <code>presets/&lt;name&gt;.json</code> and are the recommended way to share an opinionated combination across teams.</p>
+
+    <h3>Example 4 — NestJS + Prisma + Supabase</h3>
+<pre><code>bash scripts/apply.sh --base=nestjs --integrations=prisma,supabase ../my-app</code></pre>
+    <p>Both integrations are compatible with the <code>nestjs</code> base (<code>prisma</code> works with any TS server; <code>supabase</code> is flexible and only warns on bare-Node bases).</p>
+
+    <h2 id="contract">The <code>apply.sh</code> contract</h2>
+    <p>The script runs these steps in order. Any step failing aborts the run with a non-zero exit code and leaves the target untouched (no partial copies).</p>
+
+    <h3>1. Validate the combo</h3>
+    <p>Some integrations are framework-specific. The script enforces this <strong>before copying any files</strong>:</p>
+    <ul>
+      <li><code>nextauth</code> requires <code>base ∈ {nextjs-js, nextjs-ts}</code></li>
+      <li><code>trpc</code> requires <code>base ∈ {nextjs-*, express-*, nestjs}</code></li>
+      <li><code>tailwind</code> requires <code>base ∈ {react-*, nextjs-*}</code></li>
+      <li><code>supabase</code> and <code>firebase</code> are flexible; the script <strong>warns</strong> if <code>base=node-*</code> (bare Node without Express is unusual for these and can be bypassed with <code>--force</code>)</li>
+    </ul>
+    <p>Each base overlay ships a <code>compatible-integrations.txt</code> listing the integrations it supports. The script checks the requested integrations against that list and exits with a clear error if any aren't allowed.</p>
+
+    <h3>2. Copy <code>core/</code> to target</h3>
+    <p>The entire <code>core/</code> tree is copied into the target directory. This is the always-on baseline.</p>
+
+    <h3>3. Copy <code>overlays/bases/&lt;base&gt;/</code></h3>
+    <p>The selected base overlay is copied on top of <code>core/</code>. <strong>Bases may override files from <code>core/</code></strong> — that's expected (e.g., a base ships its own <code>package.json</code> scripts that build on the core editor configs).</p>
+
+    <h3>4. Copy each <code>overlays/integrations/&lt;name&gt;/</code></h3>
+    <p>For each integration in the order listed, copy its files into the target.</p>
+    <div class="callout danger">
+      <strong>Conflict rule:</strong> if an integration tries to write a file that already exists from <code>core/</code> or the base, the script <strong>aborts</strong> rather than overwrite. A conflict signals the integration is broken — integrations must be <strong>additive only</strong>.
+    </div>
+
+    <h3>5. Merge <code>package.json</code></h3>
+    <p>Deep-merge <code>"scripts"</code> and <code>"devDependencies"</code> from every layer into the target's <code>package.json</code>. If a key collides, the highest layer wins (<code>integrations &gt; base &gt; core</code>), and a warning is printed naming each colliding key.</p>
+
+    <h3>6. Render <code>CLAUDE.md</code></h3>
+    <p>Substitute the base fragment into the placeholders inside <code>core/CLAUDE.template.md</code> (<code>{{STACK}}</code>, <code>{{COMMANDS}}</code>, <code>{{ARCHITECTURE}}</code>), then append each integration's Architecture paragraph in the order they were listed.</p>
+
+    <h3>7. Append <code>.env.example</code> keys</h3>
+    <p>Each integration's <code>env.snippet</code> is appended to the project's <code>.env.example</code>. Duplicate keys are deduplicated; the first occurrence wins.</p>
+
+    <h3>8. Print a summary</h3>
+<pre><code>✓ Applied base `nextjs-ts` + integrations [`supabase`, `tailwind`]
+  Files added: 23  ·  Files modified: 3
+  Next steps:
+    1. cd ../my-app
+    2. npm install
+    3. Fill in Supabase keys in .env
+    4. Run npm run validate</code></pre>
+
+    <h3>9. Dry-run mode (<code>--dry</code>)</h3>
+    <p><code>--dry</code> runs steps 1–8 in plan-only mode: nothing is written to disk. The summary lists every file the real run would create, modify, or leave alone. Use this before applying to an existing project.</p>
+
+    <h2 id="matrix">Compatibility matrix</h2>
+    <p>Quick reference. Detailed compatibility for each base lives in its <code>compatible-integrations.txt</code>.</p>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>supabase</th><th>firebase</th><th>tailwind</th><th>prisma</th>
+          <th>trpc</th><th>nextauth</th><th>tanstack-query</th><th>zod</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>express-js</code></td><td>✓</td><td>✓</td><td>—</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>✓</td></tr>
+        <tr><td><code>express-ts</code></td><td>✓</td><td>✓</td><td>—</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>✓</td></tr>
+        <tr><td><code>nestjs</code></td><td>✓</td><td>✓</td><td>—</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>✓</td></tr>
+        <tr><td><code>react-vite-ts</code></td><td>✓</td><td>✓</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td></tr>
+        <tr><td><code>nextjs-ts</code></td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td><code>node-*</code> (v2)</td><td>⚠️</td><td>⚠️</td><td>—</td><td>✓</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:0.9rem;color:var(--text-dim)">
+      <span class="tag ok">✓</span> supported &nbsp;
+      <span class="tag no">—</span> not applicable (hard error) &nbsp;
+      <span class="tag warn">⚠️</span> allowed with warning, override with <code>--force</code>
+    </p>
+
+    <h2 id="flags">Flags and modes</h2>
+    <table>
+      <thead><tr><th>Flag</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>--base=&lt;name&gt;</code></td><td>Required unless <code>--preset</code> is used. One of the base names in <code>overlays/bases/</code>.</td></tr>
+        <tr><td><code>--integrations=&lt;a,b,c&gt;</code></td><td>Optional. Comma-separated list. Order determines the <code>CLAUDE.md</code> Architecture order.</td></tr>
+        <tr><td><code>--preset=&lt;name&gt;</code></td><td>Use a named preset from <code>presets/</code>. Mutually exclusive with <code>--base</code>/<code>--integrations</code>.</td></tr>
+        <tr><td><code>--dry</code></td><td>Plan-only mode. No files written. Prints the full diff that would be applied.</td></tr>
+        <tr><td><code>--force</code></td><td>Bypass soft warnings (e.g. <code>firebase</code> on a bare-Node base). Hard errors are <strong>never</strong> bypassable.</td></tr>
+        <tr><td><code>--target=&lt;path&gt;</code></td><td>Explicit target directory. The last positional argument is used if this flag is omitted.</td></tr>
+        <tr><td><code>--starter</code></td><td>(v2) Include integration starter files (e.g. <code>src/lib/supabase.ts</code>). Off by default — keeps overlays SDK-version-agnostic.</td></tr>
+        <tr><td><code>-h</code>, <code>--help</code></td><td>Print usage and exit.</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="errors">Conflict &amp; error model</h2>
+    <p>The script distinguishes three failure modes:</p>
+    <table>
+      <thead><tr><th>Class</th><th>Example</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag no">Hard</span> Combo invalid</td><td><code>nextauth</code> with <code>--base=nestjs</code></td><td>Abort before touching the target. Exit code <code>2</code>.</td></tr>
+        <tr><td><span class="tag no">Hard</span> File conflict</td><td>An integration tries to overwrite a base file</td><td>Abort mid-run. Roll back any files written so far. Exit code <code>3</code>.</td></tr>
+        <tr><td><span class="tag warn">Soft</span> Warning</td><td><code>firebase</code> with <code>--base=node-ts</code></td><td>Print warning. Continue. Exit code <code>0</code>. <code>--force</code> silences the warning.</td></tr>
+      </tbody>
+    </table>
+    <p>The target directory is never left in a half-applied state. Every step that writes files is staged in a temporary directory and only moved into place after step 8 succeeds.</p>
+
+    <h2 id="anatomy">Anatomy of a target project after apply</h2>
+    <p>For <code>--base=nextjs-ts --integrations=supabase,tailwind</code>:</p>
+<pre><code>my-app/
+├── .claude/
+│   ├── agents/                  ← from core
+│   ├── commands/                ← from core
+│   ├── hooks/                   ← from core
+│   ├── skills/ui-ux-pro-max/    ← from core
+│   ├── rules/
+│   │   ├── error-handling.md    ← core
+│   │   ├── security.md          ← core
+│   │   ├── environment.md       ← core
+│   │   ├── testing.md           ← core
+│   │   ├── frontend.md          ← base (nextjs-ts)
+│   │   ├── typescript.md        ← base (nextjs-ts)
+│   │   ├── nextjs-conventions.md← base (nextjs-ts)
+│   │   ├── api.md               ← base (nextjs-ts, trimmed for route handlers)
+│   │   ├── supabase.md          ← integration
+│   │   └── tailwind.md          ← integration
+│   ├── settings.json            ← core
+│   └── review-prompt.md         ← core
+├── .agents/workflows/           ← core
+├── .editorconfig                ← core
+├── .gitignore                   ← core
+├── .prettierrc                  ← core
+├── .nvmrc                       ← base
+├── eslint.config.js             ← base
+├── tsconfig.json                ← base (recommended values)
+├── package.json                 ← base scripts + integration devDeps, merged
+├── .env.example                 ← base + integration keys appended
+└── CLAUDE.md                    ← template + base fragment + integration paragraphs</code></pre>
+    <p>No application code (<code>src/</code>, <code>app/</code>, <code>pages/</code>) is created. The boilerplate is a <strong>brain</strong>, not a scaffold — you bring your own framework-init step (<code>create-next-app</code>, <code>nest new</code>, <code>npm create vite</code>) and run <code>apply.sh</code> on top of the result.</p>
+
+    <h2 id="faq">FAQ</h2>
+
+    <h3>Can I run <code>apply.sh</code> on an existing project that already has files?</h3>
+    <p>Yes. Use <code>--dry</code> first to preview every file that would be written or modified. The script will warn before overwriting any file that the boilerplate is responsible for. Application code is never touched.</p>
+
+    <h3>What if I want a combination that isn't in <code>presets/</code>?</h3>
+    <p>Use <code>--base</code> and <code>--integrations</code> directly. If the combo is one your team uses often, drop a JSON file in <code>presets/</code> so the next person can use a short name.</p>
+
+    <h3>Can I write my own integration?</h3>
+    <p>Yes — create a folder under <code>overlays/integrations/&lt;name&gt;/</code>. The only requirements: (a) every file you add must be a <em>new</em> file not owned by <code>core/</code> or any base; (b) include a <code>compatible-with.txt</code> listing the bases your integration supports; (c) include a one-paragraph <code>architecture.md</code> that gets appended to <code>CLAUDE.md</code>. See the contributing notes in the README.</p>
+
+    <h3>How do I upgrade an existing project when the boilerplate gets new rules?</h3>
+    <p>Re-run <code>apply.sh</code> with the same flags. The script reads <code>.claude/boilerplate.lock.json</code> (written on first apply) to recover the original base + integrations, then re-applies the latest versions. Files you've edited locally are flagged in the dry-run report so you can merge by hand.</p>
+
+    <h3>Why no starter code in integrations by default?</h3>
+    <p>SDKs change. A <code>src/lib/supabase.ts</code> that ships with the overlay will drift the moment Supabase publishes a new client. Keeping integrations to rules + env keys means the boilerplate ages well. Use <code>--starter</code> (v2) when you explicitly want scaffolding.</p>
+
+    <footer class="site">
+      <div><a href="./index.html">← Home</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>react-vite-ts — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="./index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="../presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All bases</a></p>
+    <h1><code>react-vite-ts</code></h1>
+    <p class="lede">React + Vite + TypeScript. The modern SPA starting point.</p>
+
+    <p><span class="tag">TS</span><span class="tag">frontend</span><span class="tag">SPA</span><span class="tag">Vite</span></p>
+
+    <h2>When to choose this base</h2>
+    <ul>
+      <li>You're building a single-page app, not a full-stack site</li>
+      <li>You want Vite's fast HMR and ESM-native dev server</li>
+      <li>Your backend lives separately (this base + <code>express-ts</code> on the API is a common pair)</li>
+    </ul>
+    <p>If you need SSR, server components, or route handlers, jump to <a href="./nextjs-ts.html"><code>nextjs-ts</code></a>.</p>
+
+    <h2>Apply command</h2>
+<pre><code>bash scripts/apply.sh --base=react-vite-ts ../my-app
+bash scripts/apply.sh --base=react-vite-ts --integrations=tailwind,supabase ../my-app
+bash scripts/apply.sh --base=react-vite-ts --integrations=firebase ../my-app   # or use --preset=firebase-react</code></pre>
+    <div class="callout warn">
+      Scaffold Vite first:
+      <pre style="margin-top:0.5rem"><code>npm create vite@latest my-app -- --template react-ts
+cd ..
+bash scripts/apply.sh --base=react-vite-ts ./my-app</code></pre>
+    </div>
+
+    <h2>What lands</h2>
+    <table>
+      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>.claude/rules/frontend.md</code></td><td>Component conventions, hooks discipline, accessibility, performance (memo/callback boundaries), state colocation</td></tr>
+        <tr><td><code>.claude/rules/typescript.md</code></td><td>Strict TS, prop typing, discriminated unions over enums</td></tr>
+        <tr><td><code>eslint.config.js</code></td><td>Flat config with <code>typescript-eslint</code>, <code>eslint-plugin-react</code>, <code>react-hooks</code>, <code>jsx-a11y</code></td></tr>
+        <tr><td><code>tsconfig.recommended.json</code></td><td>Vite-flavored — <code>"jsx": "react-jsx"</code>, <code>"moduleResolution": "bundler"</code>, <code>"strict": true</code></td></tr>
+        <tr><td><code>package.scripts.json</code></td><td>Scripts: <code>dev</code>, <code>build</code>, <code>preview</code> (all via <code>vite</code>), plus lint/format/validate. Testing via <code>vitest</code> + <code>@testing-library/react</code>.</td></tr>
+        <tr><td><code>CLAUDE.fragment.md</code></td><td>Stack: React 18+ · Vite · TypeScript · Commands · Architecture: <code>src/components/</code>, <code>src/hooks/</code>, <code>src/lib/</code>, <code>src/pages/</code> or <code>src/routes/</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Compatible integrations</h2>
+    <table>
+      <thead><tr><th>Integration</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><a href="../integrations/tailwind.html"><code>tailwind</code></a></td><td><span class="tag ok">✓</span></td><td>Recommended styling layer. Add <code>postcss.config.js</code> + <code>tailwind.config.js</code>.</td></tr>
+        <tr><td><a href="../integrations/supabase.html"><code>supabase</code></a></td><td><span class="tag ok">✓</span></td><td>Use the JS client. RLS is mandatory — service-role key must never reach the browser.</td></tr>
+        <tr><td><a href="../integrations/firebase.html"><code>firebase</code></a></td><td><span class="tag ok">✓</span></td><td>Use the Web SDK. Init in <code>src/lib/firebase.ts</code>.</td></tr>
+        <tr><td><code>prisma</code></td><td><span class="tag no">—</span></td><td>Server-only ORM; hard error.</td></tr>
+        <tr><td><code>nextauth</code></td><td><span class="tag no">—</span></td><td>Next.js-only.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Recommended <code>package.json</code> scripts after apply</h2>
+<pre><code>{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b &amp;&amp; vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "npm run lint &amp;&amp; npm run format:check &amp;&amp; npm run build &amp;&amp; npm test -- --run",
+    "review": "bash scripts/review.sh"
+  }
+}</code></pre>
+
+    <h2>Gotchas</h2>
+    <ul>
+      <li>Vite's TS config splits into <code>tsconfig.json</code> + <code>tsconfig.node.json</code>. The recommended config provided here is the app-side; Vite's own node-side config stays separate.</li>
+      <li>The <code>jsx-a11y</code> ESLint plugin is strict by default. You can relax rules in <code>eslint.config.js</code> if false positives become noisy — but err on keeping accessibility checks on.</li>
+      <li>Tests use Vitest, not Jest. The generic <code>testing.md</code> rule references Jest patterns — they're 95% compatible (same <code>describe</code>/<code>it</code>/<code>expect</code> API).</li>
+      <li>The <code>ui-ux-pro-max</code> skill in <code>core/</code> auto-triggers on UI work — useful here.</li>
+    </ul>
+
+    <h2>Smoke test after apply</h2>
+<pre><code>cd ../my-app
+npm install
+npm run dev      # browser auto-opens
+npm run validate</code></pre>
+
+    <h2>See also</h2>
+    <ul>
+      <li><a href="./nextjs-ts.html"><code>nextjs-ts</code></a> — full-stack alternative</li>
+      <li><a href="../integrations/tailwind.html"><code>tailwind</code></a> — recommended styling</li>
+      <li><a href="../presets/firebase-react.html"><code>firebase-react</code></a> preset — this base + Firebase in one command</li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="./index.html">← All bases</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

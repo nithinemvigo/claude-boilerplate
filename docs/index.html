@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claude Boilerplate — Documentation</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand">Claude Boilerplate</div>
+      <nav>
+        <a href="./index.html">Home</a>
+        <a href="./folders.html">Folders</a>
+        <a href="./apply.html">Apply</a>
+        <a href="./bases/index.html">Bases</a>
+        <a href="./integrations/index.html">Integrations</a>
+        <a href="./presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <h1>Claude Boilerplate</h1>
+    <p class="lede">
+      A composable Claude Code starter. One <code>core/</code> of agents, commands, hooks and skills,
+      plus stack-specific <strong>bases</strong> (Express, NestJS, React, Next.js…) and additive
+      <strong>integrations</strong> (Supabase, Firebase, Tailwind, Prisma…). One command stitches them
+      into any new project.
+    </p>
+
+    <div class="card">
+      <h3 style="margin-top:0">Quick start</h3>
+<pre><code>bash scripts/apply.sh --base=nextjs-ts --integrations=supabase,tailwind ../my-app</code></pre>
+      <p style="margin-bottom:0">
+        Or pick a preset — <code>--preset=t3-stack</code>, <code>--preset=supabase-nextjs</code>,
+        <code>--preset=firebase-react</code>. See <a href="./apply.html">Apply</a> for the full contract.
+      </p>
+    </div>
+
+    <div class="toc">
+      <h4>Documentation map</h4>
+      <ul>
+        <li><a href="./folders.html">Folders</a> — every directory in this repo and its purpose</li>
+        <li><a href="./apply.html">Apply</a> — <code>scripts/apply.sh</code> contract, combinations, compatibility matrix</li>
+        <li><a href="./bases/index.html">Bases</a> — the five framework starting points (Express JS/TS, NestJS, React+Vite, Next.js)</li>
+        <li><a href="./integrations/index.html">Integrations</a> — additive layers (Supabase, Firebase, Tailwind, Prisma)</li>
+        <li><a href="./presets/index.html">Presets</a> — named base + integrations combos (T3 Stack, Supabase+Next.js, Firebase+React)</li>
+      </ul>
+    </div>
+
+    <h2>The composition model</h2>
+    <p>
+      Every project bootstrapped from this boilerplate is built from three layers, applied in order:
+    </p>
+
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>How many</th><th>Owns</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>core/</code></td>
+          <td>always one</td>
+          <td>Stack-agnostic agents, commands, hooks, skills, generic rules, the <code>CLAUDE.md</code> template, and editor configs.</td>
+        </tr>
+        <tr>
+          <td>Base <span class="tag">overlays/bases/&lt;name&gt;</span></td>
+          <td>exactly one per project</td>
+          <td>Framework files: ESLint config, tsconfig, <code>.nvmrc</code>, package.json scripts, framework-specific rules, and the <code>CLAUDE.md</code> fragment.</td>
+        </tr>
+        <tr>
+          <td>Integrations <span class="tag">overlays/integrations/&lt;name&gt;</span></td>
+          <td>zero or more</td>
+          <td><strong>Additive only.</strong> A rule file, env-var keys for <code>.env.example</code>, and an Architecture paragraph appended to <code>CLAUDE.md</code>. Never overwrites base files.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      <strong>Presets</strong> (<code>presets/&lt;name&gt;.json</code>) are named aliases that expand to a base
+      plus a list of integrations. They add no new content of their own.
+    </p>
+
+    <h2>What's in v1</h2>
+    <div class="card-grid">
+      <div class="card">
+        <h3>5 bases</h3>
+        <p><code>express-js</code> · <code>express-ts</code> · <code>nestjs</code> · <code>react-vite-ts</code> · <code>nextjs-ts</code></p>
+        <p><a href="./bases/index.html">Browse bases →</a></p>
+      </div>
+      <div class="card">
+        <h3>4 integrations</h3>
+        <p><code>supabase</code> · <code>firebase</code> · <code>tailwind</code> · <code>prisma</code></p>
+        <p><a href="./integrations/index.html">Browse integrations →</a></p>
+      </div>
+      <div class="card">
+        <h3>3 presets</h3>
+        <p><code>t3-stack</code> · <code>supabase-nextjs</code> · <code>firebase-react</code></p>
+        <p><a href="./presets/index.html">Browse presets →</a></p>
+      </div>
+      <div class="card">
+        <h3>Always-on core</h3>
+        <p>4 agents · 7 commands · 3 hooks · 1 skill (UI/UX Pro Max) · 2 workflows · 4 generic rules.</p>
+        <p><a href="./folders.html#core">See core/ →</a></p>
+      </div>
+    </div>
+
+    <h2>How combinations work</h2>
+
+    <h3>Example 1 — React TS + Supabase</h3>
+<pre><code>bash scripts/apply.sh --base=react-ts --integrations=supabase ../my-app</code></pre>
+    <p><strong>What lands:</strong></p>
+    <ul>
+      <li><code>core/</code> — everything stack-agnostic</li>
+      <li><code>overlays/bases/react-ts/</code> — <code>frontend.md</code>, <code>typescript.md</code>, React ESLint config, tsconfig, scripts</li>
+      <li><code>overlays/integrations/supabase/</code> — <code>supabase.md</code> rule, env keys, Architecture paragraph in <code>CLAUDE.md</code>, optional <code>src/lib/supabase.ts</code> starter</li>
+    </ul>
+    <div class="callout"><code>react-ts</code> is v2 — use <code>react-vite-ts</code> for v1.</div>
+
+    <h3>Example 2 — Next.js TS + Firebase + Tailwind</h3>
+<pre><code>bash scripts/apply.sh --base=nextjs-ts --integrations=firebase,tailwind ../my-app</code></pre>
+    <p>Two integrations layered in the order listed. Order only affects the rendered <code>CLAUDE.md</code> Architecture section.</p>
+
+    <h3>Example 3 — T3 Stack (a preset)</h3>
+<pre><code>bash scripts/apply.sh --preset=t3-stack ../my-app
+# equivalent to:
+# --base=nextjs-ts --integrations=tailwind,trpc,prisma,nextauth,zod</code></pre>
+    <p>Presets are just named aliases for base + integrations.</p>
+
+    <h3>Example 4 — NestJS + Prisma + Supabase</h3>
+<pre><code>bash scripts/apply.sh --base=nestjs --integrations=prisma,supabase ../my-app</code></pre>
+
+    <h2>The apply.sh contract</h2>
+    <p>For the full step-by-step contract, compatibility matrix, error model, and FAQ, see <a href="./apply.html">Apply</a>. Short version:</p>
+    <ol>
+      <li>Validate the combo (hard error on impossible pairs, warn on unusual ones).</li>
+      <li>Copy <code>core/</code> to the target.</li>
+      <li>Copy <code>overlays/bases/&lt;base&gt;/</code> on top.</li>
+      <li>Copy each integration in order — aborting if any tries to overwrite a base file.</li>
+      <li>Deep-merge <code>package.json</code> scripts and devDependencies.</li>
+      <li>Render <code>CLAUDE.md</code> from the template + base fragment + integration paragraphs.</li>
+      <li>Append <code>.env.example</code> keys.</li>
+      <li>Print a summary.</li>
+      <li><code>--dry</code> shows the plan without writing anything.</li>
+    </ol>
+
+    <h2>Where to go next</h2>
+    <ul>
+      <li>I want to see what files this repo contains → <a href="./folders.html">Folders</a></li>
+      <li>I want to apply this to a new project → <a href="./apply.html">Apply</a></li>
+      <li>I'm starting an Express / NestJS / React / Next.js project → <a href="./bases/index.html">Bases</a></li>
+      <li>I'm adding Supabase / Firebase / Tailwind / Prisma → <a href="./integrations/index.html">Integrations</a></li>
+      <li>I want a turnkey combo (T3, Supabase+Next.js, Firebase+React) → <a href="./presets/index.html">Presets</a></li>
+    </ul>
+
+    <footer class="site">
+      <div>Claude Boilerplate — composable Claude Code starter</div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

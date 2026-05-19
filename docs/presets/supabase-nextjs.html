@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>supabase-nextjs preset — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="../bases/index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="./index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All presets</a></p>
+    <h1><code>supabase-nextjs</code></h1>
+    <p class="lede">Next.js App Router + TypeScript + Supabase. Postgres + Auth + Storage + Realtime behind an SSR-capable React app.</p>
+
+    <p><span class="tag">fullstack</span><span class="tag">supabase</span><span class="tag">postgres</span><span class="tag">v1</span></p>
+
+    <h2>What it expands to</h2>
+<pre><code>bash scripts/apply.sh --preset=supabase-nextjs ../my-app
+# equivalent to:
+bash scripts/apply.sh --base=nextjs-ts --integrations=supabase ../my-app</code></pre>
+
+    <h2>When to use this preset</h2>
+    <ul>
+      <li>You want Postgres + Auth in one BaaS, server-rendered on Next.js</li>
+      <li>You're shipping a SaaS, internal tool, or product with auth-gated data</li>
+      <li>You want RLS as your authorization layer (database-enforced, application-aware)</li>
+    </ul>
+    <p>Add <code>tailwind</code> on top for a SaaS UI:</p>
+<pre><code>bash scripts/apply.sh --base=nextjs-ts --integrations=supabase,tailwind ../my-app</code></pre>
+
+    <h2>What lands</h2>
+    <ul>
+      <li><strong>Base:</strong> <a href="../bases/nextjs-ts.html"><code>nextjs-ts</code></a> — full Next.js App Router setup, frontend + api rules, strict TS</li>
+      <li><strong>Integration:</strong> <a href="../integrations/supabase.html"><code>supabase</code></a> — <code>supabase.md</code> rule, env keys, Architecture paragraph</li>
+    </ul>
+
+    <h2>Environment variables</h2>
+<pre><code># Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://&lt;ref&gt;.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=&lt;anon-key&gt;
+SUPABASE_SERVICE_ROLE_KEY=&lt;service-role-key&gt;   # server-only</code></pre>
+
+    <h2>Recommended workflow</h2>
+    <ol>
+      <li>Scaffold Next.js: <code>npx create-next-app@latest my-app --typescript --app --tailwind --eslint</code></li>
+      <li>Apply the preset: <code>bash scripts/apply.sh --preset=supabase-nextjs ../my-app</code></li>
+      <li>Install the Supabase clients: <code>npm install @supabase/supabase-js @supabase/ssr</code></li>
+      <li>Initialise Supabase locally: <code>npx supabase init</code> → migrations in <code>supabase/migrations/</code></li>
+      <li>Write your first RLS policy <em>before</em> you build the feature that needs it</li>
+      <li>Generate types: <code>npx supabase gen types typescript --project-id &lt;ref&gt; &gt; src/types/supabase.ts</code></li>
+    </ol>
+
+    <h2>Architecture sketch</h2>
+<pre><code>my-app/
+├── app/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   └── api/                       Route Handlers — use service-role client carefully
+├── src/
+│   ├── lib/
+│   │   └── supabase/
+│   │       ├── client.ts          Browser client (anon key)
+│   │       ├── server.ts          Server client (cookies adapter via @supabase/ssr)
+│   │       └── service.ts         Service-role client (server-only)
+│   └── types/
+│       └── supabase.ts            Generated types
+├── supabase/
+│   ├── config.toml
+│   └── migrations/                Schema + RLS policies as SQL files
+└── .claude/                       From core + nextjs-ts base + supabase integration</code></pre>
+
+    <h2>Common follow-ups</h2>
+    <ul>
+      <li>Add <a href="../integrations/tailwind.html"><code>tailwind</code></a> for styling</li>
+      <li>Add <a href="../integrations/prisma.html"><code>prisma</code></a> if you prefer an ORM over the Supabase JS client (still keep Supabase Auth + Storage)</li>
+    </ul>
+
+    <h2>Reference</h2>
+    <ul>
+      <li><a href="https://supabase.com/docs/guides/getting-started/quickstarts/nextjs" target="_blank" rel="noopener">Supabase + Next.js quickstart</a></li>
+      <li><a href="../bases/nextjs-ts.html">nextjs-ts base</a></li>
+      <li><a href="../integrations/supabase.html">supabase integration</a></li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="./index.html">← All presets</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>

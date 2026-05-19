@@ -1,0 +1,9 @@
+{
+  "name": "firebase-react",
+  "description": "Vite + React + TypeScript with Firebase as the backend (Auth + Firestore + Storage).",
+  "base": "react-vite-ts",
+  "integrations": ["firebase"],
+  "tags": ["frontend", "typescript", "react", "vite", "firebase", "firestore"],
+  "homepage": "https://firebase.google.com/docs/web/setup",
+  "notes": "Security rules live in firestore.rules and storage.rules at the project root after apply. See overlays/integrations/firebase/.claude/rules/firebase.md."
+}

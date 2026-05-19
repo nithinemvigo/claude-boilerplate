@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>nextjs-ts — Claude Boilerplate</title>
+    <link rel="stylesheet" href="../assets/styles.css" />
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="../index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="../index.html">Home</a>
+        <a href="../folders.html">Folders</a>
+        <a href="../apply.html">Apply</a>
+        <a href="./index.html">Bases</a>
+        <a href="../integrations/index.html">Integrations</a>
+        <a href="../presets/index.html">Presets</a>
+      </nav>
+    </header>
+
+    <p style="color:var(--text-dim);font-size:0.9rem"><a href="./index.html">← All bases</a></p>
+    <h1><code>nextjs-ts</code></h1>
+    <p class="lede">Next.js App Router + TypeScript. Full-stack React with Server Components, Route Handlers, and Server Actions.</p>
+
+    <p><span class="tag">TS</span><span class="tag">fullstack</span><span class="tag">SSR</span><span class="tag">RSC</span></p>
+
+    <h2>When to choose this base</h2>
+    <ul>
+      <li>You want server-side rendering and React Server Components</li>
+      <li>You're building API routes alongside the UI (no separate backend)</li>
+      <li>You need first-class data fetching on the server (auth-gated, cached)</li>
+      <li>You're deploying to Vercel or any Edge-capable runtime</li>
+    </ul>
+    <p>If you don't need SSR, see <a href="./react-vite-ts.html"><code>react-vite-ts</code></a>. If your backend is separate, this might still be a good fit for the UI.</p>
+
+    <h2>Apply command</h2>
+<pre><code>bash scripts/apply.sh --base=nextjs-ts ../my-app
+bash scripts/apply.sh --base=nextjs-ts --integrations=supabase,tailwind ../my-app
+bash scripts/apply.sh --base=nextjs-ts --integrations=firebase ../my-app
+bash scripts/apply.sh --preset=supabase-nextjs ../my-app
+bash scripts/apply.sh --preset=t3-stack ../my-app</code></pre>
+    <div class="callout warn">
+      Scaffold Next.js first:
+      <pre style="margin-top:0.5rem"><code>npx create-next-app@latest my-app --typescript --app --tailwind --eslint
+cd ..
+bash scripts/apply.sh --base=nextjs-ts ./my-app</code></pre>
+    </div>
+
+    <h2>What lands</h2>
+    <table>
+      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>.claude/rules/frontend.md</code></td><td>Component conventions, hooks discipline, accessibility</td></tr>
+        <tr><td><code>.claude/rules/typescript.md</code></td><td>Strict TS</td></tr>
+        <tr><td><code>.claude/rules/nextjs-conventions.md</code></td><td>Server vs. Client Components, when to use Server Actions vs. Route Handlers, data caching (<code>fetch</code> options, <code>revalidate</code>), <code>"use client"</code> boundaries</td></tr>
+        <tr><td><code>.claude/rules/api.md</code></td><td>Trimmed for Route Handlers — validation, error responses, status codes</td></tr>
+        <tr><td><code>eslint.config.js</code></td><td>Extends <code>next/core-web-vitals</code>, plus <code>typescript-eslint</code> and <code>jsx-a11y</code></td></tr>
+        <tr><td><code>tsconfig.recommended.json</code></td><td>Matches Next's defaults, <code>"strict": true</code>, path aliases for <code>@/*</code></td></tr>
+        <tr><td><code>package.scripts.json</code></td><td>Scripts: <code>dev</code>, <code>build</code>, <code>start</code>, <code>lint</code> (via <code>next lint</code>). Test setup uses Vitest or Jest + RTL — pick at apply time.</td></tr>
+        <tr><td><code>CLAUDE.fragment.md</code></td><td>Stack: Next.js (App Router) · React · TypeScript · Commands · Architecture: <code>app/</code>, <code>components/</code>, <code>lib/</code>, <code>app/api/</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>Compatible integrations</h2>
+    <p>Most integrations support this base — it's the most versatile.</p>
+    <table>
+      <thead><tr><th>Integration</th><th>Status</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><a href="../integrations/supabase.html"><code>supabase</code></a></td><td><span class="tag ok">✓</span></td><td>Use <code>@supabase/ssr</code> for cookies-aware auth in Server Components and middleware.</td></tr>
+        <tr><td><a href="../integrations/firebase.html"><code>firebase</code></a></td><td><span class="tag ok">✓</span></td><td>Admin SDK on the server, Web SDK on the client. Be careful with bundle splitting.</td></tr>
+        <tr><td><a href="../integrations/tailwind.html"><code>tailwind</code></a></td><td><span class="tag ok">✓</span></td><td>If you scaffolded with <code>--tailwind</code>, it's already set up. The integration adds the <code>tailwind.md</code> rule.</td></tr>
+        <tr><td><a href="../integrations/prisma.html"><code>prisma</code></a></td><td><span class="tag ok">✓</span></td><td>Use Prisma in Server Components and Route Handlers. Don't import in Client Components.</td></tr>
+        <tr><td><code>trpc</code> (v2)</td><td><span class="tag new">v2</span></td><td>Pairs with Server Actions or Route Handlers.</td></tr>
+        <tr><td><code>nextauth</code> (v2)</td><td><span class="tag new">v2</span></td><td>Auth.js v5 (NextAuth) — only valid for Next.js bases.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Recommended <code>package.json</code> scripts after apply</h2>
+<pre><code>{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "validate": "npm run lint &amp;&amp; npm run format:check &amp;&amp; npm run build &amp;&amp; npm test -- --run",
+    "review": "bash scripts/review.sh"
+  }
+}</code></pre>
+
+    <h2>Gotchas</h2>
+    <ul>
+      <li><strong>Server vs Client boundary.</strong> Importing a Node-only library (Prisma, Firebase Admin) into a Client Component will break the build. The <code>nextjs-conventions.md</code> rule covers this.</li>
+      <li><strong>Data fetching.</strong> Default <code>fetch</code> is cached forever. Use <code>{ next: { revalidate: N } }</code> or <code>cache: "no-store"</code> deliberately.</li>
+      <li><strong>Environment variables.</strong> Only <code>NEXT_PUBLIC_*</code> reaches the browser. Anything secret stays without the prefix.</li>
+      <li><strong>The pre-commit hook</strong> runs <code>next lint</code> instead of the generic <code>eslint .</code>. If you customise the hook, mirror this.</li>
+      <li><strong>Coverage targets</strong> from <code>core/.claude/rules/testing.md</code> (80%) may be hard to hit for Client Components — relax in your project's <code>CLAUDE.md</code> if appropriate.</li>
+    </ul>
+
+    <h2>Smoke test after apply</h2>
+<pre><code>cd ../my-app
+npm install
+npm run dev      # open http://localhost:3000
+npm run validate</code></pre>
+
+    <h2>See also</h2>
+    <ul>
+      <li><a href="../presets/supabase-nextjs.html"><code>supabase-nextjs</code></a> preset — this base + Supabase</li>
+      <li><a href="../presets/t3-stack.html"><code>t3-stack</code></a> preset — this base + tRPC + Prisma + NextAuth + Tailwind + Zod</li>
+      <li><a href="../integrations/tailwind.html"><code>tailwind</code></a> — recommended styling</li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="./index.html">← All bases</a></div>
+      <div>Last updated 2026-05-19</div>
+    </footer>
+  </body>
+</html>
