@@ -1,3 +1,13 @@
+---
+description: Environment variable rules — never hardcode secrets, always use process.env with validation
+globs:
+  - "**/*.js"
+  - "**/*.ts"
+  - "**/*.env*"
+  - ".env.example"
+alwaysApply: true
+---
+
 # Environment Configuration Rules
 
 ## Environment Variables

@@ -1,162 +1,85 @@
-# claude-boilerplate
+# Claude Code Universal Boilerplate
 
-A production-ready Claude Code project skeleton with automated code review, security scanning, and best-practice tooling.
+A production-ready Claude Code project skeleton with automated code review, security scanning, end-to-end agents, and workflow playbooks.
 
-## Quick Start
+**This boilerplate works for Node.js, Express, React, Next.js, and TypeScript projects.** It establishes a "brain" for Claude Code to understand your specific rules and automatically enforce code quality.
 
-```bash
-git clone https://github.com/nithinemvigo/claude-boilerplate.git
-cd claude-boilerplate
-nvm use          # Use Node.js version from .nvmrc
-npm install
-cp .env.example .env   # Configure environment variables
-npm run dev      # Start development server
+*(Note: The `src/` directory and `src/index.js` file provided here are solely for demonstrating the automated code review pipeline catching vulnerabilities. They are NOT required for your actual project).*
+
+---
+
+## 🚀 How to Apply This Boilerplate to YOUR Project
+
+1. **Copy the brain:** Copy the `.claude/` and `.agents/` folders, and the `CLAUDE.md` file from this repo into the root folder of your project (React, Next.js, TS, etc.).
+2. **Update the Brain (if needed):** Open `CLAUDE.md` in your project and update the "Stack" and "Architecture" sections to match your actual framework (e.g., mention Next.js App Router, or React components folder structure).
+3. **Copy configurations (Optional):** We recommend copying `.nvmrc`, `.editorconfig`, and `.env.example`.
+4. **Trigger the hooks:** Our validation pipeline intercepts `git commit`. Ensure you are using Claude Code to commit, or manually configure the scripts in your `package.json`.
+
+**For TypeScript or Frontend Frameworks:** No deep structural changes are required! The AI agents and rules are entirely Markdown-based, so Claude natively reads them and applies the rules perfectly whether you write Node.js endpoints or React components.
+
+---
+
+## 🤖 Workflows & Agents
+
+Workflows are heavily structured, automated step-by-step playbooks guiding Claude from ideation to pull request.
+
+### How to run an agent workflow
+You can run a workflow inside the Claude Code terminal by explicitly telling Claude to follow the playbook.
+```text
+Follow the workflow in .agents/workflows/new-feature.md to implement a user login page...
 ```
+*(Tip: In supported editors, you can also use slash commands like `/new-feature path/to/prd.md`)*
 
-## Plugins
+### Available Workflows & Agents Leveraged
 
-Install these core plugins in Claude Code:
-
-1. **Superpowers** — [github.com/obra/superpowers](http://github.com/obra/superpowers)
-2. **Frontend Design** — [claude.com/plugins/frontend-design](http://claude.com/plugins/frontend-design)
-3. **Code Review** — https://claude.com/plugins/code-review
-4. **Security Review** — https://claude.com/plugins/security-guidance
-5. **Claude Mem** — [github.com/nicholasgasior/claude-mem](http://github.com/nicholasgasior/claude-mem)
-6. **Gstack** — [github.com/garrytan/gstack](http://github.com/garrytan/gstack)
-
-## Available Commands
-
-### npm Scripts
-
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server |
-| `npm test` | Run tests |
-| `npm run test:coverage` | Run tests with coverage report |
-| `npm run lint` | Check linting |
-| `npm run lint:fix` | Auto-fix lint issues |
-| `npm run format` | Format code with Prettier |
-| `npm run format:check` | Check formatting |
-| `npm run validate` | Full validation (lint + format + test) |
-| `npm run review` | Review the last commit |
-| `npm run review:commit -- <SHA>` | Review a specific commit |
-| `npm run deps:audit` | Check for dependency vulnerabilities |
-| `npm run deps:outdated` | List outdated packages |
-
-### Slash Commands
-
-Trigger with `/project:<command>` in Claude Code:
-
-| Command | Description |
-|---------|-------------|
-| `/project:explain <file>` | Explain a file or module in detail with diagrams |
-| `/project:test <file>` | Generate tests following existing patterns |
-| `/project:doc <file>` | Add/update JSDoc documentation |
-| `/project:refactor <file>` | Analyze refactoring opportunities (no auto-apply) |
-| `/project:todo-scan` | Find all TODO/FIXME/HACK comments |
-| `/project:changelog` | Generate changelog from recent commits |
-| `/project:pr` | Draft a PR description from current branch |
-| `/project:deps-audit` | Audit dependencies for vulnerabilities |
-| `/project:complexity <file>` | Analyze function complexity |
-
-## Agents
-
-Invoke agents by referencing them in Claude Code:
-
-| Agent | How to Use |
-|-------|-----------|
-| **Test Writer** | *"Act as the test-writer agent and write tests for src/index.js"* |
-| **Doc Writer** | *"Follow .claude/agents/doc-writer.md to document this module"* |
-| **Refactor Advisor** | *"Act as the refactor-advisor agent and analyze src/"* |
-| **PR Description** | *"Follow .claude/agents/pr-description.md to describe my changes"* |
-| **Onboarding Guide** | *"Act as the onboarding-guide agent for a new team member"* |
-
-## Rules
-
-Domain-specific rules in `.claude/rules/` are auto-loaded by Claude:
-
-| Rule | Covers |
-|------|--------|
-| `api.md` | REST conventions, request/response format, CORS, rate limiting |
-| `database.md` | Connection pooling, parameterized queries, migrations, transactions |
-| `security.md` | Input sanitization, auth patterns, secrets, OWASP, HTTP headers |
-| `error-handling.md` | try/catch patterns, custom errors, graceful shutdown, logging |
-| `testing.md` | Jest patterns, coverage targets, mocking, test isolation |
-| `environment.md` | Environment variables, .env files, naming conventions |
-
-## Workflows
-
-End-to-end automation triggered with slash commands:
-
-| Workflow | Trigger | What It Does |
+| Workflow Playbook | Trigger | What It Does & Which Agents It Uses |
 |----------|---------|-------------|
-| **New Feature** | `/new-feature path/to/prd.md` | PRD → plan → branch → implement → test → review → PR |
-| **Bug Fix** | `/bug-fix path/to/report.md` | Bug report → failing test → fix → regression test → PR |
-| **Release** | `/release patch\|minor\|major` | Version bump → changelog → tag → push |
-| **Dependency Update** | `/dependency-update` | Audit → update → test → commit |
-| **Onboard Dev** | `/onboard-dev` | New developer setup walkthrough |
+| **New Feature** | `.agents/workflows/new-feature.md` | PRD → plan → branch → implement → test → review → PR. Uses: `pr-description.md` agent. |
+| **Dependency Update** | `.agents/workflows/dependency-update.md` | Audit → update → test → commit |
 
-## 🔍 Pre-Commit Pipeline (Auto on Commit)
+### Agents (Personas)
+Invoke specialized agent personas by telling Claude to "Act as...":
+- **Test Writer:** *"Act as the test-writer agent and write tests for src/components/Button.tsx"*
+- **Doc Writer:** *"Follow .claude/agents/doc-writer.md to document this module"*
 
-Every `git commit` triggers a 4-step validation pipeline:
+---
 
-1. **ESLint** — blocks on lint errors
-2. **Prettier** — blocks on formatting issues
-3. **Security Scan** — blocks on injection, XSS, hardcoded secrets, etc.
-4. **Code Review** — blocks on "Request Changes" or critical issues
+## 🛡️ Pre-Commit Validation Pipeline (Hooks)
 
-Reviews are saved to `.reviews/<sha>.md`.
+Every time Claude Code (or you, if configured) attempts a `git commit`, the `.claude/hooks/pre-commit-validate.sh` hook intercepts it.
 
-### Manual Review
+**The Pipeline:**
+1. **ESLint** — blocks on syntax/lint issues
+2. **Prettier** — blocks on formatting drift
+3. **Security Scan** — Analyzes the diff using Claude's security plugins for injections, hardcoded secrets, XSS.
+4. **Code Review** — Analyzes the diff for logical bugs, perf problems, and code quality.
 
-```bash
-npm run review              # Review the last commit
-npm run review:commit -- abc1234   # Review a specific commit
-```
+*(You can also run this manually before committing by directly referencing the script!).*
 
-## Project Structure
+---
 
-```
-├── src/                    # Application source code
-├── scripts/                # Automation scripts
+## 📚 Core Plugins Used
+To get maximum value, install these core plugins in your Claude CLI:
+1. **Frontend Design** — `claude.com/plugins/frontend-design`
+2. **Code Review** — `claude.com/plugins/code-review`
+3. **Security Review** — `claude.com/plugins/security-guidance`
+4. **Gstack** — `github.com/garrytan/gstack`
+
+*(The security and code review hooks automatically rely on the plugin models to grade your commits!).*
+
+---
+
+## 🛠 Project Structure Overview
+
+```text
 ├── .claude/
-│   ├── hooks/              # Pre/post commit validation
+│   ├── hooks/              # Pre/post commit validation scripts
 │   ├── commands/           # Slash commands (/project:<name>)
 │   ├── agents/             # Agent personas
 │   ├── rules/              # Domain-specific coding rules
-│   ├── review-prompt.md    # Code review criteria
 │   └── settings.json       # Hook configuration
-├── .agents/workflows/      # End-to-end workflows
-├── .reviews/               # Generated review reports
-├── CLAUDE.md               # Project conventions & standards
-├── .nvmrc                  # Node.js version lock
-├── .editorconfig           # Cross-IDE editor settings
-└── .env.example            # Environment variable template
+├── .agents/workflows/      # End-to-end master playbooks
+├── CLAUDE.md               # Essential instructions & context
+├── example/                # HTML tutorial on boilerplate usage
+└── src/                    # Demo API with deliberate bugs to test the hooks!
 ```
-
-## Customization
-
-- **Review criteria**: edit `.claude/review-prompt.md`
-- **ESLint rules**: edit `eslint.config.js`
-- **Prettier style**: edit `.prettierrc`
-- **Domain rules**: add/edit files in `.claude/rules/`
-- **Slash commands**: add/edit files in `.claude/commands/`
-- **Agent personas**: add/edit files in `.claude/agents/`
-- **Workflows**: add/edit files in `.agents/workflows/`
-
-## Custom Skills Installation
-
-### Global Installation (All Projects)
-```bash
-git clone <YOUR_FORK_URL> ~/.claude/skills/<custom-skills-folder>
-```
-
-### Local Installation (This Project Only)
-```bash
-git clone <YOUR_FORK_URL> .claude/skills/<custom-skills-folder>
-```
-
-## Prerequisites
-
-- [Node.js](https://nodejs.org/) v25+ (use `nvm use`)
-- [Claude CLI](https://docs.anthropic.com/claude-cli) installed and authenticated

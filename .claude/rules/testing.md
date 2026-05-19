@@ -1,3 +1,13 @@
+---
+description: Testing rules — Jest patterns, test structure, coverage targets, mocking strategy
+globs:
+  - "**/*.test.js"
+  - "**/*.test.ts"
+  - "**/*.spec.js"
+  - "**/*.spec.ts"
+alwaysApply: false
+---
+
 # Testing Rules
 
 ## Framework & Tooling

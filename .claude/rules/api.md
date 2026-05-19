@@ -1,3 +1,15 @@
+---
+description: RESTful API design rules — routing, response format, CORS, rate limiting, versioning
+globs:
+  - "src/**/*.js"
+  - "src/**/*.ts"
+  - "**/*.route.js"
+  - "**/*.route.ts"
+  - "**/*.controller.js"
+  - "**/*.controller.ts"
+alwaysApply: false
+---
+
 # API Rules
 
 ## Routing

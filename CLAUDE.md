@@ -1,7 +1,9 @@
 # Project Brain
 
+
 ## Stack
-Node.js (v25 — see `.nvmrc`)
+Node.js (v25 — see `.nvmrc`) | JavaScript | TypeScript
+Supports: REST APIs, Next.js, React, Vue — update this section when applying to a specific project
 
 ## Commands
 npm run dev | npm run build | npm test | npm run test:coverage | npm run lint | npm run lint:fix | npm run format | npm run format:check | npm run validate | npm run deps:audit | npm run deps:outdated
@@ -15,13 +17,13 @@ npm run dev | npm run build | npm test | npm run test:coverage | npm run lint | 
 - Max file length: 300 lines — split into modules if exceeding
 
 ## Architecture
-- `src/` — Application source code
+- `src/` — Application source code *(Update this mapping if copying to Next.js `app/`!)*
 - `scripts/` — Build and automation scripts
 - `.claude/hooks/` — Pre/post commit validation pipeline
 - `.claude/commands/` — Reusable slash commands (`/project:<name>`)
 - `.claude/agents/` — Agent personas (test-writer, doc-writer, etc.)
 - `.claude/rules/` — Domain rules (API, database, security, etc.)
-- `.agents/workflows/` — End-to-end workflows (new-feature, bug-fix, release)
+- `.agents/workflows/` — End-to-end workflows (new-feature, bug-fix, dependency-update)
 - `.reviews/` — Generated review reports
 
 ## Testing Conventions
@@ -30,6 +32,8 @@ npm run dev | npm run build | npm test | npm run test:coverage | npm run lint | 
 - Coverage target: 80%+ — run `npm run test:coverage`
 - Always test: happy path, edge cases, error paths, security paths
 - See `.claude/rules/testing.md` for detailed patterns
+- See `.claude/rules/typescript.md` for TypeScript standards
+- See `.claude/rules/frontend.md` for React/Vue/Next.js patterns
 
 ## Git Conventions
 - Branch naming: `feature/`, `fix/`, `chore/`, `docs/`
@@ -74,9 +78,3 @@ Hooks are configured in `.claude/settings.json` and fire automatically during Cl
 - Use `/clear` between unrelated tasks
 - Use targeted prompts (specific files/lines, not "look at the codebase")
 - Cap long CLI output: `npm test 2>&1 | head -50`
-
-## Cleanup
-The `.husky/` directory is no longer needed. Remove it with:
-```
-git rm -r .husky
-```

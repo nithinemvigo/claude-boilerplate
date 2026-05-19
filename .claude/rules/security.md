@@ -1,3 +1,13 @@
+---
+description: Security rules — input sanitization, auth, secrets, OWASP top 10, HTTP headers
+globs:
+  - "src/**/*.js"
+  - "src/**/*.ts"
+  - "**/*.route.js"
+  - "**/*.route.ts"
+alwaysApply: true
+---
+
 # Security Rules
 
 ## Input Sanitization

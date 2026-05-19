@@ -1,3 +1,14 @@
+---
+description: Database rules — connection pooling, parameterized queries, migrations, transactions
+globs:
+  - "src/**/*.js"
+  - "src/**/*.ts"
+  - "**/*.model.js"
+  - "**/*.model.ts"
+  - "**/*.repository.js"
+alwaysApply: false
+---
+
 # Database Rules
 
 ## Connection Management

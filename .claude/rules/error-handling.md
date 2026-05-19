@@ -1,3 +1,11 @@
+---
+description: Error handling rules — try/catch, custom error classes, graceful shutdown, structured logging
+globs:
+  - "src/**/*.js"
+  - "src/**/*.ts"
+alwaysApply: false
+---
+
 # Error Handling Rules
 
 ## General Principles
