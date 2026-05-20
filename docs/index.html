@@ -521,10 +521,245 @@
         font-size: 2rem;
       }
     }
+
+    /* ── ANIMATIONS ──────────────────────────────────────────── */
+
+    /* 1. Hero background gradient drift */
+    @keyframes gradient-drift {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .hero {
+      background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(56, 189, 248, .15), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(129, 140, 248, .07), transparent);
+      animation: gradient-drift 10s ease infinite;
+      background-size: 200% 200%;
+    }
+
+    /* 2. Badge pulse glow */
+    @keyframes badge-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(56, 189, 248, .3);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(56, 189, 248, .0);
+      }
+    }
+
+    .badge {
+      animation: badge-pulse 2.5s ease infinite;
+    }
+
+    /* 3. Scroll-reveal: fade + slide up */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .55s cubic-bezier(.22, 1, .36, 1), transform .55s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* stagger children */
+    .reveal-stagger>* {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .5s cubic-bezier(.22, 1, .36, 1), transform .5s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .reveal-stagger.visible>*:nth-child(1) {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: .05s;
+    }
+
+    .reveal-stagger.visible>*:nth-child(2) {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: .13s;
+    }
+
+    .reveal-stagger.visible>*:nth-child(3) {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: .21s;
+    }
+
+    .reveal-stagger.visible>*:nth-child(4) {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: .29s;
+    }
+
+    .reveal-stagger.visible>*:nth-child(5) {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: .37s;
+    }
+
+    .reveal-stagger.visible>*:nth-child(6) {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: .45s;
+    }
+
+    /* 4. Feature card subtle lift */
+    .feature-card {
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+    }
+
+    /* 5. Chip micro-bounce on select */
+    @keyframes chip-pop {
+      0% {
+        transform: scale(1);
+      }
+
+      40% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .chip.selected {
+      animation: chip-pop .25s ease-out;
+    }
+
+    .chip.selected-green {
+      animation: chip-pop .25s ease-out;
+    }
+
+    /* 6. Terminal cursor blink */
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0
+      }
+    }
+
+    .t-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin-left: 2px;
+      vertical-align: middle;
+      animation: blink .85s step-start infinite;
+    }
+
+    /* 7. Pipeline step slide-in left */
+    .pipe-step {
+      transition: border-color .2s, background .2s;
+      opacity: 0;
+      transform: translateX(-20px);
+      transition: opacity .5s ease, transform .5s ease, border-color .2s, background .2s;
+    }
+
+    .pipe-step.visible {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .pipe-step:nth-child(1) {
+      transition-delay: .05s;
+    }
+
+    .pipe-step:nth-child(2) {
+      transition-delay: .15s;
+    }
+
+    .pipe-step:nth-child(3) {
+      transition-delay: .25s;
+    }
+
+    .pipe-step:nth-child(4) {
+      transition-delay: .35s;
+    }
+
+    .pipe-step:hover {
+      border-color: var(--accent2);
+      background: var(--surface2);
+    }
+
+    /* 8. Nav link underline slide */
+    .nav-links a {
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -3px;
+      width: 0;
+      height: 1.5px;
+      background: var(--accent);
+      transition: width .2s ease;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    /* 9. Hero CTA glow pulse on hover */
+    .btn-primary {
+      transition: background .2s, transform .2s, box-shadow .2s;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 24px rgba(56, 189, 248, .45);
+      transform: translateY(-2px);
+    }
+
+    /* 10. Floating particle canvas */
+    #particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      opacity: .45;
+    }
+
+    .hero,
+    nav,
+    section,
+    footer {
+      position: relative;
+      z-index: 1;
+    }
   </style>
 </head>
 
 <body>
+  <canvas id="particles"></canvas>
 
   <!-- ── NAV ── -->
   <nav>
@@ -535,14 +770,14 @@
       <a href="#pipeline">Pipeline</a>
       <a href="#stacks">Stacks</a>
       <a href="apply.html">CLI Docs</a>
-      <a href="https://github.com" target="_blank">GitHub ↗</a>
+      <a href="https://github.com/nithinemvigo/claude-boilerplate" target="_blank">GitHub ↗</a>
     </div>
   </nav>
 
   <!-- ── HERO ── -->
   <div class="hero">
     <div class="badge">🤖 Claude Code Boilerplate</div>
-    <h1>Scaffold any project with<br><em>Claude Code superpowers</em></h1>
+    <h1>Supercharge your codebase with<br><em>AI-native workflows</em></h1>
     <p class="hero-sub">Agents, hooks, slash commands, and rules that snap into any Node, Express, NestJS, React, or
       Next.js project — composable by design.</p>
     <div class="hero-cta">
@@ -552,80 +787,22 @@
   </div>
 
   <!-- ── INTERACTIVE BUILDER ── -->
-  <section id="builder">
+  <section id="builder" class="reveal">
     <h2>Build your command</h2>
     <p class="section-sub">Pick your stack and integrations. We'll generate the exact command to run.</p>
 
-    <div class="builder-card">
-      <div class="builder-title">🛠 Interactive Stack Builder</div>
-      <div class="builder-body">
-
-        <!-- Step 1: Base -->
-        <div>
-          <div class="picker-label">Step 1 — Choose your base framework</div>
-          <div class="chip-row" id="base-picker">
-            <div class="chip" data-base="express-js" onclick="selectBase(this)">🟨 Express.js <span
-                style="font-size:.75rem;opacity:.6">JS</span></div>
-            <div class="chip" data-base="express-ts" onclick="selectBase(this)">🟦 Express.ts <span
-                style="font-size:.75rem;opacity:.6">TS</span></div>
-            <div class="chip" data-base="nestjs" onclick="selectBase(this)">🔴 NestJS <span
-                style="font-size:.75rem;opacity:.6">TS</span></div>
-            <div class="chip" data-base="react-vite-ts" onclick="selectBase(this)">⚛️ React + Vite <span
-                style="font-size:.75rem;opacity:.6">TS</span></div>
-            <div class="chip" data-base="nextjs-ts" onclick="selectBase(this)">▲ Next.js <span
-                style="font-size:.75rem;opacity:.6">TS</span></div>
-          </div>
-        </div>
-
-        <!-- Step 2: Integrations -->
-        <div>
-          <div class="picker-label">Step 2 — Add integrations <span
-              style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted)">(optional, pick
-              multiple)</span></div>
-          <div class="chip-row" id="integ-picker">
-            <div class="chip" data-integ="supabase" data-bases="express-js express-ts nestjs react-vite-ts nextjs-ts"
-              onclick="toggleInteg(this)">🟢 Supabase</div>
-            <div class="chip" data-integ="firebase" data-bases="express-js express-ts nestjs react-vite-ts nextjs-ts"
-              onclick="toggleInteg(this)">🔥 Firebase</div>
-            <div class="chip" data-integ="tailwind" data-bases="react-vite-ts nextjs-ts" onclick="toggleInteg(this)">🎨
-              Tailwind CSS</div>
-            <div class="chip" data-integ="prisma" data-bases="express-js express-ts nestjs nextjs-ts"
-              onclick="toggleInteg(this)">🔷 Prisma</div>
-          </div>
-        </div>
-
-        <!-- Step 3: Target dir -->
-        <div>
-          <div class="picker-label">Step 3 — Name your project directory</div>
-          <input id="target-input" type="text" placeholder="my-project" value="my-project" oninput="renderCommand()"
-            style="padding:.55rem 1rem;border-radius:8px;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);font-size:.9rem;width:260px;font-family:'JetBrains Mono',monospace;outline:none;">
-        </div>
-
-        <!-- Generated command -->
-        <div class="terminal">
-          <div class="terminal-bar">
-            <div class="dot red"></div>
-            <div class="dot yellow"></div>
-            <div class="dot green"></div>
-            <span class="terminal-label">Terminal</span>
-          </div>
-          <div class="terminal-body" id="cmd-output">
-            <span class="t-comment"># Select a base above to generate your command</span>
-          </div>
-          <button class="copy-btn" onclick="copyCmd()">📋 Copy command</button>
-        </div>
-
-      </div>
+    <div id="react-builder-root">
+      <div style="padding: 3rem; text-align: center; color: var(--muted);">Loading interactive builder...</div>
     </div>
   </section>
 
   <!-- ── WHAT YOU GET ── -->
   <section id="features">
-    <h2>What every project gets</h2>
-    <p class="section-sub">Everything is wired up automatically after <code
+    <h2 class="reveal">What every project gets</h2>
+    <p class="section-sub reveal">Everything is wired up automatically after <code
         style="color:var(--accent);font-family:'JetBrains Mono',monospace">apply.sh</code> runs — no manual setup
       needed.</p>
-    <div class="grid-3">
+    <div class="grid-3 reveal-stagger">
       <div class="feature-card">
         <div class="feature-icon">🤖</div>
         <div class="feature-title">4 Agent Personas</div>
@@ -667,8 +844,8 @@
 
   <!-- ── PRE-COMMIT PIPELINE ── -->
   <section id="pipeline">
-    <h2>The pre-commit pipeline</h2>
-    <p class="section-sub">Every <code
+    <h2 class="reveal">The pre-commit pipeline</h2>
+    <p class="section-sub reveal">Every <code
         style="color:var(--accent);font-family:'JetBrains Mono',monospace">git commit</code> in applied projects
       triggers 4 gates — the commit is rejected if any fail.</p>
     <div class="pipeline">
@@ -775,9 +952,26 @@
         Structure</a> · <a href="https://github.com/nithinemvigo/claude-boilerplate">GitHub</a></p>
   </footer>
 
-  <script>
-    let selectedBase = null;
-    let selectedIntegs = new Set();
+  <script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.2.0",
+      "react-dom": "https://esm.sh/react-dom@18.2.0",
+      "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+      "framer-motion": "https://esm.sh/framer-motion@11.0.8?external=react,react-dom",
+      "lucide-react": "https://esm.sh/lucide-react@0.358.0?external=react",
+      "htm": "https://esm.sh/htm"
+    }
+  }
+  </script>
+  <script type="module">
+    import React, { useState, useEffect } from 'react';
+    import { createRoot } from 'react-dom/client';
+    import { motion, AnimatePresence } from 'framer-motion';
+    import * as Icons from 'lucide-react';
+    import htm from 'htm';
+
+    const html = htm.bind(React.createElement);
 
     const COMPAT = {
       'express-js': ['supabase', 'firebase', 'prisma'],
@@ -787,91 +981,259 @@
       'nextjs-ts': ['supabase', 'firebase', 'tailwind', 'prisma'],
     };
 
-    function selectBase(el) {
-      document.querySelectorAll('#base-picker .chip').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedBase = el.dataset.base;
-      selectedIntegs.clear();
+    const BASES = [
+      { id: 'express-js', name: 'Express.js', icon: Icons.Server, color: '#f59e0b', label: 'JS' },
+      { id: 'express-ts', name: 'Express.ts', icon: Icons.Server, color: '#38bdf8', label: 'TS' },
+      { id: 'nestjs', name: 'NestJS', icon: Icons.Box, color: '#e11d48', label: 'TS' },
+      { id: 'react-vite-ts', name: 'React+Vite', icon: Icons.Atom, color: '#61dafb', label: 'TS' },
+      { id: 'nextjs-ts', name: 'Next.js', icon: Icons.Triangle, color: '#fff', label: 'TS' }
+    ];
 
-      // Update integration availability
-      document.querySelectorAll('#integ-picker .chip').forEach(chip => {
-        chip.classList.remove('selected', 'selected-green', 'disabled');
-        const allowed = COMPAT[selectedBase] || [];
-        if (!allowed.includes(chip.dataset.integ)) {
-          chip.classList.add('disabled');
-        }
-      });
-
-      renderCommand();
-    }
-
-    function toggleInteg(el) {
-      if (el.classList.contains('disabled')) return;
-      const integ = el.dataset.integ;
-      if (selectedIntegs.has(integ)) {
-        selectedIntegs.delete(integ);
-        el.classList.remove('selected-green');
-      } else {
-        selectedIntegs.add(integ);
-        el.classList.add('selected-green');
-      }
-      renderCommand();
-    }
-
-    function renderCommand() {
-      const out = document.getElementById('cmd-output');
-      const target = document.getElementById('target-input').value.trim() || 'my-project';
-
-      if (!selectedBase) {
-        out.innerHTML = '<span class="t-comment"># Select a base above to generate your command</span>';
-        return;
-      }
-
-      let integPart = '';
-      if (selectedIntegs.size > 0) {
-        integPart = ` <span class="t-flag">--integrations=${[...selectedIntegs].join(',')}</span>`;
-      }
-
-      out.innerHTML =
-        `<span class="t-comment"># 1. Clone the boilerplate (once)</span>\n` +
-        `<span class="t-cmd">git</span> clone &lt;repo-url&gt; ~/tools/claude-boilerplate\n\n` +
-        `<span class="t-comment"># 2. Scaffold your framework</span>\n` +
-        getScaffoldCmd(selectedBase, target) + `\n\n` +
-        `<span class="t-comment"># 3. Apply Claude superpowers on top</span>\n` +
-        `<span class="t-cmd">bash</span> ~/tools/claude-boilerplate/scripts/apply.sh <span class="t-arg">--base=${selectedBase}</span>${integPart} <span class="t-path">${target}/</span>\n\n` +
-        `<span class="t-comment"># 4. Install and validate</span>\n` +
-        `<span class="t-cmd">cd</span> ${target} <span class="t-comment">&&</span> <span class="t-cmd">npm</span> install <span class="t-comment">&&</span> <span class="t-cmd">npm</span> run validate`;
-    }
+    const INTEGS = [
+      { id: 'supabase', name: 'Supabase', icon: Icons.Database, color: '#10b981' },
+      { id: 'firebase', name: 'Firebase', icon: Icons.Flame, color: '#f59e0b' },
+      { id: 'tailwind', name: 'Tailwind CSS', icon: Icons.Palette, color: '#38bdf8' },
+      { id: 'prisma', name: 'Prisma', icon: Icons.Hexagon, color: '#fff' }
+    ];
 
     function getScaffoldCmd(base, target) {
+      if (!base) return '';
       switch (base) {
-        case 'express-js':
-          return `<span class="t-cmd">mkdir</span> <span class="t-path">${target}</span> <span class="t-comment">&&</span> <span class="t-cmd">cd</span> ${target} <span class="t-comment">&&</span> <span class="t-cmd">npm</span> init -y`;
-        case 'express-ts':
-          return `<span class="t-cmd">mkdir</span> <span class="t-path">${target}</span> <span class="t-comment">&&</span> <span class="t-cmd">cd</span> ${target} <span class="t-comment">&&</span> <span class="t-cmd">npm</span> init -y`;
-        case 'nestjs':
-          return `<span class="t-cmd">npx</span> @nestjs/cli new <span class="t-path">${target}</span>`;
-        case 'react-vite-ts':
-          return `<span class="t-cmd">npm</span> create vite@latest <span class="t-path">${target}</span> -- --template react-ts`;
-        case 'nextjs-ts':
-          return `<span class="t-cmd">npx</span> create-next-app@latest <span class="t-path">${target}</span> <span class="t-flag">--typescript --app</span>`;
-        default:
-          return `<span class="t-cmd">mkdir</span> <span class="t-path">${target}</span>`;
+        case 'express-js': return `npm init -y`;
+        case 'express-ts': return `npm init -y`;
+        case 'nestjs': return `npx @nestjs/cli new ${target}`;
+        case 'react-vite-ts': return `npm create vite@latest ${target} -- --template react-ts`;
+        case 'nextjs-ts': return `npx create-next-app@latest ${target} --typescript --app`;
       }
     }
 
-    function copyCmd() {
-      if (!selectedBase) return;
-      const target = document.getElementById('target-input').value.trim() || 'my-project';
-      let integPart = selectedIntegs.size > 0 ? ` --integrations=${[...selectedIntegs].join(',')}` : '';
-      const cmd = `bash ~/tools/claude-boilerplate/scripts/apply.sh --base=${selectedBase}${integPart} ${target}/`;
-      navigator.clipboard.writeText(cmd).then(() => {
-        const btn = document.querySelector('.copy-btn');
-        btn.textContent = '✅ Copied!';
-        setTimeout(() => btn.textContent = '📋 Copy command', 2000);
-      });
+    function BuilderApp() {
+      const [base, setBase] = useState(null);
+      const [integs, setIntegs] = useState([]);
+      const [target, setTarget] = useState('my-project');
+      const [copied, setCopied] = useState(false);
+
+      const handleBaseClick = (id) => {
+        setBase(id);
+        const allowed = COMPAT[id] || [];
+        setIntegs(integs.filter(i => allowed.includes(i)));
+      };
+
+      const handleIntegClick = (id) => {
+        if (!base || !COMPAT[base].includes(id)) return;
+        setIntegs(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+      };
+
+      const doCopy = () => {
+        if (!base) return;
+        const tgt = target || 'my-project';
+        const intStr = integs.length > 0 ? ` ${integs.join(' ')}` : '';
+        const cmd = `npx github:nithinemvigo/claude-boilerplate ${base} ${tgt}${intStr}`;
+        navigator.clipboard.writeText(cmd).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        });
+      };
+
+      return html`
+        <${motion.div} layout className="builder-card" initial=${{opacity:0, y:20}} animate=${{opacity:1, y:0}} transition=${{duration:0.5}}>
+          <div className="builder-title" style=${{display:'flex', alignItems:'center', gap:'0.5rem'}}>
+            <${Icons.Wrench} size=${16} /> Interactive Stack Builder
+          </div>
+
+          <div className="builder-body">
+            <!-- Step 1 -->
+            <div>
+              <div className="picker-label">Step 1 — Choose your base framework</div>
+              <div className="chip-row">
+                ${BASES.map(b => {
+        const sel = base === b.id;
+        return html`
+                    <${motion.button} 
+                      key=${b.id}
+                      layout
+                      whileHover=${{ scale: 1.02 }}
+                      whileTap=${{ scale: 0.98 }}
+                      onClick=${() => handleBaseClick(b.id)}
+                      className="chip"
+                      style=${{
+                        borderColor: sel ? 'var(--accent)' : 'var(--border)',
+                        backgroundColor: sel ? 'rgba(56,189,248,0.1)' : 'var(--surface2)',
+                        color: sel ? 'var(--accent)' : 'var(--text)'
+                      }}
+                    >
+                      <${b.icon} size=${16} color=${b.color} /> 
+                      ${b.name}
+                      <span style=${{fontSize:'0.75rem', opacity:0.6}}>${b.label}</span>
+                      ${sel && html`<${motion.div} layoutId="selBase" style=${{marginLeft:'auto'}}><${Icons.Check} size=${14} /></${motion.div}>`}
+                    </${motion.button}>
+                  `;
+      })}
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div>
+              <div className="picker-label">Step 2 — Add integrations <span style=${{fontWeight:400, textTransform:'none', color:'var(--muted)'}}>(optional, pick multiple)</span></div>
+              <div className="chip-row">
+                ${INTEGS.map(i => {
+        const allowed = base && COMPAT[base].includes(i.id);
+        const sel = integs.includes(i.id);
+        return html`
+                    <${motion.button}
+                      key=${i.id}
+                      layout
+                      disabled=${!allowed}
+                      whileHover=${allowed ? { scale: 1.02 } : {}}
+                      whileTap=${allowed ? { scale: 0.98 } : {}}
+                      onClick=${() => handleIntegClick(i.id)}
+                      className="chip"
+                      style=${{
+                        borderColor: sel ? 'var(--green)' : 'var(--border)',
+                        backgroundColor: sel ? 'rgba(52,211,153,0.08)' : 'var(--surface2)',
+                        color: sel ? 'var(--green)' : 'var(--text)',
+                        opacity: allowed ? 1 : 0.3,
+                        cursor: allowed ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      <${i.icon} size=${16} color=${sel ? 'var(--green)' : i.color} />
+                      ${i.name}
+                      ${sel && html`<${Icons.Check} size=${14} />`}
+                    </${motion.button}>
+                  `;
+      })}
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div>
+              <div className="picker-label">Step 3 — Name your project directory</div>
+              <input 
+                type="text" 
+                value=${target} 
+                onChange=${e => setTarget(e.target.value)}
+                placeholder="my-project"
+                style=${{
+                  padding:'.6rem 1rem', borderRadius:'8px', background:'var(--surface2)', 
+                  border:'1.5px solid var(--border)', color:'var(--text)', 
+                  fontFamily:"'JetBrains Mono', monospace", outline:'none', width:'260px'
+                }}
+              />
+            </div>
+
+            <!-- Plugin Notice -->
+            <div style=${{background:'rgba(251,191,36,0.06)', border:'1px solid rgba(251,191,36,0.2)', borderRadius:'10px', padding:'1rem 1.2rem', fontSize:'0.85rem'}}>
+              <div style=${{color:'var(--yellow)', fontWeight:600, marginBottom:'0.4rem', display:'flex', alignItems:'center', gap:'0.4rem'}}>
+                <${Icons.AlertTriangle} size=${16} /> Install these Claude Code plugins first
+              </div>
+              <div style=${{color:'var(--subtle)', lineHeight:1.8}}>
+                <a href="https://github.com/garrytan/gstack" target="_blank" style=${{color:'var(--accent2)', textDecoration:'none'}}>gstack</a>
+                ${' · security-guidance · code-review · superpowers'}
+              </div>
+            </div>
+
+            <!-- Terminal -->
+            <${motion.div} layout className="terminal">
+              <div className="terminal-bar">
+                <div className="dot red"></div><div className="dot yellow"></div><div className="dot green"></div>
+                <span className="terminal-label">Terminal</span>
+              </div>
+              <div className="terminal-body">
+                <${AnimatePresence} mode="wait">
+                  ${!base ? html`
+                    <${motion.div} key="empty" initial=${{opacity:0}} animate=${{opacity:1}} exit=${{opacity:0}}>
+                      <span className="t-comment"># Select a base framework above to generate your command</span><span className="t-cursor"></span>
+                    </${motion.div}>
+                  ` : html`
+                    <${motion.div} key="cmd" initial=${{opacity:0, y:10}} animate=${{opacity:1, y:0}} exit=${{opacity:0, y:-10}}>
+                      <span className="t-comment"># 1. Scaffold your framework</span><br/>
+                      ${base === 'express-js' || base === 'express-ts'
+            ? html`<span className="t-cmd">mkdir</span> <span className="t-path">${target || 'my-project'}</span> <span className="t-comment">&&</span> <span className="t-cmd">cd</span> ${target || 'my-project'} <span className="t-comment">&&</span> <span className="t-cmd">npm</span> init -y<br/><br/>`
+            : html`
+                          <span className="t-cmd">${getScaffoldCmd(base, target || 'my-project').split(' ')[0]}</span> 
+                          ${getScaffoldCmd(base, target || 'my-project').split(' ').slice(1).join(' ')}<br/><br/>
+                        `
+          }
+
+                      <span className="t-comment"># 2. Apply Claude superpowers via npx</span><br/>
+                      <span className="t-cmd">npx</span> <span className="t-arg">github:nithinemvigo/claude-boilerplate</span> <span className="t-path">${base}</span> <span className="t-path">${target || 'my-project'}</span>
+                      ${integs.length > 0 && html` <span className="t-flag">${integs.join(' ')}</span>`}
+                      <br/><br/>
+
+                      <span className="t-comment"># 3. Install and validate</span><br/>
+                      <span className="t-cmd">cd</span> ${target || 'my-project'} <span className="t-comment">&&</span> <span className="t-cmd">npm</span> install <span className="t-comment">&&</span> <span className="t-cmd">npm</span> run validate<span className="t-cursor"></span>
+                    </${motion.div}>
+                  `}
+                </${AnimatePresence}>
+              </div>
+              <button className="copy-btn" onClick=${doCopy} style=${{display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', background: copied ? 'rgba(56,189,248,0.1)' : 'var(--surface2)', color: copied ? 'var(--accent)' : 'var(--subtle)'}}>
+                ${copied ? html`<${Icons.Check} size=${16} /> Copied!` : html`<${Icons.Copy} size=${16} /> Copy command`}
+              </button>
+            </${motion.div}>
+
+          </div>
+        </${motion.div}>
+      `;
     }
+
+    const root = createRoot(document.getElementById('react-builder-root'));
+    root.render(html`<${BuilderApp} />`);
   </script>
+
+  <script>
+    // ── Scroll-reveal (IntersectionObserver) ──────────────────────
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible'); revealObserver.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal, .reveal-stagger, .pipe-step').forEach(el => revealObserver.observe(el));
+
+    // ── Floating Particles ────────────────────────────────────────
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let W, H, dots = [];
+
+    function resize() {
+      W = canvas.width = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function randomDot() {
+      return {
+        x: Math.random() * W, y: Math.random() * H,
+        vx: (Math.random() - .5) * .35, vy: (Math.random() - .5) * .35,
+        r: Math.random() * 1.5 + .5,
+        alpha: Math.random() * .4 + .1
+      };
+    }
+    for (let i = 0; i < 55; i++) dots.push(randomDot()); function animateParticles() {
+      ctx.clearRect(0, 0, W, H);
+      dots.forEach(d => {
+        d.x += d.vx; d.y += d.vy;
+        if (d.x < 0 || d.x > W) d.vx *= -1;
+        if (d.y < 0 || d.y > H) d.vy *= -1;
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(56,189,248,${d.alpha})`;
+        ctx.fill();
+      });
+      // draw connecting lines between nearby dots
+      for (let i = 0; i < dots.length; i++) {
+        for (let j = i + 1; j < dots.length; j++) {
+          const dx = dots[i].x -
+            dots[j].x, dy = dots[i].y - dots[j].y; const dist = Math.sqrt(dx * dx + dy * dy); if (dist < 120) {
+              ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+              ctx.strokeStyle = `rgba(56,189,248,${(1 - dist / 120) * .12})`; ctx.lineWidth = .6; ctx.stroke();
+            }
+        }
+      }
+      requestAnimationFrame(animateParticles);
+    } animateParticles(); </script>
 
 </body>
 
