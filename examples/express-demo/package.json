@@ -1,5 +1,5 @@
 {
-  "name": "claude-boilerplate",
+  "name": "claude-js-boilerplate",
   "version": "1.0.0",
   "scripts": {
     "test": "jest",
@@ -28,14 +28,14 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nithinemvigo/claude-boilerplate.git"
+    "url": "git+https://github.com/nithinemvigo/claude-js-boilerplate.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/nithinemvigo/claude-boilerplate/issues"
+    "url": "https://github.com/nithinemvigo/claude-js-boilerplate/issues"
   },
-  "homepage": "https://github.com/nithinemvigo/claude-boilerplate#readme"
+  "homepage": "https://github.com/nithinemvigo/claude-js-boilerplate#readme"
 }

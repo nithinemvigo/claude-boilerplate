@@ -13,17 +13,28 @@ alwaysApply: false
 # API Rules
 
 ## Routing
-- Use RESTful URL patterns: `GET /api/resources`, `POST /api/resources`, `GET /api/resources/:id`
-- Group related endpoints under a common prefix (e.g., `/api/users`, `/api/orders`)
-- Use plural nouns for resource names, never verbs in URLs
+- Use RESTful URL patterns: `GET /api/v1/resources`, `POST /api/v1/resources`, `GET /api/v1/resources/:id`
+- Group related endpoints under a common prefix (e.g., `/api/v1/users`, `/api/v1/orders`)
+- Use plural nouns for resource names, never verbs in URLs (`/users` not `/getUsers`)
+- Use lowercase, kebab-case for multi-word resources (`/user-profiles`)
+
+## HTTP Methods
+| Method | Endpoint        | Action             |
+|--------|-----------------|--------------------|
+| GET    | `/users`        | List all           |
+| GET    | `/users/:id`    | Get one            |
+| POST   | `/users`        | Create             |
+| PUT    | `/users/:id`    | Update (full)      |
+| PATCH  | `/users/:id`    | Update (partial)   |
+| DELETE | `/users/:id`    | Delete             |
 
 ## Request Handling
-- Always validate and sanitize request input before processing
-- Use a request body size limit (e.g., 1MB max) to prevent DoS
+- Always validate and sanitize request input before processing (see `validation.md`)
+- Use a request body size limit (e.g., 1MB max) to prevent DoS: `express.json({ limit: '1mb' })`
 - Parse `Content-Type` headers — reject unsupported types with `415`
 
 ## Response Format
-- Always return JSON with consistent structure:
+- Always return JSON with a consistent envelope:
   ```json
   { "status": "success|error", "data": {}, "message": "" }
   ```
@@ -36,13 +47,15 @@ alwaysApply: false
 
 ## CORS
 - Never use `Access-Control-Allow-Origin: *` in production
-- Whitelist specific origins via environment variable
+- Whitelist specific origins via environment variable (`ALLOWED_ORIGINS`)
 - Include proper `Access-Control-Allow-Methods` and `Access-Control-Allow-Headers`
 
 ## Rate Limiting
-- Apply rate limiting to all public-facing endpoints
+- Apply rate limiting to all public-facing endpoints (`express-rate-limit`)
 - Use `429 Too Many Requests` with `Retry-After` header when limit exceeded
+- Stricter limits on auth endpoints (login, register, password reset)
 
 ## Versioning
 - Prefix API routes with version: `/api/v1/resources`
-- Never break existing API contracts without versioning
+- Never break existing API contracts without bumping the version
+- Mount versioned router in `app.js`: `app.use('/api/v1', require('./routes'))`

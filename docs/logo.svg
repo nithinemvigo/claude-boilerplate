@@ -1,0 +1,60 @@
+<svg width="520" height="120" viewBox="0 0 520 120" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Claude Boilerplate</title>
+  <desc>Isometric stacked-layers mark alongside the wordmark "claude boilerplate".</desc>
+
+  <style>
+    .lc  { fill: #2563eb; }
+    .lb  { fill: #059669; }
+    .li  { fill: #ea580c; }
+    .ld  { fill: rgba(0,0,0,0.18); }
+    .ll  { fill: rgba(255,255,255,0.16); }
+    .gem { fill: #7c3aed; }
+    .wm  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-weight: 500; fill: #111; }
+    .sub { font-family: "SF Mono", "Fira Code", "Consolas", monospace; fill: #999; }
+    .div { stroke: rgba(0,0,0,0.1); }
+
+    @media (prefers-color-scheme: dark) {
+      .lc  { fill: #3b82f6; }
+      .lb  { fill: #10b981; }
+      .li  { fill: #f97316; }
+      .ld  { fill: rgba(0,0,0,0.22); }
+      .ll  { fill: rgba(255,255,255,0.13); }
+      .gem { fill: #8b5cf6; }
+      .wm  { fill: #ffffff; }
+      .sub { fill: #666; }
+      .div { stroke: rgba(255,255,255,0.12); }
+    }
+  </style>
+
+  <!-- Isometric icon (centred at x=76, y=60) -->
+  <g transform="translate(76,60)">
+    <!-- Layer 3 — integrations (bottom, orange) -->
+    <g transform="translate(0,21)">
+      <polygon class="li" points="0,-20 60,-10 60,8 0,18 -60,8 -60,-10"/>
+      <polygon class="ld" points="60,-10 60,8 0,18 0,0"/>
+      <polygon class="ll" points="-60,-10 -60,8 0,18 0,0"/>
+    </g>
+    <!-- Layer 2 — base (middle, green) -->
+    <g transform="translate(0,1)">
+      <polygon class="lb" points="0,-20 60,-10 60,8 0,18 -60,8 -60,-10"/>
+      <polygon class="ld" points="60,-10 60,8 0,18 0,0"/>
+      <polygon class="ll" points="-60,-10 -60,8 0,18 0,0"/>
+    </g>
+    <!-- Layer 1 — core (top, blue) -->
+    <g transform="translate(0,-19)">
+      <polygon class="lc" points="0,-20 60,-10 60,8 0,18 -60,8 -60,-10"/>
+      <polygon class="ld" points="60,-10 60,8 0,18 0,0"/>
+      <polygon class="ll" points="-60,-10 -60,8 0,18 0,0"/>
+      <!-- gem accent -->
+      <polygon class="gem" points="0,-8 12,0 0,8 -12,0"/>
+    </g>
+  </g>
+
+  <!-- Divider -->
+  <line class="div" x1="152" y1="22" x2="152" y2="98" stroke-width="1"/>
+
+  <!-- Wordmark -->
+  <text class="wm" x="168" y="54" font-size="26" letter-spacing="0.4">claude</text>
+  <text class="wm" x="168" y="82" font-size="26" letter-spacing="0.4">boilerplate</text>
+  <text class="sub" x="170" y="100" font-size="10" letter-spacing="2.5">COMPOSABLE · CLAUDE CODE · STARTER</text>
+</svg>

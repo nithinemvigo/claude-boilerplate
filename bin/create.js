@@ -13,15 +13,15 @@ const args = process.argv.slice(2);
 if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
     console.log(`
   Usage:
-    npx create-claude-boilerplate <base> <project-dir> [integrations...] [--dry] [--force]
-    npx create-claude-boilerplate list
+    npx create-claude-js-boilerplate <base> <project-dir> [integrations...] [--dry] [--force]
+    npx create-claude-js-boilerplate list
 
   Examples:
-    npx create-claude-boilerplate express-js my-api
-    npx create-claude-boilerplate express-js my-api firebase prisma
-    npx create-claude-boilerplate nextjs-ts ../apps/dashboard tailwind supabase
-    npx create-claude-boilerplate express-js my-api --dry
-    npx create-claude-boilerplate list
+    npx create-claude-js-boilerplate express-js my-api
+    npx create-claude-js-boilerplate express-js my-api firebase prisma
+    npx create-claude-js-boilerplate nextjs-ts ../apps/dashboard tailwind supabase
+    npx create-claude-js-boilerplate express-js my-api --dry
+    npx create-claude-js-boilerplate list
   `);
     process.exit(0);
 }

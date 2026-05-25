@@ -1,9 +1,9 @@
 {
-    "name": "create-claude-boilerplate",
+    "name": "create-claude-js-boilerplate",
     "version": "1.0.0",
     "description": "Claude Code universal project boilerplate — Express, Next.js, React, NestJS, TypeScript",
     "bin": {
-        "create-claude-boilerplate": "./bin/create.js"
+        "create-claude-js-boilerplate": "./bin/create.js"
     },
     "files": [
         "bin/",

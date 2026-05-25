@@ -251,4 +251,4 @@ For the full guide see `docs/customizing.html` in the boilerplate repo.
 
 ---
 
-*Assembled by [Claude Boilerplate](https://github.com/your-org/claude-boilerplate) `apply.sh`. Re-running `apply.sh upgrade` warns before overwriting any local edits.*
+*Assembled by [Claude Boilerplate](https://github.com/your-org/claude-js-boilerplate) `apply.sh`. Re-running `apply.sh upgrade` warns before overwriting any local edits.*
