@@ -755,6 +755,105 @@
       position: relative;
       z-index: 1;
     }
+
+    /* 11. Builder App injected styles */
+    .flex-center-gap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chip-sel-base {
+      border-color: var(--accent) !important;
+      background-color: rgba(56, 189, 248, 0.1) !important;
+      color: var(--accent) !important;
+    }
+
+    .chip-unsel {
+      border-color: var(--border);
+      background-color: var(--surface2);
+      color: var(--text);
+    }
+
+    .chip-label {
+      font-size: 0.75rem;
+      opacity: 0.6;
+    }
+
+    .chip-check {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+
+    .chip-sel-integ {
+      border-color: var(--green) !important;
+      background-color: rgba(52, 211, 153, 0.08) !important;
+      color: var(--green) !important;
+    }
+
+    .chip-disabled {
+      opacity: 0.3;
+      cursor: not-allowed !important;
+    }
+
+    .picker-opt {
+      font-weight: 400;
+      text-transform: none;
+      color: var(--muted);
+    }
+
+    .target-input {
+      padding: .6rem 1rem;
+      border-radius: 8px;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      width: 260px;
+    }
+
+    .plugin-notice {
+      background: rgba(251, 191, 36, 0.06);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      font-size: 0.85rem;
+    }
+
+    .plugin-notice-title {
+      color: var(--yellow);
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .plugin-notice-body {
+      color: var(--subtle);
+      line-height: 1.8;
+    }
+
+    .plugin-link {
+      color: var(--accent2);
+      text-decoration: none;
+    }
+
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--surface2);
+      color: var(--subtle);
+    }
+
+    .copy-btn.copied {
+      background: rgba(56, 189, 248, 0.1) !important;
+      color: var(--accent) !important;
+    }
   </style>
 </head>
 
@@ -1036,8 +1135,8 @@
       };
 
       return html`
-        <${motion.div} layout className="builder-card" initial=${{opacity:0, y:20}} animate=${{opacity:1, y:0}} transition=${{duration:0.5}}>
-          <div className="builder-title" style=${{display:'flex', alignItems:'center', gap:'0.5rem'}}>
+        <${motion.div} layout className="builder-card" initial=${{ opacity: 0, y: 20 }} animate=${{ opacity: 1, y: 0 }} transition=${{ duration: 0.5 }}>
+          <div className="builder-title flex-center-gap">
             <${Icons.Wrench} size=${16} /> Interactive Stack Builder
           </div>
 
@@ -1048,6 +1147,7 @@
               <div className="chip-row">
                 ${BASES.map(b => {
         const sel = base === b.id;
+        const btnClass = sel ? 'chip chip-sel-base' : 'chip chip-unsel';
         return html`
                     <${motion.button} 
                       key=${b.id}
@@ -1055,17 +1155,12 @@
                       whileHover=${{ scale: 1.02 }}
                       whileTap=${{ scale: 0.98 }}
                       onClick=${() => handleBaseClick(b.id)}
-                      className="chip"
-                      style=${{
-                        borderColor: sel ? 'var(--accent)' : 'var(--border)',
-                        backgroundColor: sel ? 'rgba(56,189,248,0.1)' : 'var(--surface2)',
-                        color: sel ? 'var(--accent)' : 'var(--text)'
-                      }}
+                      className=${btnClass}
                     >
                       <${b.icon} size=${16} color=${b.color} /> 
                       ${b.name}
-                      <span style=${{fontSize:'0.75rem', opacity:0.6}}>${b.label}</span>
-                      ${sel && html`<${motion.div} layoutId="selBase" style=${{marginLeft:'auto'}}><${Icons.Check} size=${14} /></${motion.div}>`}
+                      <span className="chip-label">${b.label}</span>
+                      ${sel && html`<${motion.div} layoutId="selBase" className="chip-check"><${Icons.Check} size=${14} /></${motion.div}>`}
                     </${motion.button}>
                   `;
       })}
@@ -1074,11 +1169,14 @@
 
             <!-- Step 2 -->
             <div>
-              <div className="picker-label">Step 2 — Add integrations <span style=${{fontWeight:400, textTransform:'none', color:'var(--muted)'}}>(optional, pick multiple)</span></div>
+              <div className="picker-label">Step 2 — Add integrations <span className="picker-opt">(optional, pick multiple)</span></div>
               <div className="chip-row">
                 ${INTEGS.map(i => {
         const allowed = base && COMPAT[base].includes(i.id);
         const sel = integs.includes(i.id);
+        let btnClass = 'chip ' + (sel ? 'chip-sel-integ ' : 'chip-unsel ');
+        if (!allowed) btnClass += 'chip-disabled';
+
         return html`
                     <${motion.button}
                       key=${i.id}
@@ -1087,14 +1185,7 @@
                       whileHover=${allowed ? { scale: 1.02 } : {}}
                       whileTap=${allowed ? { scale: 0.98 } : {}}
                       onClick=${() => handleIntegClick(i.id)}
-                      className="chip"
-                      style=${{
-                        borderColor: sel ? 'var(--green)' : 'var(--border)',
-                        backgroundColor: sel ? 'rgba(52,211,153,0.08)' : 'var(--surface2)',
-                        color: sel ? 'var(--green)' : 'var(--text)',
-                        opacity: allowed ? 1 : 0.3,
-                        cursor: allowed ? 'pointer' : 'not-allowed'
-                      }}
+                      className=${btnClass}
                     >
                       <${i.icon} size=${16} color=${sel ? 'var(--green)' : i.color} />
                       ${i.name}
@@ -1113,21 +1204,17 @@
                 value=${target} 
                 onChange=${e => setTarget(e.target.value)}
                 placeholder="my-project"
-                style=${{
-                  padding:'.6rem 1rem', borderRadius:'8px', background:'var(--surface2)', 
-                  border:'1.5px solid var(--border)', color:'var(--text)', 
-                  fontFamily:"'JetBrains Mono', monospace", outline:'none', width:'260px'
-                }}
+                className="target-input"
               />
             </div>
 
             <!-- Plugin Notice -->
-            <div style=${{background:'rgba(251,191,36,0.06)', border:'1px solid rgba(251,191,36,0.2)', borderRadius:'10px', padding:'1rem 1.2rem', fontSize:'0.85rem'}}>
-              <div style=${{color:'var(--yellow)', fontWeight:600, marginBottom:'0.4rem', display:'flex', alignItems:'center', gap:'0.4rem'}}>
+            <div className="plugin-notice">
+              <div className="plugin-notice-title">
                 <${Icons.AlertTriangle} size=${16} /> Install these Claude Code plugins first
               </div>
-              <div style=${{color:'var(--subtle)', lineHeight:1.8}}>
-                <a href="https://github.com/garrytan/gstack" target="_blank" style=${{color:'var(--accent2)', textDecoration:'none'}}>gstack</a>
+              <div className="plugin-notice-body">
+                <a href="https://github.com/garrytan/gstack" target="_blank" className="plugin-link">gstack</a>
                 ${' · security-guidance · code-review · superpowers'}
               </div>
             </div>
@@ -1141,13 +1228,13 @@
               <div className="terminal-body">
                 <${AnimatePresence} mode="wait">
                   ${!base ? html`
-                    <${motion.div} key="empty" initial=${{opacity:0}} animate=${{opacity:1}} exit=${{opacity:0}}>
+                    <${motion.div} key="empty" initial=${{ opacity: 0 }} animate=${{ opacity: 1 }} exit=${{ opacity: 0 }}>
                       <span className="t-comment"># Select a base framework above to generate your command</span><span className="t-cursor"></span>
                     </${motion.div}>
                   ` : html`
-                    <${motion.div} key="cmd" initial=${{opacity:0, y:10}} animate=${{opacity:1, y:0}} exit=${{opacity:0, y:-10}}>
+                    <${motion.div} key="cmd" initial=${{ opacity: 0, y: 10 }} animate=${{ opacity: 1, y: 0 }} exit=${{ opacity: 0, y: -10 }}>
                       <span className="t-comment"># 1. Scaffold your framework</span><br/>
-                      ${base === 'express-js' || base === 'express-ts'
+                      ${(base === 'express-js' || base === 'express-ts')
             ? html`<span className="t-cmd">mkdir</span> <span className="t-path">${target || 'my-project'}</span> <span className="t-comment">&&</span> <span className="t-cmd">cd</span> ${target || 'my-project'} <span className="t-comment">&&</span> <span className="t-cmd">npm</span> init -y<br/><br/>`
             : html`
                           <span className="t-cmd">${getScaffoldCmd(base, target || 'my-project').split(' ')[0]}</span> 
@@ -1166,7 +1253,7 @@
                   `}
                 </${AnimatePresence}>
               </div>
-              <button className="copy-btn" onClick=${doCopy} style=${{display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', background: copied ? 'rgba(56,189,248,0.1)' : 'var(--surface2)', color: copied ? 'var(--accent)' : 'var(--subtle)'}}>
+              <button className=${copied ? "copy-btn copied" : "copy-btn"} onClick=${doCopy}>
                 ${copied ? html`<${Icons.Check} size=${16} /> Copied!` : html`<${Icons.Copy} size=${16} /> Copy command`}
               </button>
             </${motion.div}>

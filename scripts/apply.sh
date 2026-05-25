@@ -335,7 +335,7 @@ done < <(find "${BASE_PATH}" -type f -print0 2>/dev/null)
 ok "Copied ${copied} file(s) from base '${BASE}'"
 
 # ── Step 3: copy each integration (with conflict detection) ──────────────────
-INT_META="compatible-with.txt package.snippet.json env.snippet architecture.md"
+INT_META="compatible-with.txt package.snippet.json env.snippet gitignore.snippet architecture.md"
 for integ in "${INT_ARRAY[@]+"${INT_ARRAY[@]}"}" ; do
   [ -z "${integ}" ] && continue
   section "Step 3: integration ${integ}"
@@ -460,9 +460,33 @@ for integ in "${INT_ARRAY[@]+"${INT_ARRAY[@]}"}" ; do
   fi
 done
 
-# ── Step 7: dry-run vs commit ────────────────────────────────────────────────
+# ── Step 7: append .gitignore snippets ───────────────────────────────────────
+section "Step 7: append .gitignore snippets"
+gi_target="${STAGE}/.gitignore"
+if [ ! -f "${gi_target}" ]; then
+  warn "No .gitignore in staging — creating one. (Did you forget a base .gitignore?)"
+  touch "${gi_target}"
+fi
+gi_appended=0
+for integ in "${INT_ARRAY[@]+"${INT_ARRAY[@]}"}" ; do
+  [ -z "${integ}" ] && continue
+  snip="${INTEGRATIONS_DIR}/${integ}/gitignore.snippet"
+  if [ -f "${snip}" ]; then
+    {
+      echo ""
+      echo "# ─── ${integ} ───"
+      cat "${snip}"
+    } >> "${gi_target}"
+    ok "Appended .gitignore entries for '${integ}'"
+    gi_appended=$((gi_appended+1))
+  fi
+done
+[ "${gi_appended}" = "0" ] && info "No gitignore.snippet files for selected integrations — skipping."
+
+# ── Step 8: dry-run vs commit ────────────────────────────────────────────────
 if [ "${DRY}" = "1" ]; then
   section "Dry-run summary (no files written to target)"
+
   staged_files=$(find "${STAGE}" -type f | wc -l | tr -d ' ')
   log "Would write ${staged_files} file(s) to: ${TARGET}"
   log ""
@@ -474,7 +498,7 @@ if [ "${DRY}" = "1" ]; then
 fi
 
 # Copy staging → target (refuse to clobber unless --force)
-section "Step 7: write to target ${TARGET}"
+section "Step 8: write to target ${TARGET}"
 if [ "${FORCE}" != "1" ]; then
   conflicts=()
   while IFS= read -r -d '' f; do
