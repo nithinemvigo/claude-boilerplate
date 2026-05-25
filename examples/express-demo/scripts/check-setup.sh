@@ -71,7 +71,7 @@ else
              "Install: https://docs.anthropic.com/claude-cli"
 fi
 
-# ── Core plugins (required for pre-commit pipeline) ────────────────────────────
+# ── Plugins ─────────────────────────────────────────────────────────
 PROBE=".claude/hooks/plugin-probe.sh"
 if [ -x "$PROBE" ]; then
   for plugin in security-guidance code-review; do
@@ -87,27 +87,6 @@ else
              "Re-run scripts/apply.sh to restore .claude/hooks/"
 fi
 
-# ── Workflow plugins (recommended for /feature and /fix workflows) ─────────────
-echo ""
-echo -e "${BOLD}Workflow Plugins${NC}"
-if [ -x "$PROBE" ]; then
-  if bash "$PROBE" "gstack" >/dev/null 2>&1; then
-    check_pass "gstack installed  (/office-hours, /plan-ceo-review, /plan-eng-review, /ship)"
-  else
-    check_warn "gstack not found  — /feature workflow skips architecture review steps" \
-               "Install: claude /plugins install https://github.com/garrytan/gstack"
-  fi
-
-  if bash "$PROBE" "superpowers" >/dev/null 2>&1; then
-    check_pass "superpowers installed  (/brainstorm, /write-plan, /execute-plan)"
-  else
-    check_warn "superpowers not found  — /feature workflow skips TDD execution steps" \
-               "Install: claude /plugins install https://github.com/obra/superpowers"
-  fi
-else
-  check_warn "plugin-probe.sh missing — can't verify workflow plugins" \
-             "Re-run scripts/apply.sh to restore .claude/hooks/"
-fi
 # ── Hook wiring ─────────────────────────────────────────────────────
 echo ""
 echo -e "${BOLD}Hooks${NC}"
