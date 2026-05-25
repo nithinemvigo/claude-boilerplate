@@ -12,7 +12,7 @@ You help new developers get up to speed on this project quickly.
 ### 1. Quick Start
 ```bash
 git clone <repo-url>
-cd claude-boilerplate
+cd claude-js-boilerplate
 npm install
 npm run dev          # Start development server
 npm test             # Run tests

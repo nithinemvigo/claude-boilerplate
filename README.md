@@ -10,14 +10,14 @@ A `core/` of always-on Claude tooling, plus stack-specific **bases** (Express JS
 
 ```bash
 # 1. Clone this repo somewhere
-git clone <repo-url> ~/tools/claude-boilerplate
+git clone <repo-url> ~/tools/claude-js-boilerplate
 
 # 2. Scaffold your project (whatever framework)
 npx create-next-app@latest my-app --typescript --app
 # (or: npm create vite@latest, npx @nestjs/cli new, etc.)
 
 # 3. Apply the boilerplate on top
-bash ~/tools/claude-boilerplate/scripts/apply.sh \
+bash ~/tools/claude-js-boilerplate/scripts/apply.sh \
   --base=nextjs-ts --integrations=supabase,tailwind \
   ./my-app
 ```
@@ -142,7 +142,7 @@ The pipeline still runs if a plugin is missing — that gate just gets skipped w
 ## Repo anatomy
 
 ```
-claude-boilerplate/
+claude-js-boilerplate/
 ├── core/                     ← copied to every target (agents, commands, hooks, skills, generic rules, CLAUDE template)
 ├── overlays/
 │   ├── bases/                ← one per project (express-js, express-ts, nestjs, react-vite-ts, nextjs-ts)

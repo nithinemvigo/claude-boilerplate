@@ -1,0 +1,3 @@
+<!-- Deprecated: use logo-light.svg and logo-dark.svg instead.
+     SVG @media (prefers-color-scheme) is ignored when loaded via <img>.
+     See README for the correct <picture> snippet. -->

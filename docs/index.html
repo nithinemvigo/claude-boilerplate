@@ -862,14 +862,16 @@
 
   <!-- ── NAV ── -->
   <nav>
-    <div class="logo"><span>claude</span>-boilerplate</div>
+    <picture>
+      <img src="./logo-dark.svg" alt="claude-js-boilerplate" width="300">
+    </picture>
     <div class="nav-links">
       <a href="#builder">Builder</a>
       <a href="#features">Features</a>
       <a href="#pipeline">Pipeline</a>
       <a href="#stacks">Stacks</a>
       <a href="apply.html">CLI Docs</a>
-      <a href="https://github.com/nithinemvigo/claude-boilerplate" target="_blank">GitHub ↗</a>
+      <a href="https://github.com/nithinemvigo/claude-js-boilerplate" target="_blank">GitHub ↗</a>
     </div>
   </nav>
 
@@ -1048,7 +1050,7 @@
   <!-- ── FOOTER ── -->
   <footer>
     <p>Built with ❤️ for Claude Code users · <a href="apply.html">CLI Docs</a> · <a href="folders.html">Repo
-        Structure</a> · <a href="https://github.com/nithinemvigo/claude-boilerplate">GitHub</a></p>
+        Structure</a> · <a href="https://github.com/nithinemvigo/claude-js-boilerplate">GitHub</a></p>
   </footer>
 
   <script type="importmap">
@@ -1127,7 +1129,7 @@
         if (!base) return;
         const tgt = target || 'my-project';
         const intStr = integs.length > 0 ? ` ${integs.join(' ')}` : '';
-        const cmd = `npx github:nithinemvigo/claude-boilerplate ${base} ${tgt}${intStr}`;
+        const cmd = `npx github:nithinemvigo/claude-js-boilerplate ${base} ${tgt}${intStr}`;
         navigator.clipboard.writeText(cmd).then(() => {
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
@@ -1243,7 +1245,7 @@
           }
 
                       <span className="t-comment"># 2. Apply Claude superpowers via npx</span><br/>
-                      <span className="t-cmd">npx</span> <span className="t-arg">github:nithinemvigo/claude-boilerplate</span> <span className="t-path">${base}</span> <span className="t-path">${target || 'my-project'}</span>
+                      <span className="t-cmd">npx</span> <span className="t-arg">github:nithinemvigo/claude-js-boilerplate</span> <span className="t-path">${base}</span> <span className="t-path">${target || 'my-project'}</span>
                       ${integs.length > 0 && html` <span className="t-flag">${integs.join(' ')}</span>`}
                       <br/><br/>
 

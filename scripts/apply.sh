@@ -306,7 +306,7 @@ if [ ! -d "${TARGET}" ]; then
 fi
 
 # Staging area
-STAGE="$(mktemp -d -t claude-boilerplate-apply.XXXXXX)"
+STAGE="$(mktemp -d -t claude-js-boilerplate-apply.XXXXXX)"
 trap 'rm -rf "${STAGE}"' EXIT
 
 # ── Step 1: copy core ────────────────────────────────────────────────────────
