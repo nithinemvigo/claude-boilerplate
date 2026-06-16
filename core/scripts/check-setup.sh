@@ -87,22 +87,29 @@ else
              "Re-run scripts/apply.sh to restore .claude/hooks/"
 fi
 
-# ── Workflow plugins (recommended for /feature and /fix workflows) ─────────────
+# ── Workflow plugins (used by /start and stage agents) ────────────────────────
 echo ""
 echo -e "${BOLD}Workflow Plugins${NC}"
 if [ -x "$PROBE" ]; then
   if bash "$PROBE" "gstack" >/dev/null 2>&1; then
     check_pass "gstack installed  (/office-hours, /plan-ceo-review, /plan-eng-review, /ship)"
   else
-    check_warn "gstack not found  — /feature workflow skips architecture review steps" \
+    check_warn "gstack not found  — CEO/Eng/Ship stages skip architecture review steps" \
                "Install: claude /plugins install https://github.com/garrytan/gstack"
   fi
 
   if bash "$PROBE" "superpowers" >/dev/null 2>&1; then
     check_pass "superpowers installed  (/brainstorm, /write-plan, /execute-plan)"
   else
-    check_warn "superpowers not found  — /feature workflow skips TDD execution steps" \
+    check_warn "superpowers not found  — Build stage skips TDD execution steps" \
                "Install: claude /plugins install https://github.com/obra/superpowers"
+  fi
+
+  if bash "$PROBE" "claude-mem" >/dev/null 2>&1; then
+    check_pass "claude-mem installed  (persistent memory for CEO/Eng/Build/Review/Ship)"
+  else
+    check_warn "claude-mem not found  — pipeline runs without project memory; agents re-derive context each task" \
+               "Install: claude /plugins install https://claude.com/plugins/claude-mem"
   fi
 else
   check_warn "plugin-probe.sh missing — can't verify workflow plugins" \

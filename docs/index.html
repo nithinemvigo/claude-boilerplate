@@ -870,7 +870,12 @@
       <a href="#features">Features</a>
       <a href="#pipeline">Pipeline</a>
       <a href="#stacks">Stacks</a>
-      <a href="apply.html">CLI Docs</a>
+      <a href="folders.html">Folders</a>
+      <a href="apply.html">Apply</a>
+      <a href="workflow.html">Workflow</a>
+      <a href="bases/index.html">Bases</a>
+      <a href="integrations/index.html">Integrations</a>
+      <a href="presets/index.html">Presets</a>
       <a href="https://github.com/nithinemvigo/claude-js-boilerplate" target="_blank">GitHub ↗</a>
     </div>
   </nav>
@@ -906,40 +911,365 @@
     <div class="grid-3 reveal-stagger">
       <div class="feature-card">
         <div class="feature-icon">🤖</div>
-        <div class="feature-title">4 Agent Personas</div>
-        <div class="feature-desc">test-writer, doc-writer, pr-description, onboarding-guide — invoke by name in Claude
-          Code.</div>
+        <div class="feature-title">8 Stage Agents</div>
+        <div class="feature-desc">classifier · ceo · eng · design · build · testing · review · ship — a pipeline, not a
+          loose collection. The classifier sizes the task; the orchestrator routes it through.</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
-        <div class="feature-title">7 Slash Commands</div>
-        <div class="feature-desc">/feature, /pr, /test, /doc, /explain, /changelog, /code-review — ready in Claude Code.
-        </div>
+        <div class="feature-title">6 Slash Commands</div>
+        <div class="feature-desc">/start · /status · /approve · /review · /code-review · /ship — the gate-by-gate flow
+          for any change. /start is the universal entry point.</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🛡️</div>
         <div class="feature-title">Pre-commit Pipeline</div>
-        <div class="feature-desc">Every commit auto-runs: ESLint → Prettier → Security Review → Code Review. No Husky
-          needed.</div>
+        <div class="feature-desc">Every commit auto-runs: ESLint → Prettier → Security Review → Code Review. Missing
+          plugin? Degrades to a warning (or fails hard with <code>CLAUDE_BOILERPLATE_STRICT=1</code>).</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📚</div>
         <div class="feature-title">Layered Rules</div>
         <div class="feature-desc">error-handling, security, environment, testing from core. Framework rules from your
-          base. Integration-specific rules added per integration.</div>
+          base. Integration-specific rules added per integration. Project rules in <code>.claude/rules/project/</code>.
+        </div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🗺️</div>
         <div class="feature-title">Populated CLAUDE.md</div>
-        <div class="feature-desc">Stack, Commands, Architecture — all filled in from your base fragment. Integration
-          paragraphs appended automatically.</div>
+        <div class="feature-desc">Stack · Commands · Architecture · Anti-patterns — all filled in from your base
+          fragment. Integration paragraphs appended automatically. 16 Project-context placeholders for your team to
+          fill.</div>
       </div>
       <div class="feature-card">
-        <div class="feature-icon">🎨</div>
-        <div class="feature-title">UI/UX Skill</div>
-        <div class="feature-desc">67 design styles, 96 palettes, 99 UX guidelines — auto-triggers when Claude does UI
-          work.</div>
+        <div class="feature-icon">🔧</div>
+        <div class="feature-title">Helper scripts</div>
+        <div class="feature-desc"><code>scripts/check-setup.sh</code> verifies Node, claude CLI, plugins, hooks, env.
+          <code>scripts/review.sh</code> runs a manual review. Wired into <code>npm run check-setup</code> and
+          <code>npm run review</code>.</div>
       </div>
+    </div>
+  </section>
+
+  <!-- ── AGENTS & WORKFLOW ── -->
+  <section id="workflow">
+    <h2 class="reveal">How a task runs — <code style="color:var(--accent);font-family:'JetBrains Mono',monospace">/start</code></h2>
+    <p class="section-sub reveal">Universal entry point for any change: feature, bug fix, hotfix, refactor, chore, docs. The classifier sizes the task; the orchestrator routes it to the right pipeline; each stage stops at its gate for your approval.</p>
+
+    <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0 2rem; font-family: 'JetBrains Mono', monospace; font-size: .92rem;">
+      <div style="color: var(--muted); margin-bottom: .5rem;">$ <span style="color: var(--accent);">/start</span> add Stripe billing to checkout</div>
+      <div style="color: var(--accent2);">&lt;task_size&gt;</div><span style="color: var(--green);">standard</span><span style="color: var(--accent2);">&lt;/task_size&gt;</span>
+      <div><span style="color: var(--accent2);">&lt;branch&gt;</span><span style="color: var(--green);">feature/stripe-billing-checkout</span><span style="color: var(--accent2);">&lt;/branch&gt;</span></div>
+      <div><span style="color: var(--accent2);">&lt;reason&gt;</span><span style="color: var(--subtle);">Touches 4 files; no contract change; contained to checkout layer.</span><span style="color: var(--accent2);">&lt;/reason&gt;</span></div>
+      <div style="color: var(--muted); margin-top: .6rem;"># → orchestrator loads pipeline-standard.md, CEO agent activates...</div>
+    </div>
+
+    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 2.5rem; margin-bottom: .8rem; letter-spacing: -.015em;">Three tiers — the classifier picks one</h3>
+    <p class="section-sub reveal">Sizing is automatic. The classifier (~50 tokens) runs before anything else loads, then the orchestrator routes to the matching pipeline.</p>
+
+    <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin: 1.5rem 0 2rem; overflow-x: auto;">
+      <svg viewBox="0 0 1400 980" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; display: block; min-width: 760px;" role="img" aria-labelledby="flowTitle">
+        <title id="flowTitle">/start routes to one of three tiers: nano, standard, or full</title>
+        <defs>
+          <style>
+            .label-dark { font-family: Inter, system-ui, sans-serif; fill: #1f2937; }
+            .label-muted { font-family: Inter, system-ui, sans-serif; fill: #6b7280; }
+            .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+          </style>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280"/>
+          </marker>
+        </defs>
+
+        <!-- Root: /start <task> -->
+        <g>
+          <rect x="510" y="40" width="380" height="100" rx="14" fill="#f5ebdc" stroke="#d4c4a8" stroke-width="1.5"/>
+          <text x="700" y="84" text-anchor="middle" class="mono" font-size="24" font-weight="700" fill="#3a2f20">/start &lt;task&gt;</text>
+          <text x="700" y="114" text-anchor="middle" class="label-muted" font-size="14">size classifier runs first</text>
+        </g>
+
+        <!-- Arrows from root to three tiers -->
+        <path d="M 700 145 L 700 180 L 200 180 L 200 218" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 700 145 L 700 218" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+        <path d="M 700 145 L 700 180 L 1200 180 L 1200 218" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
+
+        <!-- ── Nano column ── -->
+        <g>
+          <rect x="60" y="220" width="280" height="92" rx="12" fill="#cfe9d8" stroke="#9bcfa9" stroke-width="1.5"/>
+          <text x="200" y="262" text-anchor="middle" class="label-dark" font-size="26" font-weight="700" fill="#1a6c46">Nano</text>
+          <text x="200" y="290" text-anchor="middle" class="label-dark" font-size="14" fill="#2d7855">1 file · obvious fix</text>
+        </g>
+        <path d="M 200 312 L 200 358" stroke="#9bcfa9" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <g>
+          <rect x="60" y="360" width="280" height="540" rx="12" fill="#dff0e4" stroke="#9bcfa9" stroke-width="1.5"/>
+          <text x="200" y="400" text-anchor="middle" class="label-dark" font-size="18" font-weight="600" fill="#1a6c46">pipeline</text>
+          <text x="200" y="442" text-anchor="middle" class="label-dark" font-size="17">Build</text>
+          <text x="200" y="468" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
+          <text x="200" y="494" text-anchor="middle" class="label-dark" font-size="17">Review</text>
+          <text x="200" y="520" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
+          <text x="200" y="546" text-anchor="middle" class="label-dark" font-size="17">commit + ship</text>
+
+          <!-- inset boxes -->
+          <rect x="92" y="580" width="216" height="40" rx="8" fill="#bedfcd"/>
+          <text x="200" y="606" text-anchor="middle" class="mono" font-size="13" fill="#1a6c46">~400 tokens</text>
+
+          <rect x="92" y="640" width="216" height="40" rx="8" fill="#bedfcd"/>
+          <text x="200" y="666" text-anchor="middle" class="label-dark" font-size="13" fill="#1a6c46">no spec · no gate</text>
+
+          <rect x="92" y="700" width="216" height="40" rx="8" fill="#bedfcd"/>
+          <text x="200" y="726" text-anchor="middle" class="label-dark" font-size="13" fill="#1a6c46">inline review only</text>
+        </g>
+
+        <!-- ── Standard column ── -->
+        <g>
+          <rect x="560" y="220" width="280" height="92" rx="12" fill="#d4e2f0" stroke="#9ab8d8" stroke-width="1.5"/>
+          <text x="700" y="262" text-anchor="middle" class="label-dark" font-size="26" font-weight="700" fill="#1d4d8a">Standard</text>
+          <text x="700" y="290" text-anchor="middle" class="label-dark" font-size="14" fill="#345fa0">feature · 2–5 files</text>
+        </g>
+        <path d="M 700 312 L 700 358" stroke="#9ab8d8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <g>
+          <rect x="560" y="360" width="280" height="540" rx="12" fill="#e2ecf6" stroke="#9ab8d8" stroke-width="1.5"/>
+          <text x="700" y="400" text-anchor="middle" class="label-dark" font-size="18" font-weight="600" fill="#1d4d8a">pipeline</text>
+          <text x="700" y="442" text-anchor="middle" class="label-dark" font-size="17">CEO (lean)</text>
+          <text x="700" y="468" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
+          <text x="700" y="494" text-anchor="middle" class="label-dark" font-size="17">Build</text>
+          <text x="700" y="520" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
+          <text x="700" y="546" text-anchor="middle" class="label-dark" font-size="17">Review → Ship</text>
+
+          <rect x="592" y="580" width="216" height="40" rx="8" fill="#c4d9ee"/>
+          <text x="700" y="606" text-anchor="middle" class="mono" font-size="13" fill="#1d4d8a">~1500 tokens</text>
+
+          <rect x="592" y="640" width="216" height="40" rx="8" fill="#c4d9ee"/>
+          <text x="700" y="666" text-anchor="middle" class="label-dark" font-size="13" fill="#1d4d8a">brief only · no brainstorm</text>
+
+          <rect x="592" y="700" width="216" height="40" rx="8" fill="#c4d9ee"/>
+          <text x="700" y="726" text-anchor="middle" class="label-dark" font-size="13" fill="#1d4d8a">test if risk flagged</text>
+        </g>
+
+        <!-- ── Full column ── -->
+        <g>
+          <rect x="1060" y="220" width="280" height="92" rx="12" fill="#e0dbef" stroke="#b4a8d9" stroke-width="1.5"/>
+          <text x="1200" y="262" text-anchor="middle" class="label-dark" font-size="26" font-weight="700" fill="#4f3d8a">Full</text>
+          <text x="1200" y="290" text-anchor="middle" class="label-dark" font-size="14" fill="#6a55a3">cross-cutting · new system</text>
+        </g>
+        <path d="M 1200 312 L 1200 358" stroke="#b4a8d9" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+        <g>
+          <rect x="1060" y="360" width="280" height="540" rx="12" fill="#ebe7f5" stroke="#b4a8d9" stroke-width="1.5"/>
+          <text x="1200" y="400" text-anchor="middle" class="label-dark" font-size="18" font-weight="600" fill="#4f3d8a">pipeline</text>
+          <text x="1200" y="442" text-anchor="middle" class="label-dark" font-size="17">CEO + Eng + Design</text>
+          <text x="1200" y="468" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
+          <text x="1200" y="494" text-anchor="middle" class="label-dark" font-size="17">Build + Testing</text>
+          <text x="1200" y="520" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
+          <text x="1200" y="546" text-anchor="middle" class="label-dark" font-size="17">Review → Ship</text>
+
+          <rect x="1092" y="580" width="216" height="40" rx="8" fill="#d5cde7"/>
+          <text x="1200" y="606" text-anchor="middle" class="mono" font-size="13" fill="#4f3d8a">4000+ tokens</text>
+
+          <rect x="1092" y="640" width="216" height="40" rx="8" fill="#d5cde7"/>
+          <text x="1200" y="666" text-anchor="middle" class="label-dark" font-size="13" fill="#4f3d8a">all agents + plugins</text>
+
+          <rect x="1092" y="700" width="216" height="40" rx="8" fill="#d5cde7"/>
+          <text x="1200" y="726" text-anchor="middle" class="label-dark" font-size="13" fill="#4f3d8a">full gates + tests</text>
+        </g>
+
+        <!-- Footer -->
+        <text x="700" y="945" text-anchor="middle" class="label-muted" font-size="14" font-style="italic">classifier itself costs ~50 tokens — runs before anything else loads</text>
+      </svg>
+    </div>
+
+    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 3rem; margin-bottom: .8rem; letter-spacing: -.015em;">The eight stage agents</h3>
+    <p class="section-sub reveal">Each agent is one file in <code>.claude/agents/</code>. The orchestrator activates them in the order the pipeline requires; gates between stages enforce explicit approval before the next agent starts.</p>
+    <div class="pipeline reveal-stagger">
+      <div class="pipe-step">
+        <div class="pipe-num">🔢</div>
+        <div class="pipe-content">
+          <h3>classifier <code style="color:var(--muted);font-size:.78rem">.claude/agents/classifier.md</code></h3>
+          <p>Runs first on every <code style="color:var(--accent)">/start</code>. Reads the description, emits <code>&lt;task_size&gt;</code> (nano / standard / full) and <code>&lt;branch&gt;</code> (feature/, bugfix/, or hotfix/). ~50 tokens.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">🏛️</div>
+        <div class="pipe-content">
+          <h3>ceo <code style="color:var(--muted);font-size:.78rem">.claude/agents/ceo.md</code></h3>
+          <p>Task intake, flow routing, brief production. Outputs <code>flow_type</code> tag — backend-feature, frontend-feature, hotfix, design-only, or security-patch. Gate: <code>/plan-ceo-review</code>.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">🛠️</div>
+        <div class="pipe-content">
+          <h3>eng <code style="color:var(--muted);font-size:.78rem">.claude/agents/eng.md</code></h3>
+          <p>Technical spec. Writes <code>docs/spec-&lt;id&gt;.md</code>. Resolves data model, API contracts, service boundaries. Gate: <code>/plan-eng-review</code>.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">🎨</div>
+        <div class="pipe-content">
+          <h3>design <code style="color:var(--muted);font-size:.78rem">.claude/agents/design.md</code></h3>
+          <p>UI spec + design tokens. Only activates when the flow includes Design (frontend-feature, design-only). Writes <code>docs/design-&lt;id&gt;.md</code>.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">⚒️</div>
+        <div class="pipe-content">
+          <h3>build <code style="color:var(--muted);font-size:.78rem">.claude/agents/build.md</code></h3>
+          <p>Implementation. Writes code, updates <code>docs/progress.md</code>. If scope grows mid-task, emits <code>&lt;escalate&gt;</code> and the orchestrator re-classifies into a bigger tier.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">🧪</div>
+        <div class="pipe-content">
+          <h3>testing <code style="color:var(--muted);font-size:.78rem">.claude/agents/testing.md</code></h3>
+          <p>Test suite + security validation. Loops back to Build on failures. Required for standard and full tiers.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">🔍</div>
+        <div class="pipe-content">
+          <h3>review <code style="color:var(--muted);font-size:.78rem">.claude/agents/review.md</code></h3>
+          <p><strong>The commit gate.</strong> Only stage permitted to issue <code>git commit</code>. The orchestrator rejects git commands from any other stage. Loops back to Build on any blocker finding.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">🚢</div>
+        <div class="pipe-content">
+          <h3>ship <code style="color:var(--muted);font-size:.78rem">.claude/agents/ship.md</code></h3>
+          <p>Merge, tag, retrospective. Runs only after Review approval and <code>Reviewed-by: review-agent</code> appears in the commit. Writes the retrospective and updates the changelog.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="border-left: 3px solid var(--accent); background: rgba(56,189,248,.07); padding: 1rem 1.4rem; border-radius: 8px; margin: 1.5rem 0;">
+      <strong>Escalation:</strong> if Build discovers mid-task that the scope is bigger than the classifier estimated, it emits <code>&lt;escalate&gt;standard|full&lt;/escalate&gt;</code>. The orchestrator pauses, re-classifies, reloads the bigger pipeline, and resumes from Build — work on the branch is preserved.
+    </div>
+
+    <!-- ── STEP-BY-STEP WALKTHROUGH ── -->
+    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 3rem; margin-bottom: .8rem; letter-spacing: -.015em;">Step-by-step walkthrough — a <span style="background:rgba(154,184,216,.2);color:var(--accent2);padding:.15rem .55rem;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:.85em;">standard</span> task, end to end</h3>
+    <p class="section-sub reveal">Concrete trace of what happens after you run <code style="color:var(--accent);font-family:'JetBrains Mono',monospace">/start add rate limiting to the API</code>. Most projects spend most of their time in this tier.</p>
+
+    <div class="pipeline reveal-stagger">
+      <div class="pipe-step">
+        <div class="pipe-num">1</div>
+        <div class="pipe-content">
+          <h3>You type <code style="color:var(--accent)">/start add rate limiting to the API</code></h3>
+          <p>The classifier loads first (~50 tokens). Nothing else runs until it emits its tags.</p>
+          <pre style="background:#020817;border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin:.6rem 0 0;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;overflow-x:auto;"><code style="color:var(--subtle);">&lt;task_size&gt;<span style="color:var(--accent2);">standard</span>&lt;/task_size&gt;
+&lt;branch&gt;<span style="color:var(--green);">feature/api-rate-limiting</span>&lt;/branch&gt;
+&lt;reason&gt;<span style="color:var(--muted);">3 files (middleware + route + tests), no contract change, contained to API layer.</span>&lt;/reason&gt;</code></pre>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">2</div>
+        <div class="pipe-content">
+          <h3>Orchestrator activates</h3>
+          <p>Reads the classifier's tags. Loads <code>.claude/workflows/pipeline-standard.md</code>. Creates the branch <code>feature/api-rate-limiting</code>. Activates the CEO agent next.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">3</div>
+        <div class="pipe-content">
+          <h3>CEO (lean) — task brief</h3>
+          <p>Produces a short brief: scope, success criteria, affected modules. Writes <code>docs/brief-&lt;id&gt;.md</code>. Skips the heavy <code>/office-hours</code> + <code>/plan-ceo-review</code> calls that the full tier uses. <strong>Gate:</strong> you run <code style="color:var(--accent)">/approve</code> to advance to Build.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">4</div>
+        <div class="pipe-content">
+          <h3>Build — implementation</h3>
+          <p>Implements the change on the branch. Writes the middleware module, wires it into the route, adds tests. Updates <code>docs/progress.md</code> as it goes. If scope balloons (turns out you need a new Redis dep, or it touches auth too), Build emits <code>&lt;escalate&gt;full&lt;/escalate&gt;</code> and the orchestrator re-classifies. <strong>Gate:</strong> <code>code-review</code> plugin runs a self-check; clean before advancing.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">5</div>
+        <div class="pipe-content">
+          <h3>Review — the commit gate</h3>
+          <p>Reads the brief, the implementation, and the test results. Calls <code>code-review</code> and <code>security-guidance</code> plugins on the staged diff. Emits one of <code>VERDICT: Approve</code>, <code>Request Changes</code>, or <code>Needs Discussion</code>.</p>
+          <p style="margin-top:.4rem;"><strong>On Approve:</strong> Review issues <code>git commit</code> with <code>Reviewed-by: review-agent</code> in the message. <strong>This is the only stage permitted to commit.</strong> The orchestrator rejects git commands from any other stage. On Request Changes, loops back to Build with the findings.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">6</div>
+        <div class="pipe-content">
+          <h3>Ship (lean) — merge &amp; tag</h3>
+          <p>Verifies the <code>Reviewed-by: review-agent</code> tag is present in the commit. Pushes the branch, opens the PR, tags the release. Updates <code>CHANGELOG.md</code>. Writes a one-line retrospective entry.</p>
+          <p style="margin-top:.4rem;"><strong>Done.</strong> Branch is open, PR is up, tag is set. The full task touched ~1500 tokens of orchestration plus whatever the implementation needed.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 3rem; margin-bottom: .8rem; letter-spacing: -.015em;">How the tiers differ in practice</h3>
+    <div class="reveal" style="overflow-x:auto;">
+      <table class="compat-table" style="margin: 1rem 0;">
+        <thead>
+          <tr>
+            <th>Step</th>
+            <th style="background:rgba(52,211,153,.08);color:var(--green);">Nano</th>
+            <th style="background:rgba(154,184,216,.08);color:var(--accent2);">Standard</th>
+            <th style="background:rgba(180,168,217,.1);color:#a78bfa;">Full</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Classifier</strong></td>
+            <td>✓ (always)</td>
+            <td>✓ (always)</td>
+            <td>✓ (always)</td>
+          </tr>
+          <tr>
+            <td><strong>CEO brief</strong></td>
+            <td>—</td>
+            <td>✓ lean (skip /office-hours, /brainstorm)</td>
+            <td>✓ full (/office-hours + /plan-ceo-review)</td>
+          </tr>
+          <tr>
+            <td><strong>Eng spec</strong></td>
+            <td>—</td>
+            <td>—</td>
+            <td>✓ writes <code>docs/spec-&lt;id&gt;.md</code>, /plan-eng-review</td>
+          </tr>
+          <tr>
+            <td><strong>Design</strong></td>
+            <td>—</td>
+            <td>—</td>
+            <td>✓ only if flow includes UI (frontend-feature, design-only)</td>
+          </tr>
+          <tr>
+            <td><strong>Build</strong></td>
+            <td>✓ lean (no progress doc)</td>
+            <td>✓ writes <code>docs/progress.md</code></td>
+            <td>✓ + TDD (/execute-plan), full progress doc</td>
+          </tr>
+          <tr>
+            <td><strong>Testing</strong></td>
+            <td>—</td>
+            <td>only if risk flagged</td>
+            <td>✓ always; security-guidance for security-patch flow</td>
+          </tr>
+          <tr>
+            <td><strong>Review</strong> (commit gate)</td>
+            <td>✓ inline (no separate report)</td>
+            <td>✓ writes <code>docs/review-&lt;id&gt;.md</code></td>
+            <td>✓ full report, loops back on any blocker</td>
+          </tr>
+          <tr>
+            <td><strong>Ship</strong></td>
+            <td>✓ commit + push only</td>
+            <td>✓ lean (PR + tag + 1-line retro)</td>
+            <td>✓ full (PR + tag + retro + claude-mem write)</td>
+          </tr>
+          <tr>
+            <td><strong>Cost (orchestration)</strong></td>
+            <td style="color:var(--green);">~400 tokens</td>
+            <td style="color:var(--accent2);">~1500 tokens</td>
+            <td style="color:#a78bfa;">4000+ tokens</td>
+          </tr>
+          <tr>
+            <td><strong>Loopbacks possible</strong></td>
+            <td>Review → Build (1×)</td>
+            <td>Review → Build (up to 3×)</td>
+            <td>Testing → Build · Review → Build · Review → Eng (up to 3× per pair)</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </section>
 
@@ -1049,7 +1379,7 @@
 
   <!-- ── FOOTER ── -->
   <footer>
-    <p>Built with ❤️ for Claude Code users · <a href="apply.html">CLI Docs</a> · <a href="folders.html">Repo
+    <p>Built with ❤️ for Claude Code users · <a href="apply.html">Apply</a> · <a href="workflow.html">Workflow</a> · <a href="folders.html">Repo
         Structure</a> · <a href="https://github.com/nithinemvigo/claude-js-boilerplate">GitHub</a></p>
   </footer>
 

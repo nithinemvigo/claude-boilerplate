@@ -10,12 +10,17 @@
     <header class="site">
       <div class="brand"><a href="./index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
       <nav>
-        <a href="./index.html">Home</a>
+        <a href="./index.html#builder">Builder</a>
+        <a href="./index.html#features">Features</a>
+        <a href="./index.html#pipeline">Pipeline</a>
+        <a href="./index.html#stacks">Stacks</a>
         <a href="./folders.html">Folders</a>
         <a href="./apply.html">Apply</a>
+        <a href="./workflow.html">Workflow</a>
         <a href="./bases/index.html">Bases</a>
         <a href="./integrations/index.html">Integrations</a>
         <a href="./presets/index.html">Presets</a>
+        <a href="https://github.com/nithinemvigo/claude-js-boilerplate" target="_blank">GitHub ↗</a>
       </nav>
     </header>
 
@@ -24,6 +29,9 @@
       How the composer stitches a project from a <strong>base</strong> stack plus zero or more
       <strong>integrations</strong>, what lands on disk, and how invalid combinations are caught.
     </p>
+    <div class="callout">
+      <strong>Two flavors:</strong> use <code>scripts/apply.sh</code> for a <em>new project directory</em>; use <code>scripts/apply-to-existing.sh</code> when you already have a repo (it copies only missing files, auto-merges <code>.gitignore</code> and <code>.env.example</code>, and prints a per-file merge plan for the rest).
+    </div>
 
     <div class="toc">
       <h4>On this page</h4>
@@ -126,7 +134,7 @@
     <p>Deep-merge <code>"scripts"</code> and <code>"devDependencies"</code> from every layer into the target's <code>package.json</code>. If a key collides, the highest layer wins (<code>integrations &gt; base &gt; core</code>), and a warning is printed naming each colliding key.</p>
 
     <h3>6. Render <code>CLAUDE.md</code></h3>
-    <p>Substitute the base fragment into the placeholders inside <code>core/CLAUDE.template.md</code> (<code>{{STACK}}</code>, <code>{{COMMANDS}}</code>, <code>{{ARCHITECTURE}}</code>), then append each integration's Architecture paragraph in the order they were listed.</p>
+    <p>Substitute the base fragment into the placeholders inside <code>core/CLAUDE.template.md</code> (<code>{{STACK}}</code>, <code>{{COMMANDS}}</code>, <code>{{ARCHITECTURE}}</code>, <code>{{ANTIPATTERNS}}</code>), then append each integration's Architecture paragraph in the order they were listed.</p>
 
     <h3>7. Append <code>.env.example</code> keys</h3>
     <p>Each integration's <code>env.snippet</code> is appended to the project's <code>.env.example</code>. Duplicate keys are deduplicated; the first occurrence wins.</p>

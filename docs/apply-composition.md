@@ -1,6 +1,8 @@
 # Applying the Boilerplate — Composition Guide
 
 > How `scripts/apply.sh` composes a project from a **base** stack plus zero or more **integrations**, what lands on disk, and how invalid combinations are caught.
+>
+> **For existing repos:** use `scripts/apply-to-existing.sh` instead — it stages a full apply, copies only files the target doesn't have, auto-appends unique lines to `.gitignore` and `.env.example`, and prints a per-file merge plan for the conflicts.
 
 ---
 
@@ -119,7 +121,7 @@ Deep-merge `"scripts"` and `"devDependencies"` from every layer into the target'
 
 ### 6. Render `CLAUDE.md`
 
-Substitute the base fragment into the placeholders inside `core/CLAUDE.template.md` (`{{STACK}}`, `{{COMMANDS}}`, `{{ARCHITECTURE}}`), then append each integration's Architecture paragraph in the order they were listed.
+Substitute the base fragment into the placeholders inside `core/CLAUDE.template.md` (`{{STACK}}`, `{{COMMANDS}}`, `{{ARCHITECTURE}}`, `{{ANTIPATTERNS}}`), then append each integration's Architecture paragraph in the order they were listed.
 
 ### 7. Append `.env.example` keys
 
@@ -201,7 +203,7 @@ my-app/
 │   ├── agents/                  ← from core
 │   ├── commands/                ← from core
 │   ├── hooks/                   ← from core
-│   ├── skills/ui-ux-pro-max/    ← from core
+│   ├── skills/*/    ← from core
 │   ├── rules/
 │   │   ├── error-handling.md    ← core
 │   │   ├── security.md          ← core

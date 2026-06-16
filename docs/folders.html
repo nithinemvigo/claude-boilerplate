@@ -10,12 +10,17 @@
     <header class="site">
       <div class="brand"><a href="./index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
       <nav>
-        <a href="./index.html">Home</a>
+        <a href="./index.html#builder">Builder</a>
+        <a href="./index.html#features">Features</a>
+        <a href="./index.html#pipeline">Pipeline</a>
+        <a href="./index.html#stacks">Stacks</a>
         <a href="./folders.html">Folders</a>
         <a href="./apply.html">Apply</a>
+        <a href="./workflow.html">Workflow</a>
         <a href="./bases/index.html">Bases</a>
         <a href="./integrations/index.html">Integrations</a>
         <a href="./presets/index.html">Presets</a>
+        <a href="https://github.com/nithinemvigo/claude-js-boilerplate" target="_blank">GitHub ↗</a>
       </nav>
     </header>
 
@@ -37,19 +42,20 @@
     </div>
 
     <h2 id="tree">Tree at a glance</h2>
-<pre><code>claude-js-boilerplate/
+<pre><code>claude-boilerplate/
 ├── core/                          ← always copied to every target project
 │   ├── .claude/
-│   │   ├── agents/                 4 personas (test-writer, doc-writer, pr-description, onboarding-guide)
-│   │   ├── commands/               7 slash commands
-│   │   ├── hooks/                  pre/post commit + status line
+│   │   ├── agents/                 8 stage agents (classifier, ceo, eng, design, build, testing, review, ship)
+│   │   ├── commands/               6 slash commands (/start, /status, /approve, /review, /code-review, /ship)
+│   │   ├── workflows/              pipeline definitions (orchestrator, pipeline-nano, pipeline-standard)
+│   │   ├── hooks/                  pre-commit + post-commit + status line + plugin-probe
 │   │   ├── rules/                  generic rules (error-handling, security, environment, testing)
-│   │   ├── skills/ui-ux-pro-max/   design intelligence skill (67 styles, 96 palettes…)
 │   │   ├── settings.json           Claude Code hook wiring
-│   │   └── review-prompt.md        prompt used by code-review hook
-│   ├── .agents/workflows/          new-feature.md, dependency-update.md
+│   │   ├── review-prompt.md        prompt used by /code-review
+│   │   └── CHANGELOG.md            system-extensions changelog
+│   ├── scripts/                    ships with every target (check-setup.sh, review.sh)
 │   ├── .editorconfig, .prettierrc, .prettierignore
-│   └── CLAUDE.template.md          template with {{STACK}}, {{COMMANDS}}, {{ARCHITECTURE}} placeholders
+│   └── CLAUDE.template.md          template with {{STACK}}, {{COMMANDS}}, {{ARCHITECTURE}}, {{ANTIPATTERNS}}
 │
 ├── overlays/
 │   ├── bases/                     ← pick ONE per project
@@ -70,7 +76,7 @@
 │   └── firebase-react.json
 │
 ├── examples/                      ← runnable demos
-│   └── express-demo/              the old src/ — a demo API with deliberate bugs
+│   └── express-demo/              demo API with deliberate bugs the security pipeline catches
 │
 ├── docs/                          ← what you're reading right now
 │   ├── index.html, folders.html, apply.html
@@ -79,8 +85,12 @@
 │   └── presets/                   one page per preset
 │
 ├── scripts/
-│   └── apply.sh                   the composer (added in step 4)
+│   ├── apply.sh                   composer for NEW project directories
+│   └── apply-to-existing.sh       safe-merge into an EXISTING repo
 │
+├── bin/create.js                  npx wrapper (`npx create-claude-boilerplate`)
+├── create.sh                      bash wrapper (`bash create.sh &lt;base&gt; &lt;target&gt; [integrations…]`)
+├── package.json                   declares this repo as the npx-publishable `create-claude-boilerplate`
 ├── CLAUDE.md                      about THIS repo (boilerplate itself, not the target)
 ├── README.md, CHANGELOG.md
 └── .gitignore, .vscode/
@@ -91,50 +101,65 @@
     <h2 id="core">core/</h2>
     <p>
       <strong>The always-on layer.</strong> Every project bootstrapped from this boilerplate gets <em>all</em> of <code>core/</code>
-      copied into it, regardless of stack. This is what makes the agents, hooks, slash commands, skills,
+      copied into it, regardless of stack. This is what makes the agents, hooks, slash commands,
       and generic rules work everywhere.
     </p>
 
     <h3>core/.claude/agents/</h3>
-    <p>Four agent personas. Invoked with <em>"Act as the X agent…"</em> or by following the file directly.</p>
+    <p>Eight <strong>stage agents</strong>. They form a pipeline orchestrated by <code>.claude/workflows/orchestrator.md</code>. The classifier sizes the task, then the matching pipeline activates the agents in sequence.</p>
     <table>
-      <thead><tr><th>File</th><th>Persona</th><th>Typical invocation</th></tr></thead>
+      <thead><tr><th>File</th><th>Stage role</th></tr></thead>
       <tbody>
-        <tr><td><code>test-writer.md</code></td><td>QA-minded test author — emphasises edge cases and error paths over happy paths</td><td><em>"Act as test-writer and write tests for src/components/Button.tsx"</em></td></tr>
-        <tr><td><code>doc-writer.md</code></td><td>Technical writer — JSDoc, README updates, clear examples</td><td><em>"Follow .claude/agents/doc-writer.md to document this module"</em></td></tr>
-        <tr><td><code>pr-description.md</code></td><td>PR author — structured descriptions from git diff</td><td>Auto-invoked by the <code>new-feature</code> workflow at step 11</td></tr>
-        <tr><td><code>onboarding-guide.md</code></td><td>New-developer guide — anticipates "where is X?" questions</td><td><em>"Run the onboarding-guide for a new developer"</em></td></tr>
+        <tr><td><code>classifier.md</code></td><td>Sizes the task into <code>nano | standard | full</code> and picks the branch name. Runs first on every <code>/start</code>.</td></tr>
+        <tr><td><code>ceo.md</code></td><td>Task intake, flow routing, brief production. Required for standard/full sizes.</td></tr>
+        <tr><td><code>eng.md</code></td><td>Technical spec. Writes <code>docs/spec-&lt;id&gt;.md</code>.</td></tr>
+        <tr><td><code>design.md</code></td><td>UI spec + design tokens (when the flow includes Design).</td></tr>
+        <tr><td><code>build.md</code></td><td>Implementation. Writes <code>docs/progress.md</code>.</td></tr>
+        <tr><td><code>testing.md</code></td><td>Test suite + security validation.</td></tr>
+        <tr><td><code>review.md</code></td><td><strong>The commit gate.</strong> Only stage permitted to issue <code>git commit</code>.</td></tr>
+        <tr><td><code>ship.md</code></td><td>Merge, tag, retrospective. Only runs after Review approval.</td></tr>
       </tbody>
     </table>
 
     <h3>core/.claude/commands/</h3>
-    <p>Seven slash commands. Available in Claude Code as <code>/&lt;name&gt;</code>.</p>
+    <p>Six slash commands. Available in Claude Code as <code>/&lt;name&gt;</code>.</p>
     <table>
       <thead><tr><th>Command</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td><code>/changelog</code></td><td>Generate a <code>CHANGELOG.md</code> entry from recent commits, grouped by conventional-commit type</td></tr>
-        <tr><td><code>/code-review</code></td><td>On-demand multi-agent review — security, performance, accessibility, doc quality</td></tr>
-        <tr><td><code>/doc &lt;file&gt;</code></td><td>Add or update JSDoc on every exported function/class/constant</td></tr>
-        <tr><td><code>/explain &lt;file&gt;</code></td><td>Explain a file: purpose, data flow, dependencies, side-effects, edge cases</td></tr>
-        <tr><td><code>/feature &lt;prd&gt;</code></td><td>Run the <code>new-feature</code> workflow against a PRD path</td></tr>
-        <tr><td><code>/pr</code></td><td>Draft a PR description from the current branch</td></tr>
-        <tr><td><code>/test &lt;file&gt;</code></td><td>Generate or update tests for the target file</td></tr>
+        <tr><td><code>/start &lt;description&gt;</code></td><td>Universal entry point for any change (feature, bug fix, hotfix, refactor, chore). Runs the classifier, picks the branch, loads the matching pipeline.</td></tr>
+        <tr><td><code>/status</code></td><td>Inspect where the current task sits in the pipeline.</td></tr>
+        <tr><td><code>/approve</code></td><td>Advance through the current stage gate.</td></tr>
+        <tr><td><code>/review</code></td><td>Trigger the Review-stage agent manually.</td></tr>
+        <tr><td><code>/code-review</code></td><td>On-demand multi-agent review of a file, commit, or PR — independent of the pipeline.</td></tr>
+        <tr><td><code>/ship</code></td><td>Merge and tag. Requires the Review-stage approval and <code>Reviewed-by: review-agent</code> in the commit.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>core/.claude/workflows/</h3>
+    <p>Pipeline definitions. The orchestrator picks one based on the classifier's task size.</p>
+    <table>
+      <thead><tr><th>File</th><th>What it covers</th></tr></thead>
+      <tbody>
+        <tr><td><code>orchestrator.md</code></td><td>The stage sequencer. Loads the right pipeline file by task size. Enforces the commit rule (only Review-stage may <code>git commit</code>). Handles loopbacks (Testing → Build, Review → Build). For task-size <code>full</code>, runs the 7-agent flow inline (CEO → Eng → [Design] → Build → Testing → Review → Ship).</td></tr>
+        <tr><td><code>pipeline-nano.md</code></td><td>Fast path for trivial changes (1–2 files, no contract change). Build lean → Review lean → done. ~400 tokens.</td></tr>
+        <tr><td><code>pipeline-standard.md</code></td><td>Mid-weight path (2–5 files, contained to one layer). CEO lean → Build → Review → Ship lean. ~1500 tokens.</td></tr>
       </tbody>
     </table>
 
     <h3>core/.claude/hooks/</h3>
-    <p>Three shell scripts wired up by <code>core/.claude/settings.json</code>.</p>
+    <p>Four shell scripts wired up by <code>core/.claude/settings.json</code>.</p>
     <table>
       <thead><tr><th>Hook</th><th>Trigger</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td><code>pre-commit-validate.sh</code></td><td>PreToolUse on Bash <code>git commit</code></td><td>4-step pipeline: ESLint → Prettier → <code>/security-review</code> → <code>/code-review</code>. Blocks the commit on failure.</td></tr>
-        <tr><td><code>post-commit-review.sh</code></td><td>PostToolUse on Bash <code>git commit</code></td><td>Writes a lightweight commit record to <code>.reviews/&lt;sha&gt;.md</code></td></tr>
-        <tr><td><code>statusline.sh</code></td><td>Status-line renderer</td><td>Shows project context in the Claude Code status line</td></tr>
+        <tr><td><code>pre-commit-validate.sh</code></td><td>PreToolUse on Bash <code>git commit</code></td><td>4-step pipeline: ESLint → Prettier → <code>/security-review</code> → <code>/code-review</code>. Missing-plugin gates degrade to a warning by default (set <code>CLAUDE_BOILERPLATE_STRICT=1</code> to fail hard).</td></tr>
+        <tr><td><code>plugin-probe.sh</code></td><td>Called by pre-commit-validate.sh</td><td>Detects whether <code>security-guidance</code> and <code>code-review</code> plugins are installed.</td></tr>
+        <tr><td><code>post-commit-review.sh</code></td><td>PostToolUse on Bash <code>git commit</code></td><td>Writes a lightweight commit record to <code>.reviews/&lt;sha&gt;.md</code>.</td></tr>
+        <tr><td><code>statusline.sh</code></td><td>Status-line renderer</td><td>Shows project context in the Claude Code status line.</td></tr>
       </tbody>
     </table>
 
     <h3>core/.claude/rules/</h3>
-    <p>Generic, stack-agnostic rules. Every target gets these. Stack-specific rules ship with bases (<code>frontend.md</code>, <code>api.md</code>, etc.) and integrations (<code>supabase.md</code>, <code>firebase.md</code>, etc.).</p>
+    <p>Generic, stack-agnostic rules. Every target gets these. Stack-specific rules ship with bases (<code>api.md</code>, <code>frontend.md</code>, etc.) and integrations (<code>supabase.md</code>, <code>firebase.md</code>, etc.).</p>
     <ul>
       <li><code>error-handling.md</code> — try/catch idioms, meaningful messages, when to bubble vs. swallow</li>
       <li><code>security.md</code> — input validation, no hardcoded secrets, injection guards, dangerous APIs</li>
@@ -142,33 +167,18 @@
       <li><code>testing.md</code> — happy/edge/error/security test buckets, coverage discipline</li>
     </ul>
 
-    <h3>core/.claude/skills/ui-ux-pro-max/</h3>
-    <p>
-      Design-intelligence skill: 67 styles, 96 color palettes, 57 font pairings, 99 UX guidelines, 25 chart types,
-      13 technology stacks (React, Next.js, Vue, Svelte, SwiftUI, React Native, Flutter, Tailwind, shadcn/ui…).
-      Auto-triggers on UI-related work (<em>"design a landing page"</em>, <em>"build a dashboard"</em>, <em>"choose a color palette"</em>).
-    </p>
-
-    <h3>core/.agents/workflows/</h3>
-    <p>End-to-end playbooks Claude can execute step by step.</p>
-    <table>
-      <thead><tr><th>Workflow</th><th>What it covers</th><th>How to run</th></tr></thead>
-      <tbody>
-        <tr>
-          <td><code>new-feature.md</code></td>
-          <td>11 steps, PRD → PR. Uses <code>/office-hours</code>, <code>/plan-ceo-review</code>, <code>/brainstorm</code>, <code>/plan-eng-review</code>, <code>/write-plan</code>, <code>/execute-plan</code>, <code>/ship</code> (gstack + superpowers plugins), with <code>pr-description.md</code> as fallback.</td>
-          <td><code>/feature path/to/prd.md</code> or <em>"Follow .agents/workflows/new-feature.md to implement &lt;X&gt;"</em></td>
-        </tr>
-        <tr>
-          <td><code>dependency-update.md</code></td>
-          <td>Audit → fix vulns → update outdated → run tests → commit. Branch-based.</td>
-          <td><em>"Follow .agents/workflows/dependency-update.md"</em></td>
-        </tr>
-      </tbody>
-    </table>
+    <h3>core/scripts/</h3>
+    <p>Scripts that ship to every target project. Don't confuse these with <code>scripts/</code> at the repo root (which is for the boilerplate itself).</p>
+    <ul>
+      <li><code>check-setup.sh</code> — verifies Node version, <code>claude</code> CLI, plugin installation, hook wiring, and <code>.env</code> state. Run as <code>npm run check-setup</code> in target projects.</li>
+      <li><code>review.sh</code> — manual <code>/code-review</code> on the last commit. Run as <code>npm run review</code>.</li>
+    </ul>
 
     <h3>core/.editorconfig, .prettierrc, .prettierignore</h3>
     <p>Stack-agnostic editor and formatting defaults. Every target gets these as a starting point.</p>
+
+    <h3>core/CLAUDE.template.md</h3>
+    <p>The template that becomes the target project's <code>CLAUDE.md</code>. Has four placeholders filled by the base fragment: <code>{{STACK}}</code>, <code>{{COMMANDS}}</code>, <code>{{ARCHITECTURE}}</code>, <code>{{ANTIPATTERNS}}</code>. Integration architecture paragraphs are appended at the bottom.</p>
 
     <hr>
 
@@ -194,7 +204,7 @@
       <li><code>tsconfig.recommended.json</code> (TS bases only) — sane TS defaults</li>
       <li><code>.nvmrc</code> — Node version</li>
       <li><code>package.scripts.json</code> — scripts and devDeps to deep-merge into the target's <code>package.json</code></li>
-      <li><code>CLAUDE.fragment.md</code> — text that fills <code>{{STACK}}</code> / <code>{{COMMANDS}}</code> / <code>{{ARCHITECTURE}}</code> in the template</li>
+      <li><code>CLAUDE.fragment.md</code> — text that fills <code>{{STACK}}</code> / <code>{{COMMANDS}}</code> / <code>{{ARCHITECTURE}}</code> / <code>{{ANTIPATTERNS}}</code> in the template</li>
       <li><code>compatible-integrations.txt</code> — whitelist of integrations <code>apply.sh</code> permits with this base</li>
     </ul>
 
@@ -246,7 +256,7 @@
     <p>Runnable demos. Used to show the pre-commit pipeline in action.</p>
     <h3>examples/express-demo/</h3>
     <p>
-      The original Express API (formerly <code>src/</code> at the repo root). Contains <em>deliberate</em> bugs — SQL
+      A demo Express API. Contains <em>deliberate</em> bugs — SQL
       injection in the admin route, hardcoded secret in the FB service — so the security and code-review hooks have
       something to catch. <code>.reviews/</code> beside it stores historical review reports from past commits.
     </p>
@@ -260,7 +270,7 @@
     <h2 id="docs">docs/</h2>
     <p>This documentation site. Plain HTML, no build step.</p>
     <ul>
-      <li><code>index.html</code> — landing page</li>
+      <li><code>index.html</code> — landing page (interactive stack builder)</li>
       <li><code>folders.html</code> — this page</li>
       <li><code>apply.html</code> — <code>apply.sh</code> contract, combinations, compatibility matrix</li>
       <li><code>bases/</code> — one HTML page per base</li>
@@ -273,11 +283,11 @@
     <hr>
 
     <h2 id="scripts">scripts/</h2>
-    <p>Repo-level tooling.</p>
+    <p>Repo-level tooling. Not copied into target projects (use <code>core/scripts/</code> for things that ship to every target).</p>
     <ul>
-      <li><code>apply.sh</code> — the composer (the script every section above keeps referencing). Validates the combo, copies core, copies the base, copies integrations, merges <code>package.json</code>, renders <code>CLAUDE.md</code>, appends <code>.env.example</code>. See <a href="./apply.html">Apply</a> for the full contract.</li>
+      <li><code>apply.sh</code> — the composer. Validates the combo, copies core, copies the base, copies integrations, merges <code>package.json</code>, renders <code>CLAUDE.md</code>, appends <code>.env.example</code>. Best for <strong>new project directories</strong>. See <a href="./apply.html">Apply</a> for the full contract.</li>
+      <li><code>apply-to-existing.sh</code> — safe-merge wrapper for <strong>existing repos</strong>. Stages a full apply, then copies only files the target doesn't have. Auto-appends unique lines to <code>.gitignore</code> and <code>.env.example</code>. Prints a per-file merge plan for files that already exist (e.g. <code>package.json</code> deep-merge instructions). Preserves a staging copy at <code>.claude-boilerplate-staging/</code> for diffing.</li>
     </ul>
-    <p>The demo's <code>review.sh</code> lives at <code>examples/express-demo/scripts/review.sh</code> — it's part of the demo, not a repo-level tool.</p>
 
     <hr>
 
@@ -285,17 +295,21 @@
     <table>
       <thead><tr><th>File</th><th>Purpose</th></tr></thead>
       <tbody>
+        <tr><td><code>create.sh</code></td><td>Friendly bash wrapper. <code>bash create.sh &lt;base&gt; &lt;target&gt; [integrations…]</code> — saves typing <code>--base=</code> and <code>--integrations=</code>.</td></tr>
+        <tr><td><code>bin/create.js</code></td><td>Node wrapper for npm. Lets users run <code>npx create-claude-boilerplate &lt;base&gt; &lt;target&gt;</code> without cloning.</td></tr>
+        <tr><td><code>package.json</code></td><td>Declares this repo as the npx-publishable <code>create-claude-boilerplate</code> package (just for the wrapper — the repo itself is not a Node project).</td></tr>
         <tr><td><code>CLAUDE.md</code></td><td>Instructions for Claude when editing <em>this boilerplate repo itself</em> (not the target project). The template that becomes the target's <code>CLAUDE.md</code> lives at <code>core/CLAUDE.template.md</code>.</td></tr>
-        <tr><td><code>README.md</code></td><td>High-level pitch, quick start, links to docs. Rewritten in step 5 of the build plan.</td></tr>
+        <tr><td><code>README.md</code></td><td>Public-facing pitch, quick start, links to docs.</td></tr>
+        <tr><td><code>CONTRIBUTING.md</code></td><td>How to add a new base, integration, or preset.</td></tr>
         <tr><td><code>CHANGELOG.md</code></td><td>Boilerplate version history.</td></tr>
-        <tr><td><code>.gitignore</code></td><td>Repo-level ignore. <code>__pycache__/</code> and <code>*.pyc</code> should be added (from the UI skill restore).</td></tr>
+        <tr><td><code>.gitignore</code></td><td>Repo-level ignore.</td></tr>
         <tr><td><code>.vscode/</code></td><td>Recommended VS Code settings.</td></tr>
       </tbody>
     </table>
 
     <footer class="site">
       <div><a href="./index.html">← Home</a></div>
-      <div>Last updated 2026-05-19</div>
+      <div>Last updated 2026-06-15</div>
     </footer>
   </body>
 </html>

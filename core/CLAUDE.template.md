@@ -154,11 +154,97 @@ _TODO: SEV1 / SEV2 / SEV3 definitions + response SLAs._
 
 ## Git
 
-- Branches: `feature/`, `fix/`, `chore/`, `docs/`, `refactor/`, `test/`.
 - Commits: conventional (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`).
 - The pre-commit hook handles lint, format, security, and code review automatically. Don't squash these gates around — they protect the branch.
 
+### Branch naming
+
+| Change type | Branch pattern |
+|---|---|
+| New feature | `feature/<ticket-or-slug>` |
+| Bug fix | `bugfix/<ticket-or-slug>` |
+| Production hotfix | `hotfix/<ticket-or-slug>` |
+| Chore / housekeeping | `chore/<ticket-or-slug>` |
+| Docs only | `docs/<ticket-or-slug>` |
+| Refactor (no behavior change) | `refactor/<ticket-or-slug>` |
+| Tests only | `test/<ticket-or-slug>` |
+
+Rules:
+- Use the ticket ID if present: `feature/PROJ-123`.
+- Otherwise a short slug (2–4 words, lowercase, hyphens): `bugfix/auth-token-expiry`.
+- Never use pipeline-tier prefixes (`nano/`, `task/`, `standard/`) — those are workflow internals, not branch names.
+
+## SDLC workflow
+
+The boilerplate ships an opinionated 8-agent SDLC pipeline triggered by `/start <task>`. Every change — feature, bug fix, hotfix, refactor, chore — goes through it. The **classifier** sizes the task, the **orchestrator** routes through the matching pipeline, each stage stops at its gate for explicit approval, and **only the Review stage is permitted to issue `git commit`**.
+
+### The eight stage agents
+
+Each agent is a markdown file in `.claude/agents/`. The orchestrator activates them in sequence:
+
+| # | File | Role |
+|---|---|---|
+| 1 | `classifier.md` | Runs first (~50 tokens). Sizes the task into `nano / standard / full` and picks the branch name (`feature/`, `bugfix/`, or `hotfix/`). |
+| 2 | `ceo.md` | Task intake, brief production. Outputs `<flow_type>` tag (`backend-feature` / `frontend-feature` / `hotfix` / `design-only` / `security-patch`). |
+| 3 | `eng.md` | Technical spec. Writes `docs/spec-<id>.md`. Gate: `/plan-eng-review`. |
+| 4 | `design.md` | UI spec + design tokens. Only activates when the flow includes Design. |
+| 5 | `build.md` | Implementation. Writes `docs/progress.md`. Can emit `<escalate>` to upgrade the tier mid-task. |
+| 6 | `testing.md` | Test suite + security validation. Loops back to Build on failure. |
+| 7 | `review.md` | **The commit gate.** Only stage permitted to issue `git commit`. Verifies `code-review` and `security-guidance` plugins clean. |
+| 8 | `ship.md` | Merge, tag, retrospective. Runs only after Review approval. |
+
+### Three tiers — the classifier picks one
+
+| Tier | When | Pipeline | Orchestration cost |
+|---|---|---|---|
+| `nano` | 1–2 files, obvious fix, no contract change, no new deps | Build (lean) → Review (lean) | ~400 tokens |
+| `standard` | 2–5 files, contained to one layer (API, UI, or data) | CEO (lean) → Build → Review → Ship (lean) | ~1500 tokens |
+| `full` | New service / cross-cutting / >5 files / security-sensitive | CEO → Eng → [Design] → Build → Testing → Review → Ship | 4000+ tokens |
+
+If Build discovers the scope is bigger than classified, it emits `<escalate>standard|full</escalate>`. The orchestrator re-classifies, reloads the bigger pipeline, and resumes — work on the branch is preserved.
+
+### The commit rule
+
+**Only the Review-stage agent issues `git commit`.** The orchestrator rejects git commands from any other stage. The commit message must include the line `Reviewed-by: review-agent`. The Ship stage verifies this tag before merging — without it, the merge is rejected.
+
+### Loopback rules
+
+When a downstream stage fails, the orchestrator returns to a specific upstream stage with structured findings:
+
+| From | When | Returns to |
+|---|---|---|
+| Testing | Any test fails | Build |
+| Testing | `security-guidance` flags a partial fix | Build |
+| Review | Any BLOCKER finding | Build |
+| Review | Spec compliance failure | Eng |
+
+Maximum 3 cycles per stage pair; on the 4th cycle the orchestrator escalates to CEO for scope reassessment.
+
+### Required plugins
+
+The SDLC pipeline expects these plugins. It degrades gracefully if any are missing (each gate skips with a warning instead of blocking), but capability drops accordingly. Run `npm run check-setup` to verify all five.
+
+| Plugin | Used by | Effect if missing |
+|---|---|---|
+| `gstack` | CEO, Eng, Ship | Skip `/office-hours`, `/plan-ceo-review`, `/plan-eng-review`, `/ship` |
+| `superpowers` | Build | Skip `/brainstorm`, `/write-plan`, `/execute-plan` TDD |
+| `claude-mem` | CEO, Eng, Build, Review, Ship | Pipeline runs without project memory; agents re-derive context each task |
+| `code-review` | Build, Review | Skip step 4 of the pre-commit hook (code-review gate) |
+| `security-guidance` | Testing, Review | Skip step 3 of the pre-commit hook (security-review gate) |
+
+### Workflow files
+
+Default workflows live in `.claude/workflows/`:
+
+- `orchestrator.md` — stage sequencer + commit-rule enforcement. The full-tier 7-agent flow lives inline here.
+- `pipeline-nano.md` — fast path for trivial changes
+- `pipeline-standard.md` — medium path for contained changes
+
+**Adding a custom workflow:** drop a file in `.claude/workflows/project/` — anything under `project/` is user-namespaced (the boilerplate's upgrade machinery never touches it). Wire it into the orchestrator via `.claude/workflows/orchestrator.override.md`. See the boilerplate's `docs/workflow.html` for the interactive walkthrough and the full "How to add a custom workflow" guide.
+
 ## Pre-commit pipeline
+
+> **The commit rule:** code is not committed until the pre-commit gates pass. The 4-step pipeline below is non-negotiable. If you adopt stage-based agents (Orchestrator / CEO / Eng / Design / Build / Testing / Review / Ship), only the **Review-stage agent** issues `git commit` — all other agents hand off. This is enforced at three levels: (1) the pre-commit hook, (2) agent definitions (only Review outputs git commands), (3) any orchestrator rejects `git commit`/`push` from non-Review agents.
 
 Every `git commit` runs `.claude/hooks/pre-commit-validate.sh`:
 
@@ -196,25 +282,37 @@ These rules live in `.claude/rules/` and Claude reads them as the situation call
 
 **Project-specific** (yours — put them in `.claude/rules/project/`)
 
+## Docs convention
+
+If your team uses staged docs per task, follow this naming so authorship and audience are unambiguous. Skip if you don't have a staged process — the pattern works once you do.
+
+| File | Written by | Read by |
+|---|---|---|
+| `docs/spec-<id>.md` | Eng / planning | Build, Testing, Review |
+| `docs/design-<id>.md` | Design | Build, Testing, Review |
+| `docs/progress.md` | Implementer | Testing, Review |
+| `docs/review-<id>.md` | Review gate | Ship, audit trail |
+| `CHANGELOG.md` | Release | everyone |
+
+`<id>` is the ticket ID or branch slug — same identifier used in the branch name (`feature/PROJ-123` → `docs/spec-PROJ-123.md`).
+
 ## Common workflows
 
-### Add a new feature
+### Start any task
 
-1. Have a PRD? Run `/feature <path-to-prd.md>` (wraps `.agents/workflows/new-feature.md`).
-2. No PRD? Write rough notes, then run `/feature` against them.
-3. The workflow: brainstorm → plan → branch → TDD loop → commit → PR.
+`/start <description>` is the universal entry point. See **§ SDLC workflow** above for the full contract (8 agents, 3 tiers, commit rule, loopbacks). Quick examples:
 
-### Fix a bug
+- `/start add Stripe billing to checkout`
+- `/start fix the auth token expiry crash on refresh`
+- `/start hotfix the null-pointer in payment-service`
+- `/start refactor user service into smaller modules`
 
-1. Reproduce locally first.
-2. Write a failing test that captures the bug.
-3. Fix the code; verify the test passes; confirm neighbours didn't break.
-4. Commit — pre-commit hook reviews automatically.
+Use `/approve` to advance through a gate, `/status` to inspect where you are, `/review` for an on-demand review, `/ship` to merge and tag (Review approval required first).
 
 ### Update dependencies
 
 1. `npm run deps:audit && npm run deps:outdated`.
-2. Follow `.agents/workflows/dependency-update.md` — audit → fix vulns first → update outdated → test → commit.
+2. Treat dependency updates like any other task: `/start update outdated dependencies` and let the classifier route through the pipeline.
 
 ## Anti-patterns ("Looks right but is wrong")
 
@@ -238,7 +336,7 @@ This file was generated by the Claude Boilerplate. To extend safely without maki
 - **Add a project-specific rule:** drop it in `.claude/rules/project/<name>.md`. The boilerplate's upgrade machinery never touches anything under `project/`.
 - **Override a managed rule:** create `.claude/rules/<name>.override.md` next to the managed file. Claude reads both; the override wins on conflicts. Survives upgrades.
 - **Extend the pre-commit pipeline:** drop a script in `.claude/hooks/pre-commit.d/` named `before-NN-<name>.sh` (runs before step 1) or `after-NN-<name>.sh` (runs after step 4). Sort order by numeric prefix.
-- **Add a project workflow:** put it in `.agents/workflows/`. Workflows are user-namespaced — upgrades won't touch them.
+- **Add a project workflow:** put it in `.claude/workflows/project/`. Workflows under `project/` are user-namespaced — upgrades won't touch them.
 
 For the full guide see `docs/customizing.html` in the boilerplate repo.
 
