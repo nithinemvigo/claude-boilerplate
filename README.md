@@ -8,23 +8,47 @@ A `core/` of always-on Claude tooling, plus stack-specific **bases** (Express JS
 
 ## Quick start
 
+### Option A — npx (no clone required)
+
+```bash
+# Scaffold your project (whatever framework)
+npx create-next-app@latest my-app --typescript --app
+
+# Apply the boilerplate on top
+npx create-claude-boilerplate nextjs-ts ./my-app supabase tailwind
+```
+
+### Option B — clone and apply
+
 ```bash
 # 1. Clone this repo somewhere
-git clone <repo-url> ~/tools/claude-js-boilerplate
+git clone <repo-url> ~/tools/claude-boilerplate
 
 # 2. Scaffold your project (whatever framework)
 npx create-next-app@latest my-app --typescript --app
 # (or: npm create vite@latest, npx @nestjs/cli new, etc.)
 
-# 3. Apply the boilerplate on top
-bash ~/tools/claude-js-boilerplate/scripts/apply.sh \
-  --base=nextjs-ts --integrations=supabase,tailwind \
-  ./my-app
+# 3. Apply the boilerplate on top — pick one of:
+bash ~/tools/claude-boilerplate/create.sh nextjs-ts ./my-app supabase tailwind
+# or the explicit form:
+bash ~/tools/claude-boilerplate/scripts/apply.sh --base=nextjs-ts --integrations=supabase,tailwind ./my-app
 ```
 
-That's it. `my-app` now has `.claude/`, `.agents/`, `CLAUDE.md`, env keys, merged `package.json` scripts, and stack-specific rules wired up.
+That's it. `my-app` now has `.claude/`, `CLAUDE.md`, env keys, merged `package.json` scripts, and stack-specific rules wired up.
 
-Prefer a named bundle? Use a preset:
+### Option C — drop into an EXISTING repo
+
+If you already have a project with `package.json`, `src/`, etc., use `apply-to-existing.sh` — it copies only files that aren't already there and prints a per-file merge plan for the conflicts:
+
+```bash
+bash ~/tools/claude-boilerplate/scripts/apply-to-existing.sh \
+  --base=express-ts --integrations=prisma \
+  /path/to/your/existing/repo
+```
+
+It auto-appends unique lines to `.gitignore` and `.env.example`, leaves your `package.json` and ESLint config untouched, and saves a staging copy at `.claude-boilerplate-staging/` for diffing during merge.
+
+### Presets — opinionated bundles
 
 ```bash
 bash scripts/apply.sh --preset=t3-stack          ./my-app
@@ -80,36 +104,43 @@ The compatibility matrix (which integrations work with which bases) and the v2 r
 
 After `apply.sh` runs, every target project has:
 
-- **4 agent personas** in `.claude/agents/` — `test-writer`, `doc-writer`, `pr-description`, `onboarding-guide`.
-- **7 slash commands** in `.claude/commands/` — `/feature`, `/pr`, `/test`, `/doc`, `/explain`, `/changelog`, `/code-review`.
-- **3 hooks** in `.claude/hooks/` — pre-commit validation (lint → format → `/security-review` → `/code-review`), post-commit record, status line.
-- **1 skill** in `.claude/skills/ui-ux-pro-max/` — design intelligence (67 styles, 96 palettes, 99 UX guidelines, 13 tech stacks). Auto-triggers on UI work.
-- **2 workflows** in `.agents/workflows/` — `new-feature.md` (PRD → PR in 11 steps), `dependency-update.md`.
+- **8 stage agents** in `.claude/agents/` — `classifier`, `ceo`, `eng`, `design`, `build`, `testing`, `review`, `ship`. The classifier sizes the task; the orchestrator routes through the matching pipeline.
+- **6 slash commands** in `.claude/commands/` — `/start`, `/status`, `/approve`, `/review`, `/code-review`, `/ship`.
+- **3 pipeline definitions** in `.claude/workflows/` — `orchestrator.md`, `pipeline-nano.md`, `pipeline-standard.md`.
+- **4 hooks** in `.claude/hooks/` — pre-commit validation (lint → format → `/security-review` → `/code-review`), post-commit record, status line, plugin probe (graceful degradation when plugins are missing).
 - **Layered rules** in `.claude/rules/` — `error-handling`, `security`, `environment`, `testing` from core, plus framework-specific (e.g. `frontend`, `api`, `nextjs-conventions`) from the base, plus integration-specific (e.g. `supabase`, `tailwind`) from each integration.
-- A populated `CLAUDE.md` — Stack/Commands/Architecture filled from the base, with an integration paragraph appended for each one.
+- **2 helper scripts** in `scripts/` — `check-setup.sh` (verify env + plugins), `review.sh` (manual code review).
+- A populated `CLAUDE.md` — Project context placeholders + Stack/Commands/Architecture/Anti-patterns filled from the base + integration paragraphs appended.
 - `.env.example` with placeholder keys for every integration.
-- `package.json` with `lint`, `format`, `test`, `validate` scripts already wired up.
+- `package.json` with `lint`, `format`, `test`, `validate`, `review`, `check-setup` scripts already wired up.
 
-Concrete example — `--base=nextjs-ts --integrations=supabase,tailwind,prisma` lands **38 files**, 11 of them rules.
+Concrete example — `--base=nextjs-ts --integrations=supabase,tailwind,prisma` lands ~40 files.
 
 ---
 
-## Running a workflow
+## Running a task
 
-Three ways:
+`/start <description>` is the universal entry point for any change:
 
-```bash
-# 1. Slash command (in Claude Code)
-/feature path/to/prd.md
-
-# 2. Explicit prompt
-Follow the workflow in .agents/workflows/new-feature.md to implement <X>
-
-# 3. Step-by-step
-# Open .agents/workflows/new-feature.md and run each step manually
+```text
+/start add Stripe subscription billing to checkout
+/start fix the auth token expiry crash on refresh
+/start hotfix the null-pointer in payment-service
+/start refactor user service into smaller modules
 ```
 
-The `new-feature` workflow uses `/office-hours`, `/plan-ceo-review`, `/brainstorm`, `/plan-eng-review`, `/write-plan`, `/execute-plan`, and `/ship` from the **gstack** and **superpowers** plugins, plus the `pr-description` agent as a fallback.
+What happens:
+
+1. The **classifier** (`.claude/agents/classifier.md`) reads the description and emits the task size (`nano | standard | full`) and the branch name (`feature/`, `bugfix/`, or `hotfix/`).
+2. The **orchestrator** (`.claude/workflows/orchestrator.md`) loads the matching pipeline:
+   - **nano** → Build lean → Review lean → done (~400 tokens)
+   - **standard** → CEO lean → Build → Review → Ship lean (~1500 tokens)
+   - **full** → CEO → Eng → [Design] → Build → Testing → Review → Ship (~4000+ tokens)
+3. Each stage stops at its gate. Use `/approve` to advance, `/status` to inspect, `/review` for an on-demand review, `/ship` to merge and tag (Review approval required first).
+
+**The commit rule:** only the Review-stage agent issues `git commit`. The orchestrator rejects git commands from any other stage.
+
+For the full SDLC pipeline (workflows use the **gstack** and **superpowers** plugins for `/office-hours`, `/plan-ceo-review`, `/brainstorm`, `/plan-eng-review`, `/write-plan`, `/execute-plan`, `/ship`), see the per-stage agents in `.claude/agents/`.
 
 ---
 
@@ -123,6 +154,8 @@ Every `git commit` in a target project triggers `.claude/hooks/pre-commit-valida
 4. **`/code-review`** — blocks if the verdict is "Request Changes" or critical issues are found.
 
 Reports save to `.reviews/<commit-sha>.md` automatically. The commit is rejected if any gate fails — no need for Husky or pre-commit framework setup.
+
+If either plugin is missing, that gate **degrades to a warning** rather than blocking the commit (set `CLAUDE_BOILERPLATE_STRICT=1` to fail hard instead). Run `npm run check-setup` any time to verify Node, the `claude` CLI, both plugins, and the hook wiring.
 
 ---
 
@@ -142,15 +175,19 @@ The pipeline still runs if a plugin is missing — that gate just gets skipped w
 ## Repo anatomy
 
 ```
-claude-js-boilerplate/
-├── core/                     ← copied to every target (agents, commands, hooks, skills, generic rules, CLAUDE template)
+claude-boilerplate/
+├── core/                     ← copied to every target (8 agents, 6 commands, 4 hooks, 3 pipelines, generic rules, CLAUDE template, helper scripts)
 ├── overlays/
 │   ├── bases/                ← one per project (express-js, express-ts, nestjs, react-vite-ts, nextjs-ts)
 │   └── integrations/         ← zero or more per project (supabase, firebase, tailwind, prisma)
 ├── presets/                  ← named base + integrations bundles
 ├── examples/express-demo/    ← runnable demo with deliberate bugs the security pipeline catches
 ├── docs/                     ← documentation site (HTML, no build step)
-├── scripts/apply.sh          ← the composer
+├── scripts/
+│   ├── apply.sh              ← composer for NEW project directories
+│   └── apply-to-existing.sh  ← safe-merge into an EXISTING repo
+├── create.sh                 ← friendly wrapper: bash create.sh <base> <target> [integrations…]
+├── bin/create.js             ← npx wrapper: npx create-claude-boilerplate <base> <target>
 ├── README.md                 ← this file
 ├── CLAUDE.md                 ← instructions for editing the boilerplate itself
 └── CONTRIBUTING.md           ← how to add a new base, integration, or preset

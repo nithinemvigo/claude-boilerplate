@@ -12,12 +12,21 @@ See `docs/index.html` for the public-facing overview.
 
 ```
 core/                              ← copied into every target project, untouched per target
+  .claude/agents/                   8 stage agents (classifier + ceo/eng/design/build/testing/review/ship)
+  .claude/commands/                 6 slash commands (/start, /status, /approve, /review, /code-review, /ship)
+  .claude/workflows/                pipeline definitions (orchestrator, pipeline-nano, pipeline-standard)
+  .claude/hooks/                    pre-commit + post-commit + statusline + plugin-probe
+  .claude/rules/                    generic rules (error-handling, security, environment, testing)
+  scripts/                          target-side helpers (check-setup.sh, review.sh)
+  CLAUDE.template.md                4 placeholders: {{STACK}}, {{COMMANDS}}, {{ARCHITECTURE}}, {{ANTIPATTERNS}}
 overlays/bases/<name>/             ← pick exactly one per target
 overlays/integrations/<name>/      ← pick zero or more per target — additive only
 presets/<name>.json                ← named base + integrations bundles
 examples/express-demo/             ← runnable demo (deliberate bugs for the security pipeline to catch)
 docs/                              ← documentation site (HTML, no build step)
-scripts/apply.sh                   ← the composer
+scripts/apply.sh                   ← the composer for new project directories
+scripts/apply-to-existing.sh       ← safe-merge wrapper for existing repos
+create.sh, bin/create.js           ← friendly wrappers (bash + npx)
 ```
 
 Full breakdown: `docs/folders.html`.
@@ -31,16 +40,19 @@ Full breakdown: `docs/folders.html`.
 3. Add a flat `eslint.config.js`.
 4. Add `tsconfig.recommended.json` if it's a TypeScript base.
 5. Add `package.scripts.json` with the framework's scripts and devDeps.
-6. Add `CLAUDE.fragment.md` with exactly three sections matching the template placeholders:
+6. Add `CLAUDE.fragment.md` with exactly four sections matching the template placeholders:
    ```
    ## {{STACK}}
-   <stack description>
+   <stack description as a bullet list>
 
    ## {{COMMANDS}}
-   <commands list>
+   <commands grouped by purpose: Dev loop / Quality / Database / Preflight / Review / Maintenance>
 
    ## {{ARCHITECTURE}}
-   <architecture map>
+   <tree + "What goes where" table + base-specific notes>
+
+   ## {{ANTIPATTERNS}}
+   <"Looks right but is wrong" — concrete, framework-specific>
    ```
 7. Add `compatible-integrations.txt` — one integration name per line.
 8. Update the `COMPAT[]` map in `scripts/apply.sh` for this base.
@@ -103,7 +115,7 @@ Quick checks while iterating:
 - **DO** run `apply.sh` against a scratch target whenever you change `core/`, an overlay, or the script itself.
 - **DO** keep the v1 scope honest: bases = `express-js`, `express-ts`, `nestjs`, `react-vite-ts`, `nextjs-ts`; integrations = `supabase`, `firebase`, `tailwind`, `prisma`; presets = `t3-stack`, `supabase-nextjs`, `firebase-react`.
 - **DON'T** edit files under `core/.claude/hooks/` without testing — they fire on every commit in *every* target project. A broken hook there breaks everyone.
-- **DON'T** add stack-specific content to `core/CLAUDE.template.md`. Use `{{STACK}}` / `{{COMMANDS}}` / `{{ARCHITECTURE}}` placeholders instead.
+- **DON'T** add stack-specific content to `core/CLAUDE.template.md`. Use `{{STACK}}` / `{{COMMANDS}}` / `{{ARCHITECTURE}}` / `{{ANTIPATTERNS}}` placeholders instead.
 - **DON'T** ship starter code in integrations by default — keep them rules + env + architecture. Starter code drifts when SDKs change. (A `--starter` flag is reserved for v2.)
 - **DON'T** assume the boilerplate repo itself is a Node project. There's no root `package.json`. `examples/express-demo/` is the demo Node project; the repo around it is just a delivery vehicle.
 

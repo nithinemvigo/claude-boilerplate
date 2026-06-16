@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workflow — Claude Boilerplate</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <style>
+      /* Walkthrough-specific styles, layered on top of the shared theme */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.72rem;
+        font-weight: 500;
+        padding: 0.18rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--bg-elev);
+        color: var(--text-dim);
+        font-family: ui-monospace, SFMono-Regular, monospace;
+      }
+      .badge-agent  { background: rgba(192, 132, 252, 0.12); color: var(--purple); border-color: rgba(192, 132, 252, 0.3); }
+      .badge-plugin { background: rgba(74, 222, 128, 0.10); color: var(--green); border-color: rgba(74, 222, 128, 0.3); }
+      .badge-gate   { background: rgba(250, 204, 21, 0.10); color: var(--yellow); border-color: rgba(250, 204, 21, 0.3); }
+      .badge-active { background: rgba(56, 189, 248, 0.12); color: var(--accent); border-color: rgba(56, 189, 248, 0.3); }
+      .badge-done   { background: rgba(74, 222, 128, 0.12); color: var(--green); border-color: rgba(74, 222, 128, 0.3); }
+      .badge-blocked{ background: rgba(248, 113, 113, 0.12); color: var(--red); border-color: rgba(248, 113, 113, 0.3); }
+      .badge-skip   { background: var(--bg-elev); color: var(--text-dim); }
+
+      .stage-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.1rem 1.25rem;
+      }
+      .stage-card.active  { border-color: rgba(56, 189, 248, 0.45); box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.12); }
+      .stage-card.done    { border-color: rgba(74, 222, 128, 0.45); }
+      .stage-card.blocked { border-color: rgba(248, 113, 113, 0.45); }
+
+      .stage-card .step-header { display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.5rem; }
+      .step-num {
+        width: 28px; height: 28px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 0.85rem; font-weight: 600;
+        background: var(--bg-elev); color: var(--text-dim);
+        border: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .step-num.active  { background: rgba(56, 189, 248, 0.15); color: var(--accent); border-color: var(--accent); }
+      .step-num.done    { background: rgba(74, 222, 128, 0.15); color: var(--green); border-color: var(--green); }
+      .step-num.blocked { background: rgba(248, 113, 113, 0.15); color: var(--red); border-color: var(--red); }
+
+      .step-label { font-size: 1rem; font-weight: 600; color: var(--text); }
+      .step-sub { font-size: 0.85rem; color: var(--text-dim); margin-top: 0.15rem; }
+
+      .pill-row { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+
+      .terminal {
+        background: var(--code-bg);
+        color: var(--text);
+        border: 1px solid var(--border-soft, var(--border));
+        border-radius: 8px;
+        padding: 0.85rem 1rem;
+        font-family: ui-monospace, SFMono-Regular, monospace;
+        font-size: 0.8rem;
+        line-height: 1.55;
+        margin-top: 0.6rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-x: auto;
+      }
+      .terminal .cmd   { color: var(--accent); }
+      .terminal .ok    { color: var(--green); }
+      .terminal .warn  { color: var(--yellow); }
+      .terminal .err   { color: var(--red); }
+      .terminal .muted { color: var(--text-dim); }
+
+      .output-box {
+        border-left: 3px solid var(--accent);
+        background: rgba(56, 189, 248, 0.07);
+        padding: 0.6rem 0.9rem;
+        margin-top: 0.6rem;
+        font-size: 0.88rem;
+        color: var(--text);
+        border-radius: 0 6px 6px 0;
+      }
+      .loopback-box {
+        border-left: 3px solid var(--red);
+        background: rgba(248, 113, 113, 0.07);
+        padding: 0.6rem 0.9rem;
+        margin-top: 0.6rem;
+        font-size: 0.88rem;
+        color: var(--text);
+        border-radius: 0 6px 6px 0;
+      }
+
+      .nav-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg-elev);
+        color: var(--text);
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+      .nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+      .nav-btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+      .nav-btn.primary:hover:not(:disabled) { background: var(--accent-dim); color: var(--bg); }
+
+      .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin: 0.4rem 0 1.2rem; }
+      .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.35s ease; }
+
+      .connector { text-align: center; color: var(--text-dim); font-size: 1.2rem; line-height: 1; margin: 0.35rem 0; }
+      .stage-card.peek { opacity: 0.45; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="brand"><a href="./index.html" style="color:inherit;text-decoration:none">Claude Boilerplate</a></div>
+      <nav>
+        <a href="./index.html#builder">Builder</a>
+        <a href="./index.html#features">Features</a>
+        <a href="./index.html#pipeline">Pipeline</a>
+        <a href="./index.html#stacks">Stacks</a>
+        <a href="./folders.html">Folders</a>
+        <a href="./apply.html">Apply</a>
+        <a href="./workflow.html">Workflow</a>
+        <a href="./bases/index.html">Bases</a>
+        <a href="./integrations/index.html">Integrations</a>
+        <a href="./presets/index.html">Presets</a>
+        <a href="https://github.com/nithinemvigo/claude-js-boilerplate" target="_blank">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <h1>Default SDLC workflow</h1>
+    <p class="lede">
+      This is the <strong>default workflow</strong> that ships with the boilerplate. <code>/start &lt;task&gt;</code> runs the classifier, the orchestrator routes to the matching pipeline (nano / standard / full), and the agents hand off stage by stage until the change is merged.
+    </p>
+
+    <div class="callout">
+      <strong>This is the default — your team can add more.</strong> Drop additional workflow files in <code>.claude/workflows/project/</code> (anything under <code>project/</code> is user-namespaced — the boilerplate's upgrade machinery never touches it). See <a href="#customize">How to add your own workflow</a> at the bottom of this page.
+    </div>
+
+    <div class="toc">
+      <h4>On this page</h4>
+      <ul>
+        <li><a href="#walkthrough">Interactive walkthrough</a> — full task, 9 steps</li>
+        <li><a href="#tiers">Three tiers (nano · standard · full)</a></li>
+        <li><a href="#flows">Five flow types</a></li>
+        <li><a href="#loopbacks">Loopback rules</a></li>
+        <li><a href="#gates">Gate reference</a></li>
+        <li><a href="#customize">How to add a custom workflow</a></li>
+      </ul>
+    </div>
+
+    <h2 id="walkthrough">Interactive walkthrough</h2>
+    <p>
+      Trace of a real task: <code>/start add rate limiting to the API</code>. This task gets classified <strong>full</strong> (security-sensitive, touches middleware + routes + tests + docs), so it goes through every stage. The walkthrough also shows a Review-blocked loopback to Build — a common pattern.
+    </p>
+    <p class="lede">Click <em>Next →</em> to step through.</p>
+
+    <div style="background:var(--bg-elev);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin:1rem 0 1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem;font-size:0.85rem;color:var(--text-dim);">
+        <div>Task: <span style="font-family:ui-monospace,monospace;font-size:0.82rem;color:var(--text);">/start add rate limiting to the API</span></div>
+        <div id="step-counter">Step 1 of 9</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog" style="width:11%"></div></div>
+
+      <div id="scene"></div>
+
+      <div style="display:flex;gap:0.5rem;margin-top:1rem;justify-content:flex-end;">
+        <button class="nav-btn" id="reset-btn" onclick="reset()">↺ Restart</button>
+        <button class="nav-btn" id="prev-btn" onclick="move(-1)" disabled>← Back</button>
+        <button class="nav-btn primary" id="next-btn" onclick="move(1)">Next →</button>
+      </div>
+    </div>
+
+    <h2 id="tiers">Three tiers — the classifier picks one</h2>
+    <p>The classifier (~50 tokens) runs first on every <code>/start</code>. It emits <code>&lt;task_size&gt;nano | standard | full&lt;/task_size&gt;</code>. The orchestrator loads the matching pipeline.</p>
+    <table>
+      <thead><tr><th>Tier</th><th>When it fits</th><th>Pipeline</th><th>Cost</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="tag ok">nano</span></td>
+          <td>1–2 files · obvious fix · no contract or schema change · no new deps</td>
+          <td>Build → Review</td>
+          <td>~400 tokens</td>
+        </tr>
+        <tr>
+          <td><span class="tag" style="color:var(--accent);border-color:rgba(56,189,248,0.3);">standard</span></td>
+          <td>2–5 files · contained to one layer · clear scope</td>
+          <td>CEO (lean) → Build → Review → Ship (lean)</td>
+          <td>~1500 tokens</td>
+        </tr>
+        <tr>
+          <td><span class="tag new">full</span></td>
+          <td>New service · cross-cutting · security-sensitive · &gt;5 files</td>
+          <td>CEO → Eng → [Design] → Build → Testing → Review → Ship</td>
+          <td>4000+ tokens</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 id="flows">Five flow types — picked by CEO</h2>
+    <p>After the classifier picks the tier, the CEO emits a <code>&lt;flow_type&gt;</code> tag that determines which agents are skipped. From <code>.claude/workflows/orchestrator.md</code>:</p>
+    <table>
+      <thead><tr><th>flow_type</th><th>Stage sequence</th><th>Use case</th></tr></thead>
+      <tbody>
+        <tr><td><code>backend-feature</code></td><td>CEO → Eng → Build → Testing → Review → Ship</td><td>API endpoints, services, middleware (no UI)</td></tr>
+        <tr><td><code>frontend-feature</code></td><td>CEO → Eng → <strong>Design</strong> → Build → Testing → Review → Ship</td><td>Anything that touches the UI</td></tr>
+        <tr><td><code>hotfix</code></td><td>CEO → Build → Testing → Review → Ship</td><td>Prod emergency. Skips Eng (no spec doc) and Design.</td></tr>
+        <tr><td><code>design-only</code></td><td>CEO → Design → Review → Ship</td><td>Design tokens, UI kit changes, no code</td></tr>
+        <tr><td><code>security-patch</code></td><td>CEO → Eng → Build → Testing → Review → Ship</td><td>Testing stage adds <code>security-guidance</code> plugin</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="loopbacks">Loopback rules</h2>
+    <p>When a downstream stage fails, the orchestrator returns to a specific upstream stage with structured findings. Maximum <strong>3 cycles per stage pair</strong>; on the 4th cycle, escalates to CEO for scope reassessment.</p>
+    <table>
+      <thead><tr><th>From</th><th>Condition</th><th>Returns to</th><th>Context passed</th></tr></thead>
+      <tbody>
+        <tr><td>Testing</td><td>Any test fails</td><td>Build</td><td>Failure log from <code>docs/progress.md</code></td></tr>
+        <tr><td>Testing</td><td><code>security-guidance</code> flags partial fix</td><td>Build</td><td>security-guidance plugin output</td></tr>
+        <tr><td>Review</td><td>Any BLOCKER finding</td><td>Build</td><td>Full review checklist</td></tr>
+        <tr><td>Review</td><td>Spec compliance failure</td><td>Eng</td><td>Specific compliance gaps</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="gates">Gate reference</h2>
+    <p>Each stage has a gate that must pass before the next agent activates.</p>
+    <table>
+      <thead><tr><th>Stage</th><th>Gate</th><th>Hard block?</th></tr></thead>
+      <tbody>
+        <tr><td>CEO</td><td><code>/plan-ceo-review</code> (hotfix flow self-approves)</td><td>Yes</td></tr>
+        <tr><td>Eng</td><td><code>/plan-eng-review</code></td><td>Yes</td></tr>
+        <tr><td>Design</td><td><code>/plan-design-review</code></td><td>Yes</td></tr>
+        <tr><td>Build</td><td><code>code-review</code> self-review clean</td><td>Yes</td></tr>
+        <tr><td>Testing</td><td>All tests green + <code>security-guidance</code> (for security-patch)</td><td>Yes — loops to Build</td></tr>
+        <tr><td>Review</td><td>Zero BLOCKERs from <code>code-review</code> + <code>security-guidance</code></td><td>Yes — loops to Build</td></tr>
+        <tr><td>Ship</td><td><code>Reviewed-by: review-agent</code> in commit message</td><td>Yes — hard stop</td></tr>
+      </tbody>
+    </table>
+
+    <h2 id="customize">How to add a custom workflow</h2>
+    <p>The default workflow above covers most teams. If yours has a different shape — say a stricter compliance gate, an extra security review, or a different stage order — you don't fork the boilerplate. You drop a new workflow into <code>.claude/workflows/project/</code> and it lives alongside the defaults.</p>
+
+    <h3>1. Where it lives</h3>
+    <p>Path: <code>.claude/workflows/project/&lt;workflow-name&gt;.md</code></p>
+    <p>Anything under <code>.claude/workflows/project/</code> is <strong>user-namespaced</strong> — the boilerplate's <code>apply.sh upgrade</code> never overwrites or removes it. The defaults stay in <code>.claude/workflows/{orchestrator,pipeline-nano,pipeline-standard}.md</code>.</p>
+
+    <h3>2. Minimal structure</h3>
+<pre><code># &lt;Workflow name&gt;
+
+## Trigger
+&lt;When does the orchestrator load this workflow? Usually via flow_type tag from CEO.&gt;
+
+## Stage sequence
+
+CEO → Eng → Build → Testing → Review → Ship
+
+(or whichever stages fit your process)
+
+## Gates
+| Stage | Gate condition | Hard block? |
+|---|---|---|
+| ... | ... | Yes/No |
+
+## Loopbacks
+| From | Condition | Returns to | Context |
+|---|---|---|---|
+
+## Plugins used
+- &lt;plugin-name&gt; — &lt;which stages call it&gt;
+
+## Branch naming
+&lt;If different from the default feature/bugfix/hotfix scheme&gt;
+</code></pre>
+
+    <h3>3. Wire it into the orchestrator</h3>
+    <p>The CEO agent emits a <code>&lt;flow_type&gt;</code> tag based on the task. The orchestrator (<code>.claude/workflows/orchestrator.md</code>) reads that tag and loads the matching workflow file. To add a custom flow:</p>
+    <ol>
+      <li><strong>Pick a flow_type identifier</strong> — e.g. <code>compliance-audit</code>, <code>data-migration</code>, <code>vendor-integration</code>.</li>
+      <li><strong>Override the CEO agent</strong> by adding <code>.claude/agents/ceo.override.md</code> teaching it when to emit your new flow_type (e.g. "if the task mentions PII, GDPR, or SOC2, emit <code>&lt;flow_type&gt;compliance-audit&lt;/flow_type&gt;</code>"). The override file is read alongside the default; conflicting guidance defers to the override.</li>
+      <li><strong>Tell the orchestrator about it</strong> by adding <code>.claude/workflows/orchestrator.override.md</code> with the routing rule for your new flow_type. Same override-file convention.</li>
+    </ol>
+
+    <h3>4. Verify it</h3>
+    <pre><code>bash scripts/check-setup.sh
+# Verifies the new workflow file exists and is non-empty.
+
+/start &lt;a task that should trigger your workflow&gt;
+# The classifier and orchestrator should route to your custom flow.
+# If CEO emits the wrong flow_type, refine the override.</code></pre>
+
+    <h3>5. Examples teams have built</h3>
+    <p>For inspiration — these aren't shipped, but they're the kind of customisation that fits naturally:</p>
+    <ul>
+      <li><code>compliance-audit</code> — CEO → Eng → Build → Testing → <strong>Compliance</strong> → Review → Ship. Adds a Compliance stage between Testing and Review that runs a custom checklist agent.</li>
+      <li><code>data-migration</code> — CEO → Eng → Build → <strong>Dry-run</strong> → Testing → Review → Ship. Adds a dry-run stage that executes the migration against a snapshot.</li>
+      <li><code>vendor-integration</code> — CEO → Eng → Build → Testing → <strong>Contract-verify</strong> → Review → Ship. Adds a stage that hits the vendor's sandbox API and verifies the response contract.</li>
+    </ul>
+
+    <h3>6. Reference</h3>
+    <ul>
+      <li><a href="./folders.html#core">Folder structure</a> — where <code>.claude/workflows/</code> lives</li>
+      <li><a href="./apply.html">apply.sh contract</a> — how applies and upgrades treat the <code>project/</code> namespace</li>
+      <li>Source files in any applied target: <code>.claude/workflows/orchestrator.md</code>, <code>pipeline-nano.md</code>, <code>pipeline-standard.md</code></li>
+    </ul>
+
+    <footer class="site">
+      <div><a href="./index.html">← Home</a></div>
+      <div>Last updated 2026-06-15</div>
+    </footer>
+
+    <script>
+      const steps = [
+        {
+          status: 'active',
+          label: 'CEO — task intake',
+          sub: 'Orchestrator activates the CEO agent first.',
+          agent: 'CEO',
+          plugins: ['/office-hours', '/brainstorm', '/plan-ceo-review', 'claude-mem (read)'],
+          terminal: '<span class="cmd">/start add rate limiting to the API</span>\n' +
+                    '\n' +
+                    '<span class="muted">→ Orchestrator: classifier emits &lt;task_size&gt;full&lt;/task_size&gt;</span>\n' +
+                    '<span class="muted">→ Loading CEO agent...</span>\n' +
+                    '<span class="muted">→ claude-mem: reading codebase context...</span>\n' +
+                    '\n' +
+                    '<span class="ok">[CEO] Running /office-hours</span>\n' +
+                    '  Problem:   API has no request throttling — abuse risk\n' +
+                    '  Criteria:  100 req/min per IP, 429 response on breach\n' +
+                    '  Scope:     Express middleware only, no DB changes\n' +
+                    '  Risk:      Redis not yet in stack — use in-memory for now\n' +
+                    '\n' +
+                    '<span class="ok">[CEO] Running /brainstorm</span>\n' +
+                    '  Option A: Custom middleware (chosen — minimal deps)\n' +
+                    '  Option B: express-rate-limit package\n' +
+                    '  Option C: API gateway (out of scope)\n' +
+                    '\n' +
+                    '<span class="ok">[CEO] Emitting flow type...</span>\n' +
+                    '  &lt;flow_type&gt;backend-feature&lt;/flow_type&gt;\n' +
+                    '\n' +
+                    '<span class="ok">[CEO] /plan-ceo-review → PASSED</span>\n' +
+                    '<span class="ok">[CEO] claude-mem write: task:042:brief</span>',
+          output: 'Brief ready. flow_type = backend-feature. Handing off to Eng.',
+          gate: '/plan-ceo-review → PASSED'
+        },
+        {
+          status: 'active',
+          label: 'Eng — technical spec',
+          sub: 'API contracts, error envelopes, middleware design.',
+          agent: 'Eng',
+          plugins: ['/write-plan', '/plan-eng-review', 'code-review'],
+          terminal: '<span class="muted">→ Orchestrator: loading Eng agent...</span>\n' +
+                    '<span class="muted">→ claude-mem: reading API conventions...</span>\n' +
+                    '\n' +
+                    '<span class="ok">[ENG] Running /write-plan</span>\n' +
+                    '  Middleware: rateLimiter(windowMs, max)\n' +
+                    '  Response:   429 Too Many Requests\n' +
+                    '              body: { error: "rate_limit_exceeded",\n' +
+                    '                      retry_after: 60 }\n' +
+                    '  Headers:    X-RateLimit-Limit, X-RateLimit-Remaining,\n' +
+                    '              X-RateLimit-Reset, Retry-After\n' +
+                    '  Scope:      applied globally before route handlers\n' +
+                    '  Storage:    MemoryStore (in-process, resets on restart)\n' +
+                    '\n' +
+                    '<span class="ok">[ENG] code-review on spec → clean</span>\n' +
+                    '<span class="ok">[ENG] /plan-eng-review → PASSED</span>\n' +
+                    '\n' +
+                    '<span class="ok">Output: docs/spec-042.md</span>',
+          output: 'docs/spec-042.md written. Eng gate passed.',
+          gate: '/plan-eng-review → PASSED'
+        },
+        {
+          status: 'skip',
+          label: 'Design — skipped',
+          sub: 'backend-feature flow does not include Design.',
+          agent: 'Design',
+          plugins: [],
+          terminal: '<span class="muted">→ Orchestrator: flow_type = backend-feature\n' +
+                    '→ Design agent: SKIPPED (no UI changes)</span>',
+          output: null,
+          gate: null
+        },
+        {
+          status: 'active',
+          label: 'Build — implementation',
+          sub: 'Code on the worktree branch. NO commits at this stage.',
+          agent: 'Build',
+          plugins: ['/execute-plan', 'code-review (loop)', 'claude-mem (read)'],
+          terminal: '<span class="muted">→ Orchestrator: loading Build agent...</span>\n' +
+                    '<span class="muted">→ Reading docs/spec-042.md</span>\n' +
+                    '<span class="muted">→ claude-mem: reading coding conventions...</span>\n' +
+                    '\n' +
+                    '<span class="ok">[BUILD] Creating worktree</span>\n' +
+                    '  git worktree add ../worktrees/task-042 -b task/042\n' +
+                    '\n' +
+                    '<span class="ok">[BUILD] /execute-plan</span>\n' +
+                    '\n' +
+                    '<span class="muted">Chunk 1: rateLimiter middleware</span>\n' +
+                    '  src/middlewares/rateLimiter.middleware.js  ✓\n' +
+                    '  → code-review: clean\n' +
+                    '\n' +
+                    '<span class="muted">Chunk 2: wire into app.js</span>\n' +
+                    '  src/app.js  ✓\n' +
+                    '  → code-review: clean\n' +
+                    '\n' +
+                    '<span class="muted">Chunk 3: response helpers</span>\n' +
+                    '  src/utils/httpErrors.js  ✓\n' +
+                    '  → code-review: 1 warning (magic number) → fixed\n' +
+                    '\n' +
+                    '<span class="ok">[BUILD] docs/progress.md updated</span>\n' +
+                    '<span class="warn">⚠ NO git commit. Branch: task/042 (local only)</span>',
+          output: 'Implementation complete on task/042. Handing off to Testing.',
+          gate: 'code-review self-review → clean'
+        },
+        {
+          status: 'active',
+          label: 'Testing — verify',
+          sub: 'Unit + integration + regression. All must pass.',
+          agent: 'Testing',
+          plugins: ['/execute-plan (test mode)', 'code-review'],
+          terminal: '<span class="muted">→ Orchestrator: loading Testing agent...</span>\n' +
+                    '<span class="muted">→ Reading docs/spec-042.md + docs/progress.md</span>\n' +
+                    '\n' +
+                    '<span class="ok">[TEST] /execute-plan (test mode)</span>\n' +
+                    '\n' +
+                    '<span class="muted">Unit tests</span>\n' +
+                    '  rateLimiter: allows requests under limit       ✓\n' +
+                    '  rateLimiter: blocks at limit, returns 429      ✓\n' +
+                    '  rateLimiter: sets correct headers              ✓\n' +
+                    '  rateLimiter: window resets after windowMs      ✓\n' +
+                    '\n' +
+                    '<span class="muted">Integration tests</span>\n' +
+                    '  GET /api/items — 100 requests → 200            ✓\n' +
+                    '  GET /api/items — 101st request → 429           ✓\n' +
+                    '  429 body matches spec contract                 ✓\n' +
+                    '  Retry-After header present                     ✓\n' +
+                    '\n' +
+                    '<span class="muted">Regression</span>\n' +
+                    '  Existing routes unaffected                     ✓\n' +
+                    '\n' +
+                    '<span class="ok">[TEST] code-review on coverage → no untested paths</span>\n' +
+                    '<span class="ok">[TEST] All 12 tests passed ✓</span>',
+          output: 'All tests green. Handing off to Review.',
+          gate: 'all tests green → PASSED'
+        },
+        {
+          status: 'blocked',
+          label: 'Review — BLOCKED',
+          sub: 'One blocker found. Loops back to Build.',
+          agent: 'Review',
+          plugins: ['code-review', 'security-guidance', 'claude-mem (read)'],
+          terminal: '<span class="muted">→ Orchestrator: loading Review agent...</span>\n' +
+                    '<span class="muted">→ Reading full diff on task/042...</span>\n' +
+                    '\n' +
+                    '<span class="ok">[REVIEW] code-review on full diff</span>\n' +
+                    '  ✓ Implementation matches spec\n' +
+                    '  ✓ Error paths handled\n' +
+                    '  ✓ 429 body correct\n' +
+                    '  ✓ Headers complete\n' +
+                    '\n' +
+                    '<span class="ok">[REVIEW] security-guidance</span>\n' +
+                    '  <span class="err">✗ BLOCKER: MemoryStore is per-process\n' +
+                    '    In clustered/multi-instance deploy, each process\n' +
+                    '    has its own counter — limit is N×100 req/min,\n' +
+                    '    not 100. Must document this constraint explicitly\n' +
+                    '    or use shared store.</span>\n' +
+                    '  ✓ No injection vectors\n' +
+                    '  ✓ No sensitive data leaked in 429 body\n' +
+                    '\n' +
+                    '<span class="err">[REVIEW] Decision: BLOCKED\n' +
+                    '  → Returning to Build with findings (loopback 1/3)</span>',
+          output: null,
+          gate: null,
+          loopback: 'MemoryStore is per-process — limit bypass in clustered deploys. Add doc comment + README warning before approval.'
+        },
+        {
+          status: 'active',
+          label: 'Build — fix (loopback 1/3)',
+          sub: 'Applying Review findings. Still no commit.',
+          agent: 'Build',
+          plugins: ['code-review', 'claude-mem (read)'],
+          terminal: '<span class="muted">→ Orchestrator: loopback → Build agent (cycle 1/3)</span>\n' +
+                    '<span class="muted">→ Review findings: MemoryStore clustering caveat</span>\n' +
+                    '\n' +
+                    '<span class="ok">[BUILD] Applying fix</span>\n' +
+                    '\n' +
+                    '  src/middlewares/rateLimiter.middleware.js\n' +
+                    '  + /**\n' +
+                    '  +  * NOTE: Uses in-memory MemoryStore (single-process only).\n' +
+                    '  +  * In clustered or multi-instance deployments, each process\n' +
+                    '  +  * maintains its own counter. For shared limiting, replace\n' +
+                    '  +  * with RedisStore (see docs/spec-042.md §Storage).\n' +
+                    '  +  */\n' +
+                    '\n' +
+                    '  README.md → added §Rate limiting caveats\n' +
+                    '\n' +
+                    '<span class="ok">[BUILD] code-review on fix → clean</span>\n' +
+                    '<span class="ok">[BUILD] docs/progress.md updated (loopback-1 fix)</span>\n' +
+                    '<span class="warn">⚠ Still NO git commit. Branch: task/042 (local)</span>',
+          output: 'Fix applied. Handing back to Review.',
+          gate: 'code-review on fix → clean'
+        },
+        {
+          status: 'done',
+          label: 'Review — APPROVED',
+          sub: 'Zero blockers. Commit authorised.',
+          agent: 'Review',
+          plugins: ['code-review', 'security-guidance', 'claude-mem (read)'],
+          terminal: '<span class="muted">→ Orchestrator: loading Review agent (re-run)...</span>\n' +
+                    '\n' +
+                    '<span class="ok">[REVIEW] code-review on updated diff</span>\n' +
+                    '  ✓ Blocker resolved — clustering caveat documented\n' +
+                    '  ✓ All spec contracts met\n' +
+                    '  ✓ No warnings outstanding\n' +
+                    '\n' +
+                    '<span class="ok">[REVIEW] security-guidance</span>\n' +
+                    '  ✓ MemoryStore caveat documented\n' +
+                    '  ✓ No new vectors introduced\n' +
+                    '\n' +
+                    '<span class="ok">[REVIEW] Decision: APPROVED ✓</span>\n' +
+                    '\n' +
+                    '<span class="ok">Authorising commit:</span>\n' +
+                    '  <span class="cmd">cd ../worktrees/task-042\n' +
+                    'git add -A\n' +
+                    'git commit -m "feat(api): add rate limiting middleware\n' +
+                    '\n' +
+                    '- 100 req/min per IP via MemoryStore\n' +
+                    '- 429 response with retry_after and headers\n' +
+                    '- Document single-process constraint\n' +
+                    '\n' +
+                    'Closes: task-042\n' +
+                    'Reviewed-by: review-agent\n' +
+                    'Plugins: code-review, security-guidance"\n' +
+                    '\n' +
+                    'git push origin task/042</span>\n' +
+                    '<span class="ok">→ Branch pushed. Commit gate: OPEN for Ship.</span>',
+          output: 'Branch task/042 pushed. Reviewed-by: review-agent confirmed.',
+          gate: 'APPROVED — zero BLOCKERs'
+        },
+        {
+          status: 'done',
+          label: 'Ship — merged + tagged',
+          sub: 'Merge, tag, retrospective, claude-mem updated.',
+          agent: 'Ship',
+          plugins: ['/ship', '/wrapup', 'claude-mem (write)'],
+          terminal: '<span class="muted">→ Orchestrator: loading Ship agent...</span>\n' +
+                    '<span class="muted">→ Verifying: Reviewed-by: review-agent ✓</span>\n' +
+                    '<span class="muted">→ Verifying: task/042 on remote ✓</span>\n' +
+                    '\n' +
+                    '<span class="ok">[SHIP] /ship</span>\n' +
+                    '  <span class="cmd">git checkout main\n' +
+                    'git merge --no-ff task/042 -m "merge: task-042 — rate limiting"\n' +
+                    'git tag -a v1.4.2 -m "feat: rate limiting middleware"\n' +
+                    'git push origin main --tags\n' +
+                    'git worktree remove ../worktrees/task-042\n' +
+                    'git branch -d task/042</span>\n' +
+                    '\n' +
+                    '<span class="ok">CHANGELOG.md updated</span>\n' +
+                    '  ## v1.4.2 — 2026-06-15\n' +
+                    '  ### feat\n' +
+                    '  - Add per-IP rate limiting (100 req/min, MemoryStore)\n' +
+                    '  - Closes: task-042\n' +
+                    '\n' +
+                    '<span class="ok">[SHIP] /wrapup retrospective</span>\n' +
+                    '  What went well:   spec was tight, 1 loopback only\n' +
+                    '  Loopback cause:   security-guidance caught cluster gap\n' +
+                    '  Pattern to keep:  always document MemoryStore limits\n' +
+                    '\n' +
+                    '<span class="ok">[SHIP] claude-mem writes</span>\n' +
+                    '  retro:042         ✓\n' +
+                    '  arch:decisions   + MemoryStore caveat pattern\n' +
+                    '  security:patterns + clustering constraint doc rule\n' +
+                    '\n' +
+                    '<span class="ok">Task closed. Merge: a3f8c21 · Tag: v1.4.2</span>',
+          output: 'Merged to main. Tagged v1.4.2. claude-mem updated. Task closed.',
+          gate: null
+        }
+      ];
+
+      let cur = 0;
+
+      function statusBadge(s) {
+        if (s === 'done')    return '<span class="badge badge-done">✓ approved</span>';
+        if (s === 'blocked') return '<span class="badge badge-blocked">✗ blocked → loopback</span>';
+        if (s === 'skip')    return '<span class="badge badge-skip">skipped</span>';
+        return '<span class="badge badge-active">running</span>';
+      }
+
+      function render() {
+        const s = steps[cur];
+        const pct = Math.round(((cur + 1) / steps.length) * 100);
+        document.getElementById('prog').style.width = pct + '%';
+        document.getElementById('step-counter').textContent = 'Step ' + (cur + 1) + ' of ' + steps.length;
+        document.getElementById('prev-btn').disabled = cur === 0;
+        document.getElementById('next-btn').disabled = cur === steps.length - 1;
+        document.getElementById('next-btn').textContent = cur === steps.length - 1 ? 'Done' : 'Next →';
+
+        const statusClass = s.status === 'skip' ? '' : s.status;
+        const numClass = s.status === 'skip' ? '' : s.status;
+
+        let html = '<div class="stage-card ' + statusClass + '">' +
+                   '  <div class="step-header">' +
+                   '    <div class="step-num ' + numClass + '">' + (cur + 1) + '</div>' +
+                   '    <div>' +
+                   '      <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">' +
+                   '        <span class="step-label">' + s.label + '</span>' +
+                   '        ' + statusBadge(s.status) +
+                   '      </div>' +
+                   '      <div class="step-sub">' + s.sub + '</div>' +
+                   '    </div>' +
+                   '  </div>';
+
+        if (s.plugins && s.plugins.length) {
+          html += '<div class="pill-row">' +
+                  '  <span class="badge badge-agent">🤖 ' + s.agent + '</span>';
+          s.plugins.forEach(function (p) {
+            html += '<span class="badge badge-plugin">' + p + '</span>';
+          });
+          html += '</div>';
+        } else {
+          html += '<div class="pill-row"><span class="badge badge-agent" style="opacity:0.5">🤖 ' + s.agent + '</span></div>';
+        }
+
+        html += '<div class="terminal">' + s.terminal + '</div>';
+
+        if (s.gate) {
+          html += '<div style="margin-top:0.6rem;"><span class="badge badge-gate">🔒 gate: ' + s.gate + '</span></div>';
+        }
+        if (s.output) {
+          html += '<div class="output-box">→ ' + s.output + '</div>';
+        }
+        if (s.loopback) {
+          html += '<div class="loopback-box"><strong>↺ Loopback:</strong> ' + s.loopback + '</div>';
+        }
+
+        html += '</div>';
+
+        if (cur < steps.length - 1) {
+          const next = steps[cur + 1];
+          html += '<div class="connector">↓</div>' +
+                  '<div class="stage-card peek">' +
+                  '  <div class="step-header">' +
+                  '    <div class="step-num">' + (cur + 2) + '</div>' +
+                  '    <div>' +
+                  '      <div class="step-label">' + next.label + '</div>' +
+                  '      <div class="step-sub">' + next.sub + '</div>' +
+                  '    </div>' +
+                  '  </div>' +
+                  '</div>';
+        }
+
+        document.getElementById('scene').innerHTML = html;
+      }
+
+      function move(dir) {
+        const ni = cur + dir;
+        if (ni < 0 || ni >= steps.length) return;
+        cur = ni;
+        render();
+      }
+
+      function reset() {
+        cur = 0;
+        render();
+      }
+
+      render();
+    </script>
+  </body>
+</html>

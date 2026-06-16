@@ -1,1 +1,0 @@
-Run .agents/workflows/new-feature.md with: $ARGUMENTS

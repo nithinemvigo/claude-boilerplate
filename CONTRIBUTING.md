@@ -79,29 +79,53 @@ Scripts + devDeps that get deep-merged into the target's `package.json`. Require
 
 ### 5. Add `CLAUDE.fragment.md`
 
-The fragment fills the three placeholders in `core/CLAUDE.template.md`. Each section is headed by `## {{KEY}}`:
+The fragment fills the **four** placeholders in `core/CLAUDE.template.md`. Each section is headed by `## {{KEY}}`:
 
 ```markdown
 ## {{STACK}}
 
-Node.js v25 · <Framework> · TypeScript (strict).
+- **Runtime:** Node.js v25
+- **Framework:** <Framework>
+- **Language:** TypeScript (strict)
+- **Tests:** Jest / Vitest
+- **Lint / format:** ESLint flat config + Prettier
+- **Type:** <e.g. HTTP REST API, SPA, fullstack>
 
 ## {{COMMANDS}}
 
-```
-npm run dev          # description
-npm run build
-npm test
-...
-```
+### Dev loop
+- `npm run dev` — ...
+- `npm test` — ...
+
+### Quality
+- `npm run lint` / `lint:fix` / `format` / `validate`
+
+(group your scripts by purpose — see existing fragments)
 
 ## {{ARCHITECTURE}}
 
-- `src/<dir>/` — what lives here
-- `src/<dir>/` — what lives here
+### Tree
+```
+src/
+├── ...
 ```
 
-Keep it terse — Claude will read this on every project apply, so size matters.
+### What goes where
+
+| Adding... | Lives in |
+|---|---|
+| ...
+
+### Base-specific notes
+- See `.claude/rules/<file>.md` for ...
+
+## {{ANTIPATTERNS}}
+
+- ❌ <Concrete anti-pattern with rationale>
+- ❌ <Another one>
+```
+
+Keep it terse — Claude reads this on every project apply, so size matters. The `{{ANTIPATTERNS}}` section is your chance to encode "looks right but is wrong" patterns specific to this stack.
 
 ### 6. Add `compatible-integrations.txt`
 
