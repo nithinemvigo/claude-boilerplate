@@ -217,7 +217,7 @@ my-app/
 │   │   └── tailwind.md          ← integration
 │   ├── settings.json            ← core
 │   └── review-prompt.md         ← core
-├── .agents/workflows/           ← core
+├── .agents/                     ← core
 ├── .editorconfig                ← core
 ├── .gitignore                   ← core
 ├── .prettierrc                  ← core
