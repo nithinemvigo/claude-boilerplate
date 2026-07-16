@@ -45,9 +45,8 @@
 <pre><code>claude-boilerplate/
 ├── core/                          ← always copied to every target project
 │   ├── .claude/
-│   │   ├── agents/                 8 stage agents (classifier, ceo, eng, design, build, testing, review, ship)
-│   │   ├── commands/               6 slash commands (/start, /status, /approve, /review, /code-review, /ship)
-│   │   ├── workflows/              pipeline definitions (orchestrator, pipeline-nano, pipeline-standard)
+│   │   ├── agents/                 14 specialized core agents (planner, implementer, reviewer, tester, etc)
+│   │   ├── commands/               1 slash command (/pipeline)
 │   │   ├── hooks/                  pre-commit + post-commit + status line + plugin-probe
 │   │   ├── rules/                  generic rules (error-handling, security, environment, testing)
 │   │   ├── settings.json           Claude Code hook wiring
@@ -106,43 +105,24 @@
     </p>
 
     <h3>core/.claude/agents/</h3>
-    <p>Eight <strong>stage agents</strong>. They form a pipeline orchestrated by <code>.claude/workflows/orchestrator.md</code>. The classifier sizes the task, then the matching pipeline activates the agents in sequence.</p>
+    <p>Fourteen <strong>specialized agents</strong>. They form an autonomous SDLC pipeline orchestrated by <code>.claude/commands/pipeline.md</code>. The orchestrator dispatches them as needed.</p>
     <table>
-      <thead><tr><th>File</th><th>Stage role</th></tr></thead>
+      <thead><tr><th>Category</th><th>Agents</th></tr></thead>
       <tbody>
-        <tr><td><code>classifier.md</code></td><td>Sizes the task into <code>nano | standard | full</code> and picks the branch name. Runs first on every <code>/start</code>.</td></tr>
-        <tr><td><code>ceo.md</code></td><td>Task intake, flow routing, brief production. Required for standard/full sizes.</td></tr>
-        <tr><td><code>eng.md</code></td><td>Technical spec. Writes <code>docs/spec-&lt;id&gt;.md</code>.</td></tr>
-        <tr><td><code>design.md</code></td><td>UI spec + design tokens (when the flow includes Design).</td></tr>
-        <tr><td><code>build.md</code></td><td>Implementation. Writes <code>docs/progress.md</code>.</td></tr>
-        <tr><td><code>testing.md</code></td><td>Test suite + security validation.</td></tr>
-        <tr><td><code>review.md</code></td><td><strong>The commit gate.</strong> Only stage permitted to issue <code>git commit</code>.</td></tr>
-        <tr><td><code>ship.md</code></td><td>Merge, tag, retrospective. Only runs after Review approval.</td></tr>
+        <tr><td><strong>Planning</strong></td><td><code>planner.md</code>, <code>investigator.md</code>, <code>adr-writer.md</code>, <code>doc-writer.md</code></td></tr>
+        <tr><td><strong>Implementation</strong></td><td><code>implementer.md</code></td></tr>
+        <tr><td><strong>Review</strong></td><td><code>code-reviewer.md</code>, <code>security-reviewer.md</code>, <code>design-reviewer.md</code>, <code>eng-reviewer.md</code>, <code>ceo-reviewer.md</code></td></tr>
+        <tr><td><strong>Testing</strong></td><td><code>perf-tester.md</code>, <code>qa-tester.md</code>, <code>unit-tester.md</code></td></tr>
+        <tr><td><strong>Shipping</strong></td><td><code>ship-pr.md</code></td></tr>
       </tbody>
     </table>
 
     <h3>core/.claude/commands/</h3>
-    <p>Six slash commands. Available in Claude Code as <code>/&lt;name&gt;</code>.</p>
+    <p>One slash command. Available in Claude Code as <code>/&lt;name&gt;</code>.</p>
     <table>
       <thead><tr><th>Command</th><th>What it does</th></tr></thead>
       <tbody>
-        <tr><td><code>/start &lt;description&gt;</code></td><td>Universal entry point for any change (feature, bug fix, hotfix, refactor, chore). Runs the classifier, picks the branch, loads the matching pipeline.</td></tr>
-        <tr><td><code>/status</code></td><td>Inspect where the current task sits in the pipeline.</td></tr>
-        <tr><td><code>/approve</code></td><td>Advance through the current stage gate.</td></tr>
-        <tr><td><code>/review</code></td><td>Trigger the Review-stage agent manually.</td></tr>
-        <tr><td><code>/code-review</code></td><td>On-demand multi-agent review of a file, commit, or PR — independent of the pipeline.</td></tr>
-        <tr><td><code>/ship</code></td><td>Merge and tag. Requires the Review-stage approval and <code>Reviewed-by: review-agent</code> in the commit.</td></tr>
-      </tbody>
-    </table>
-
-    <h3>core/.claude/workflows/</h3>
-    <p>Pipeline definitions. The orchestrator picks one based on the classifier's task size.</p>
-    <table>
-      <thead><tr><th>File</th><th>What it covers</th></tr></thead>
-      <tbody>
-        <tr><td><code>orchestrator.md</code></td><td>The stage sequencer. Loads the right pipeline file by task size. Enforces the commit rule (only Review-stage may <code>git commit</code>). Handles loopbacks (Testing → Build, Review → Build). For task-size <code>full</code>, runs the 7-agent flow inline (CEO → Eng → [Design] → Build → Testing → Review → Ship).</td></tr>
-        <tr><td><code>pipeline-nano.md</code></td><td>Fast path for trivial changes (1–2 files, no contract change). Build lean → Review lean → done. ~400 tokens.</td></tr>
-        <tr><td><code>pipeline-standard.md</code></td><td>Mid-weight path (2–5 files, contained to one layer). CEO lean → Build → Review → Ship lean. ~1500 tokens.</td></tr>
+        <tr><td><code>/pipeline &lt;description&gt;</code></td><td>Autonomous SDLC Orchestrator. End-to-end feature/bug pipeline. Ask type + testing prefs → Plan (features) or Investigate (bugs) → reviews → CLIENT APPROVES PLAN → Execute (TDD if requested) → Unit test → QA → Code+Security review → Docs → Ship PR.</td></tr>
       </tbody>
     </table>
 

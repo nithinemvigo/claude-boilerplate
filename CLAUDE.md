@@ -12,9 +12,8 @@ See `docs/index.html` for the public-facing overview.
 
 ```
 core/                              ← copied into every target project, untouched per target
-  .claude/agents/                   8 stage agents (classifier + ceo/eng/design/build/testing/review/ship)
-  .claude/commands/                 6 slash commands (/start, /status, /approve, /review, /code-review, /ship)
-  .claude/workflows/                pipeline definitions (orchestrator, pipeline-nano, pipeline-standard)
+  .claude/agents/                   14 specialized core agents (planner, implementer, reviewer, tester, etc)
+  .claude/commands/                 1 slash command (/pipeline)
   .claude/hooks/                    pre-commit + post-commit + statusline + plugin-probe
   .claude/rules/                    generic rules (error-handling, security, environment, testing)
   .claude/skills/                   shared skill definitions copied to target projects

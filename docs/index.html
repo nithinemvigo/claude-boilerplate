@@ -911,15 +911,13 @@
     <div class="grid-3 reveal-stagger">
       <div class="feature-card">
         <div class="feature-icon">🤖</div>
-        <div class="feature-title">8 Stage Agents</div>
-        <div class="feature-desc">classifier · ceo · eng · design · build · testing · review · ship — a pipeline, not a
-          loose collection. The classifier sizes the task; the orchestrator routes it through.</div>
+        <div class="feature-title">14 Specialized Agents</div>
+        <div class="feature-desc">planner · investigator · implementer · code-reviewer · security-reviewer · design-reviewer · eng-reviewer · ceo-reviewer · unit-tester · qa-tester · perf-tester · adr-writer · doc-writer · ship-pr — each a focused specialist, dispatched by the orchestrator as needed.</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
-        <div class="feature-title">6 Slash Commands</div>
-        <div class="feature-desc">/start · /status · /approve · /review · /code-review · /ship — the gate-by-gate flow
-          for any change. /start is the universal entry point.</div>
+        <div class="feature-title">1 Slash Command: <code>/pipeline</code></div>
+        <div class="feature-desc">/pipeline is the universal entry point. It autonomously handles classification, planning, review gating, TDD execution, unit and QA testing, code and security review, docs, and PR creation — end to end.</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🛡️</div>
@@ -944,329 +942,220 @@
       <div class="feature-card">
         <div class="feature-icon">🔧</div>
         <div class="feature-title">Helper scripts</div>
-        <div class="feature-desc"><code>scripts/check-setup.sh</code> verifies Node, claude CLI, plugins, hooks, env.
-          <code>scripts/review.sh</code> runs a manual review. Wired into <code>npm run check-setup</code> and
-          <code>npm run review</code>.</div>
+        <div class="feature-desc"><code>scripts/check-setup.sh</code> verifies Node, claude CLI, plugins, hooks, env. Wired into <code>npm run check-setup</code>.</div>
       </div>
     </div>
   </section>
 
   <!-- ── AGENTS & WORKFLOW ── -->
   <section id="workflow">
-    <h2 class="reveal">How a task runs — <code style="color:var(--accent);font-family:'JetBrains Mono',monospace">/start</code></h2>
-    <p class="section-sub reveal">Universal entry point for any change: feature, bug fix, hotfix, refactor, chore, docs. The classifier sizes the task; the orchestrator routes it to the right pipeline; each stage stops at its gate for your approval.</p>
+    <h2 class="reveal">How a task runs — <code style="color:var(--accent);font-family:'JetBrains Mono',monospace">/pipeline</code></h2>
+    <p class="section-sub reveal">Universal entry point for any change: feature, bug fix, hotfix, refactor, chore. Run <code style="color:var(--accent);font-family:'JetBrains Mono',monospace">/pipeline &lt;description&gt;</code> and the autonomous orchestrator handles classification, planning, review gating, implementation, testing, and shipping — only interrupting you for real decisions.</p>
 
     <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0 2rem; font-family: 'JetBrains Mono', monospace; font-size: .92rem;">
-      <div style="color: var(--muted); margin-bottom: .5rem;">$ <span style="color: var(--accent);">/start</span> add Stripe billing to checkout</div>
-      <div style="color: var(--accent2);">&lt;task_size&gt;</div><span style="color: var(--green);">standard</span><span style="color: var(--accent2);">&lt;/task_size&gt;</span>
-      <div><span style="color: var(--accent2);">&lt;branch&gt;</span><span style="color: var(--green);">feature/stripe-billing-checkout</span><span style="color: var(--accent2);">&lt;/branch&gt;</span></div>
-      <div><span style="color: var(--accent2);">&lt;reason&gt;</span><span style="color: var(--subtle);">Touches 4 files; no contract change; contained to checkout layer.</span><span style="color: var(--accent2);">&lt;/reason&gt;</span></div>
-      <div style="color: var(--muted); margin-top: .6rem;"># → orchestrator loads pipeline-standard.md, CEO agent activates...</div>
+      <div style="color: var(--muted); margin-bottom: .5rem;">$ <span style="color: var(--accent);">/pipeline</span> add Stripe billing to checkout</div>
+      <div style="color: var(--muted); margin-top: .4rem;"># → classifies task · asks: bug or feature? TDD on? unit tests?</div>
+      <div style="color: var(--muted);"># → planner generates docs/plans/stripe-billing.md</div>
+      <div style="color: var(--muted);"># → ceo-reviewer + eng-reviewer approve plan</div>
+      <div style="color: var(--muted);"># ⏸ YOU APPROVE THE PLAN — then execution begins</div>
+      <div style="color: var(--muted);"># → implementer works task-by-task on feature/stripe-billing-checkout</div>
+      <div style="color: var(--muted);"># → unit-tester · qa-tester · code-reviewer · security-reviewer run</div>
+      <div style="color: var(--muted);"># → doc-writer updates docs · ship-pr opens PR</div>
     </div>
 
-    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 2.5rem; margin-bottom: .8rem; letter-spacing: -.015em;">Three tiers — the classifier picks one</h3>
-    <p class="section-sub reveal">Sizing is automatic. The classifier (~50 tokens) runs before anything else loads, then the orchestrator routes to the matching pipeline.</p>
+    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 2.5rem; margin-bottom: .8rem; letter-spacing: -.015em;">The 14 specialized agents</h3>
+    <p class="section-sub reveal">Each agent is a focused specialist in <code>.claude/agents/</code>. The <code>/pipeline</code> orchestrator dispatches them automatically — you only step in for plan approval and real decision points.</p>
 
-    <div class="reveal" style="background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin: 1.5rem 0 2rem; overflow-x: auto;">
-      <svg viewBox="0 0 1400 980" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; display: block; min-width: 760px;" role="img" aria-labelledby="flowTitle">
-        <title id="flowTitle">/start routes to one of three tiers: nano, standard, or full</title>
-        <defs>
-          <style>
-            .label-dark { font-family: Inter, system-ui, sans-serif; fill: #1f2937; }
-            .label-muted { font-family: Inter, system-ui, sans-serif; fill: #6b7280; }
-            .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
-          </style>
-          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#6b7280"/>
-          </marker>
-        </defs>
-
-        <!-- Root: /start <task> -->
-        <g>
-          <rect x="510" y="40" width="380" height="100" rx="14" fill="#f5ebdc" stroke="#d4c4a8" stroke-width="1.5"/>
-          <text x="700" y="84" text-anchor="middle" class="mono" font-size="24" font-weight="700" fill="#3a2f20">/start &lt;task&gt;</text>
-          <text x="700" y="114" text-anchor="middle" class="label-muted" font-size="14">size classifier runs first</text>
-        </g>
-
-        <!-- Arrows from root to three tiers -->
-        <path d="M 700 145 L 700 180 L 200 180 L 200 218" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
-        <path d="M 700 145 L 700 218" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
-        <path d="M 700 145 L 700 180 L 1200 180 L 1200 218" stroke="#6b7280" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
-
-        <!-- ── Nano column ── -->
-        <g>
-          <rect x="60" y="220" width="280" height="92" rx="12" fill="#cfe9d8" stroke="#9bcfa9" stroke-width="1.5"/>
-          <text x="200" y="262" text-anchor="middle" class="label-dark" font-size="26" font-weight="700" fill="#1a6c46">Nano</text>
-          <text x="200" y="290" text-anchor="middle" class="label-dark" font-size="14" fill="#2d7855">1 file · obvious fix</text>
-        </g>
-        <path d="M 200 312 L 200 358" stroke="#9bcfa9" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-        <g>
-          <rect x="60" y="360" width="280" height="540" rx="12" fill="#dff0e4" stroke="#9bcfa9" stroke-width="1.5"/>
-          <text x="200" y="400" text-anchor="middle" class="label-dark" font-size="18" font-weight="600" fill="#1a6c46">pipeline</text>
-          <text x="200" y="442" text-anchor="middle" class="label-dark" font-size="17">Build</text>
-          <text x="200" y="468" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
-          <text x="200" y="494" text-anchor="middle" class="label-dark" font-size="17">Review</text>
-          <text x="200" y="520" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
-          <text x="200" y="546" text-anchor="middle" class="label-dark" font-size="17">commit + ship</text>
-
-          <!-- inset boxes -->
-          <rect x="92" y="580" width="216" height="40" rx="8" fill="#bedfcd"/>
-          <text x="200" y="606" text-anchor="middle" class="mono" font-size="13" fill="#1a6c46">~400 tokens</text>
-
-          <rect x="92" y="640" width="216" height="40" rx="8" fill="#bedfcd"/>
-          <text x="200" y="666" text-anchor="middle" class="label-dark" font-size="13" fill="#1a6c46">no spec · no gate</text>
-
-          <rect x="92" y="700" width="216" height="40" rx="8" fill="#bedfcd"/>
-          <text x="200" y="726" text-anchor="middle" class="label-dark" font-size="13" fill="#1a6c46">inline review only</text>
-        </g>
-
-        <!-- ── Standard column ── -->
-        <g>
-          <rect x="560" y="220" width="280" height="92" rx="12" fill="#d4e2f0" stroke="#9ab8d8" stroke-width="1.5"/>
-          <text x="700" y="262" text-anchor="middle" class="label-dark" font-size="26" font-weight="700" fill="#1d4d8a">Standard</text>
-          <text x="700" y="290" text-anchor="middle" class="label-dark" font-size="14" fill="#345fa0">feature · 2–5 files</text>
-        </g>
-        <path d="M 700 312 L 700 358" stroke="#9ab8d8" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-        <g>
-          <rect x="560" y="360" width="280" height="540" rx="12" fill="#e2ecf6" stroke="#9ab8d8" stroke-width="1.5"/>
-          <text x="700" y="400" text-anchor="middle" class="label-dark" font-size="18" font-weight="600" fill="#1d4d8a">pipeline</text>
-          <text x="700" y="442" text-anchor="middle" class="label-dark" font-size="17">CEO (lean)</text>
-          <text x="700" y="468" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
-          <text x="700" y="494" text-anchor="middle" class="label-dark" font-size="17">Build</text>
-          <text x="700" y="520" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
-          <text x="700" y="546" text-anchor="middle" class="label-dark" font-size="17">Review → Ship</text>
-
-          <rect x="592" y="580" width="216" height="40" rx="8" fill="#c4d9ee"/>
-          <text x="700" y="606" text-anchor="middle" class="mono" font-size="13" fill="#1d4d8a">~1500 tokens</text>
-
-          <rect x="592" y="640" width="216" height="40" rx="8" fill="#c4d9ee"/>
-          <text x="700" y="666" text-anchor="middle" class="label-dark" font-size="13" fill="#1d4d8a">brief only · no brainstorm</text>
-
-          <rect x="592" y="700" width="216" height="40" rx="8" fill="#c4d9ee"/>
-          <text x="700" y="726" text-anchor="middle" class="label-dark" font-size="13" fill="#1d4d8a">test if risk flagged</text>
-        </g>
-
-        <!-- ── Full column ── -->
-        <g>
-          <rect x="1060" y="220" width="280" height="92" rx="12" fill="#e0dbef" stroke="#b4a8d9" stroke-width="1.5"/>
-          <text x="1200" y="262" text-anchor="middle" class="label-dark" font-size="26" font-weight="700" fill="#4f3d8a">Full</text>
-          <text x="1200" y="290" text-anchor="middle" class="label-dark" font-size="14" fill="#6a55a3">cross-cutting · new system</text>
-        </g>
-        <path d="M 1200 312 L 1200 358" stroke="#b4a8d9" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
-        <g>
-          <rect x="1060" y="360" width="280" height="540" rx="12" fill="#ebe7f5" stroke="#b4a8d9" stroke-width="1.5"/>
-          <text x="1200" y="400" text-anchor="middle" class="label-dark" font-size="18" font-weight="600" fill="#4f3d8a">pipeline</text>
-          <text x="1200" y="442" text-anchor="middle" class="label-dark" font-size="17">CEO + Eng + Design</text>
-          <text x="1200" y="468" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
-          <text x="1200" y="494" text-anchor="middle" class="label-dark" font-size="17">Build + Testing</text>
-          <text x="1200" y="520" text-anchor="middle" class="label-dark" font-size="16" fill="#4a5568">↓</text>
-          <text x="1200" y="546" text-anchor="middle" class="label-dark" font-size="17">Review → Ship</text>
-
-          <rect x="1092" y="580" width="216" height="40" rx="8" fill="#d5cde7"/>
-          <text x="1200" y="606" text-anchor="middle" class="mono" font-size="13" fill="#4f3d8a">4000+ tokens</text>
-
-          <rect x="1092" y="640" width="216" height="40" rx="8" fill="#d5cde7"/>
-          <text x="1200" y="666" text-anchor="middle" class="label-dark" font-size="13" fill="#4f3d8a">all agents + plugins</text>
-
-          <rect x="1092" y="700" width="216" height="40" rx="8" fill="#d5cde7"/>
-          <text x="1200" y="726" text-anchor="middle" class="label-dark" font-size="13" fill="#4f3d8a">full gates + tests</text>
-        </g>
-
-        <!-- Footer -->
-        <text x="700" y="945" text-anchor="middle" class="label-muted" font-size="14" font-style="italic">classifier itself costs ~50 tokens — runs before anything else loads</text>
-      </svg>
-    </div>
-
-    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 3rem; margin-bottom: .8rem; letter-spacing: -.015em;">The eight stage agents</h3>
-    <p class="section-sub reveal">Each agent is one file in <code>.claude/agents/</code>. The orchestrator activates them in the order the pipeline requires; gates between stages enforce explicit approval before the next agent starts.</p>
-    <div class="pipeline reveal-stagger">
-      <div class="pipe-step">
-        <div class="pipe-num">🔢</div>
-        <div class="pipe-content">
-          <h3>classifier <code style="color:var(--muted);font-size:.78rem">.claude/agents/classifier.md</code></h3>
-          <p>Runs first on every <code style="color:var(--accent)">/start</code>. Reads the description, emits <code>&lt;task_size&gt;</code> (nano / standard / full) and <code>&lt;branch&gt;</code> (feature/, bugfix/, or hotfix/). ~50 tokens.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.75rem;margin:1.5rem 0 2rem;" class="reveal-stagger">
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div class="feature-title">Planning agents</div>
+        <div class="feature-desc">
+          <code>planner</code> — generates the full plan at <code>docs/plans/</code><br>
+          <code>investigator</code> — root-causes bugs, produces a mini-plan at <code>docs/bugs/</code><br>
+          <code>adr-writer</code> — records architecture decisions in <code>docs/adr/</code><br>
+          <code>doc-writer</code> — updates README and docs after execution
         </div>
       </div>
-      <div class="pipe-step">
-        <div class="pipe-num">🏛️</div>
-        <div class="pipe-content">
-          <h3>ceo <code style="color:var(--muted);font-size:.78rem">.claude/agents/ceo.md</code></h3>
-          <p>Task intake, flow routing, brief production. Outputs <code>flow_type</code> tag — backend-feature, frontend-feature, hotfix, design-only, or security-patch. Gate: <code>/plan-ceo-review</code>.</p>
+      <div class="feature-card">
+        <div class="feature-icon">⚒️</div>
+        <div class="feature-title">Implementation agent</div>
+        <div class="feature-desc">
+          <code>implementer</code> — works through plan tasks <em>sequentially</em>, one at a time, on a dedicated branch. Supports TDD (RED → GREEN → REFACTOR) when requested. Never sees the whole plan at once.
         </div>
       </div>
-      <div class="pipe-step">
-        <div class="pipe-num">🛠️</div>
-        <div class="pipe-content">
-          <h3>eng <code style="color:var(--muted);font-size:.78rem">.claude/agents/eng.md</code></h3>
-          <p>Technical spec. Writes <code>docs/spec-&lt;id&gt;.md</code>. Resolves data model, API contracts, service boundaries. Gate: <code>/plan-eng-review</code>.</p>
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <div class="feature-title">Review agents</div>
+        <div class="feature-desc">
+          <code>ceo-reviewer</code> · <code>eng-reviewer</code> — evaluate the plan before code starts<br>
+          <code>design-reviewer</code> — only for plans that touch UI<br>
+          <code>code-reviewer</code> — spec compliance + quality on the diff<br>
+          <code>security-reviewer</code> — OWASP/STRIDE pass on the diff
         </div>
       </div>
-      <div class="pipe-step">
-        <div class="pipe-num">🎨</div>
-        <div class="pipe-content">
-          <h3>design <code style="color:var(--muted);font-size:.78rem">.claude/agents/design.md</code></h3>
-          <p>UI spec + design tokens. Only activates when the flow includes Design (frontend-feature, design-only). Writes <code>docs/design-&lt;id&gt;.md</code>.</p>
+      <div class="feature-card">
+        <div class="feature-icon">🧪</div>
+        <div class="feature-title">Testing agents</div>
+        <div class="feature-desc">
+          <code>unit-tester</code> — adds missing unit tests; checks coverage on changed lines<br>
+          <code>qa-tester</code> — walks acceptance criteria as real user scenarios<br>
+          <code>perf-tester</code> — benchmarks main vs branch on perf-sensitive paths
         </div>
       </div>
-      <div class="pipe-step">
-        <div class="pipe-num">⚒️</div>
-        <div class="pipe-content">
-          <h3>build <code style="color:var(--muted);font-size:.78rem">.claude/agents/build.md</code></h3>
-          <p>Implementation. Writes code, updates <code>docs/progress.md</code>. If scope grows mid-task, emits <code>&lt;escalate&gt;</code> and the orchestrator re-classifies into a bigger tier.</p>
+      <div class="feature-card">
+        <div class="feature-icon">🚢</div>
+        <div class="feature-title">Shipping agent</div>
+        <div class="feature-desc">
+          <code>ship-pr</code> — syncs main, re-runs the full test suite, pushes branch, opens the PR with review verdicts and test summary in the body. Any test failure → reports back, does not ship.
         </div>
       </div>
-      <div class="pipe-step">
-        <div class="pipe-num">🧪</div>
-        <div class="pipe-content">
-          <h3>testing <code style="color:var(--muted);font-size:.78rem">.claude/agents/testing.md</code></h3>
-          <p>Test suite + security validation. Loops back to Build on failures. Required for standard and full tiers.</p>
-        </div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-num">🔍</div>
-        <div class="pipe-content">
-          <h3>review <code style="color:var(--muted);font-size:.78rem">.claude/agents/review.md</code></h3>
-          <p><strong>The commit gate.</strong> Only stage permitted to issue <code>git commit</code>. The orchestrator rejects git commands from any other stage. Loops back to Build on any blocker finding.</p>
-        </div>
-      </div>
-      <div class="pipe-step">
-        <div class="pipe-num">🚢</div>
-        <div class="pipe-content">
-          <h3>ship <code style="color:var(--muted);font-size:.78rem">.claude/agents/ship.md</code></h3>
-          <p>Merge, tag, retrospective. Runs only after Review approval and <code>Reviewed-by: review-agent</code> appears in the commit. Writes the retrospective and updates the changelog.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="reveal" style="border-left: 3px solid var(--accent); background: rgba(56,189,248,.07); padding: 1rem 1.4rem; border-radius: 8px; margin: 1.5rem 0;">
-      <strong>Escalation:</strong> if Build discovers mid-task that the scope is bigger than the classifier estimated, it emits <code>&lt;escalate&gt;standard|full&lt;/escalate&gt;</code>. The orchestrator pauses, re-classifies, reloads the bigger pipeline, and resumes from Build — work on the branch is preserved.
     </div>
 
     <!-- ── STEP-BY-STEP WALKTHROUGH ── -->
-    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 3rem; margin-bottom: .8rem; letter-spacing: -.015em;">Step-by-step walkthrough — a <span style="background:rgba(154,184,216,.2);color:var(--accent2);padding:.15rem .55rem;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:.85em;">standard</span> task, end to end</h3>
-    <p class="section-sub reveal">Concrete trace of what happens after you run <code style="color:var(--accent);font-family:'JetBrains Mono',monospace">/start add rate limiting to the API</code>. Most projects spend most of their time in this tier.</p>
+    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 3rem; margin-bottom: .8rem; letter-spacing: -.015em;">Step-by-step walkthrough — <code style="color:var(--accent);font-family:'JetBrains Mono',monospace">/pipeline</code> end to end</h3>
+    <p class="section-sub reveal">Concrete trace of <code style="color:var(--accent);font-family:'JetBrains Mono',monospace">/pipeline add rate limiting to the API</code> — a standard feature task with TDD on and unit tests on.</p>
 
     <div class="pipeline reveal-stagger">
       <div class="pipe-step">
         <div class="pipe-num">1</div>
         <div class="pipe-content">
-          <h3>You type <code style="color:var(--accent)">/start add rate limiting to the API</code></h3>
-          <p>The classifier loads first (~50 tokens). Nothing else runs until it emits its tags.</p>
-          <pre style="background:#020817;border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;margin:.6rem 0 0;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6;overflow-x:auto;"><code style="color:var(--subtle);">&lt;task_size&gt;<span style="color:var(--accent2);">standard</span>&lt;/task_size&gt;
-&lt;branch&gt;<span style="color:var(--green);">feature/api-rate-limiting</span>&lt;/branch&gt;
-&lt;reason&gt;<span style="color:var(--muted);">3 files (middleware + route + tests), no contract change, contained to API layer.</span>&lt;/reason&gt;</code></pre>
+          <h3>Preflight &amp; classification</h3>
+          <p>Orchestrator checks that <code>superpowers</code> plugin is installed (required). Detects <code>gstack</code> (optional — affects which skills are used). Classifies: is this a <strong>nano</strong> tweak (typo, config) or a real task? If nano → jumps straight to <code>implementer</code> then <code>code-reviewer</code> then <code>ship-pr</code>.</p>
         </div>
       </div>
       <div class="pipe-step">
         <div class="pipe-num">2</div>
         <div class="pipe-content">
-          <h3>Orchestrator activates</h3>
-          <p>Reads the classifier's tags. Loads <code>.claude/workflows/pipeline-standard.md</code>. Creates the branch <code>feature/api-rate-limiting</code>. Activates the CEO agent next.</p>
+          <h3>You answer three questions (one prompt)</h3>
+          <p>Bug or feature? &nbsp;·&nbsp; Test-first (TDD)? &nbsp;·&nbsp; Add unit tests after build?<br>
+          These flags govern how the implementer works and whether <code>unit-tester</code> runs.</p>
         </div>
       </div>
       <div class="pipe-step">
         <div class="pipe-num">3</div>
         <div class="pipe-content">
-          <h3>CEO (lean) — task brief</h3>
-          <p>Produces a short brief: scope, success criteria, affected modules. Writes <code>docs/brief-&lt;id&gt;.md</code>. Skips the heavy <code>/office-hours</code> + <code>/plan-ceo-review</code> calls that the full tier uses. <strong>Gate:</strong> you run <code style="color:var(--accent)">/approve</code> to advance to Build.</p>
+          <h3>Planning — <code>planner</code> agent</h3>
+          <p>Runs <code>superpowers:brainstorming</code> + <code>superpowers:writing-plans</code> (+ gstack <code>/office-hours</code> and <code>/spec</code> if available). If clarifications are needed, surfaces them as one batched question. Writes <code>docs/plans/api-rate-limiting.md</code> — numbered tasks, files each task touches, acceptance criteria.</p>
         </div>
       </div>
       <div class="pipe-step">
         <div class="pipe-num">4</div>
         <div class="pipe-content">
-          <h3>Build — implementation</h3>
-          <p>Implements the change on the branch. Writes the middleware module, wires it into the route, adds tests. Updates <code>docs/progress.md</code> as it goes. If scope balloons (turns out you need a new Redis dep, or it touches auth too), Build emits <code>&lt;escalate&gt;full&lt;/escalate&gt;</code> and the orchestrator re-classifies. <strong>Gate:</strong> <code>code-review</code> plugin runs a self-check; clean before advancing.</p>
+          <h3>Plan review gauntlet — parallel</h3>
+          <p><code>ceo-reviewer</code> and <code>eng-reviewer</code> run concurrently. <code>design-reviewer</code> only activates if the plan touches UI components, styles, or user-visible copy — the orchestrator checks the task file list before dispatching it. Each returns APPROVED or CHANGES_REQUIRED with a numbered list. Up to 2 revision loops; only TASTE findings go to you during the loops.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">⏸</div>
+        <div class="pipe-content">
+          <h3>You approve the plan — hard gate</h3>
+          <p>Orchestrator shows a plain-language summary + link to <code>docs/plans/api-rate-limiting.md</code>. You choose <strong>Approve and build</strong> or <strong>Request changes</strong>. No code is written before this gate passes.</p>
         </div>
       </div>
       <div class="pipe-step">
         <div class="pipe-num">5</div>
         <div class="pipe-content">
-          <h3>Review — the commit gate</h3>
-          <p>Reads the brief, the implementation, and the test results. Calls <code>code-review</code> and <code>security-guidance</code> plugins on the staged diff. Emits one of <code>VERDICT: Approve</code>, <code>Request Changes</code>, or <code>Needs Discussion</code>.</p>
-          <p style="margin-top:.4rem;"><strong>On Approve:</strong> Review issues <code>git commit</code> with <code>Reviewed-by: review-agent</code> in the message. <strong>This is the only stage permitted to commit.</strong> The orchestrator rejects git commands from any other stage. On Request Changes, loops back to Build with the findings.</p>
+          <h3>Execution — <code>implementer</code>, task by task</h3>
+          <p>Creates <code>feature/api-rate-limiting</code> from latest main. Works through plan tasks <em>sequentially</em> — one fresh <code>implementer</code> dispatch per task. If TDD is on, each task follows RED → GREEN → REFACTOR. Implementers never see the whole plan or each other's diffs. After each batch the orchestrator checkpoints: verifies the test suite is still green and surfaces any drift from the plan.</p>
         </div>
       </div>
       <div class="pipe-step">
         <div class="pipe-num">6</div>
         <div class="pipe-content">
-          <h3>Ship (lean) — merge &amp; tag</h3>
-          <p>Verifies the <code>Reviewed-by: review-agent</code> tag is present in the commit. Pushes the branch, opens the PR, tags the release. Updates <code>CHANGELOG.md</code>. Writes a one-line retrospective entry.</p>
-          <p style="margin-top:.4rem;"><strong>Done.</strong> Branch is open, PR is up, tag is set. The full task touched ~1500 tokens of orchestration plus whatever the implementation needed.</p>
+          <h3>Unit &amp; QA testing</h3>
+          <p>If unit tests are on: <code>unit-tester</code> checks coverage on changed lines, adds missing tests, loops fixes through a fresh <code>implementer</code> (max 3 loops).<br>
+          If the plan has user-facing surfaces: <code>qa-tester</code> walks happy paths, error paths, and edge states — reports findings without fixing anything; fixes route to <code>implementer</code> (max 2 loops).</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">7</div>
+        <div class="pipe-content">
+          <h3>Code &amp; security review — parallel</h3>
+          <p>Generates a filtered diff (no lock files, no minified assets). Dispatches <code>code-reviewer</code> and <code>security-reviewer</code> in one message — both read-only, safe to parallelize. Critical/Important findings → fix <code>implementer</code> → delta-only re-review. Minor findings → fixed in-pass. Max 2 loops before escalating to you with a recommendation.</p>
+        </div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">8</div>
+        <div class="pipe-content">
+          <h3>Docs &amp; ship</h3>
+          <p><code>doc-writer</code> updates README and any affected docs, commits to the branch. <code>ship-pr</code> syncs main, re-runs the full test suite, pushes, and opens the PR — body includes plan link, review verdicts, and test summary. Any failure → reports back, does not ship.</p>
+          <p style="margin-top:.4rem;"><strong>Done.</strong> PR is open. You review and merge.</p>
         </div>
       </div>
     </div>
 
-    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 3rem; margin-bottom: .8rem; letter-spacing: -.015em;">How the tiers differ in practice</h3>
+    <h3 class="reveal" style="font-size: 1.15rem; margin-top: 3rem; margin-bottom: .8rem; letter-spacing: -.015em;">How nano vs standard tasks differ</h3>
     <div class="reveal" style="overflow-x:auto;">
       <table class="compat-table" style="margin: 1rem 0;">
         <thead>
           <tr>
-            <th>Step</th>
-            <th style="background:rgba(52,211,153,.08);color:var(--green);">Nano</th>
-            <th style="background:rgba(154,184,216,.08);color:var(--accent2);">Standard</th>
-            <th style="background:rgba(180,168,217,.1);color:#a78bfa;">Full</th>
+            <th>Stage</th>
+            <th style="background:rgba(52,211,153,.08);color:var(--green);">Nano<br><span style="font-weight:400;font-size:.8rem;opacity:.7">typo · config · 1-liner</span></th>
+            <th style="background:rgba(154,184,216,.08);color:var(--accent2);">Standard (feature)<br><span style="font-weight:400;font-size:.8rem;opacity:.7">new functionality</span></th>
+            <th style="background:rgba(154,184,216,.08);color:var(--accent2);">Standard (bug)<br><span style="font-weight:400;font-size:.8rem;opacity:.7">something is broken</span></th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>Classifier</strong></td>
-            <td>✓ (always)</td>
-            <td>✓ (always)</td>
-            <td>✓ (always)</td>
+            <td><strong>Classify &amp; preferences</strong></td>
+            <td>auto-detected as nano</td>
+            <td>confirms: feature · TDD? · unit tests?</td>
+            <td>confirms: bug · TDD? · unit tests?</td>
           </tr>
           <tr>
-            <td><strong>CEO brief</strong></td>
+            <td><strong>Plan</strong></td>
             <td>—</td>
-            <td>✓ lean (skip /office-hours, /brainstorm)</td>
-            <td>✓ full (/office-hours + /plan-ceo-review)</td>
+            <td><code>planner</code> → <code>docs/plans/</code></td>
+            <td><code>investigator</code> → <code>docs/bugs/</code></td>
           </tr>
           <tr>
-            <td><strong>Eng spec</strong></td>
+            <td><strong>Plan review</strong></td>
             <td>—</td>
+            <td><code>ceo-reviewer</code> + <code>eng-reviewer</code> (+ <code>design-reviewer</code> if UI)</td>
+            <td>skipped — mini-plan goes straight to approval</td>
+          </tr>
+          <tr>
+            <td><strong>Your approval</strong></td>
             <td>—</td>
-            <td>✓ writes <code>docs/spec-&lt;id&gt;.md</code>, /plan-eng-review</td>
+            <td>✓ hard gate before any code</td>
+            <td>✓ hard gate before any code</td>
           </tr>
           <tr>
-            <td><strong>Design</strong></td>
+            <td><strong>Execute</strong></td>
+            <td><code>implementer</code> (single task)</td>
+            <td><code>implementer</code> × N tasks, sequential</td>
+            <td><code>implementer</code> × N tasks, sequential</td>
+          </tr>
+          <tr>
+            <td><strong>Unit tests</strong></td>
             <td>—</td>
+            <td><code>unit-tester</code> if flag on</td>
+            <td><code>unit-tester</code> if flag on</td>
+          </tr>
+          <tr>
+            <td><strong>QA scenarios</strong></td>
             <td>—</td>
-            <td>✓ only if flow includes UI (frontend-feature, design-only)</td>
+            <td><code>qa-tester</code> if user-facing surface</td>
+            <td><code>qa-tester</code> if user-facing surface</td>
           </tr>
           <tr>
-            <td><strong>Build</strong></td>
-            <td>✓ lean (no progress doc)</td>
-            <td>✓ writes <code>docs/progress.md</code></td>
-            <td>✓ + TDD (/execute-plan), full progress doc</td>
+            <td><strong>Code + security review</strong></td>
+            <td><code>code-reviewer</code> only</td>
+            <td><code>code-reviewer</code> + <code>security-reviewer</code> (parallel)</td>
+            <td><code>code-reviewer</code> + <code>security-reviewer</code> (parallel)</td>
           </tr>
           <tr>
-            <td><strong>Testing</strong></td>
+            <td><strong>Docs &amp; ship</strong></td>
             <td>—</td>
-            <td>only if risk flagged</td>
-            <td>✓ always; security-guidance for security-patch flow</td>
+            <td><code>doc-writer</code> + <code>ship-pr</code></td>
+            <td><code>doc-writer</code> + <code>ship-pr</code></td>
           </tr>
           <tr>
-            <td><strong>Review</strong> (commit gate)</td>
-            <td>✓ inline (no separate report)</td>
-            <td>✓ writes <code>docs/review-&lt;id&gt;.md</code></td>
-            <td>✓ full report, loops back on any blocker</td>
-          </tr>
-          <tr>
-            <td><strong>Ship</strong></td>
-            <td>✓ commit + push only</td>
-            <td>✓ lean (PR + tag + 1-line retro)</td>
-            <td>✓ full (PR + tag + retro + claude-mem write)</td>
-          </tr>
-          <tr>
-            <td><strong>Cost (orchestration)</strong></td>
-            <td style="color:var(--green);">~400 tokens</td>
-            <td style="color:var(--accent2);">~1500 tokens</td>
-            <td style="color:#a78bfa;">4000+ tokens</td>
-          </tr>
-          <tr>
-            <td><strong>Loopbacks possible</strong></td>
-            <td>Review → Build (1×)</td>
-            <td>Review → Build (up to 3×)</td>
-            <td>Testing → Build · Review → Build · Review → Eng (up to 3× per pair)</td>
+            <td><strong>ADR</strong></td>
+            <td>—</td>
+            <td><code>adr-writer</code> if architecture changes</td>
+            <td>—</td>
           </tr>
         </tbody>
       </table>

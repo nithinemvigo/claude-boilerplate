@@ -104,9 +104,8 @@ The compatibility matrix (which integrations work with which bases) and the v2 r
 
 After `apply.sh` runs, every target project has:
 
-- **8 stage agents** in `.claude/agents/` — `classifier`, `ceo`, `eng`, `design`, `build`, `testing`, `review`, `ship`. The classifier sizes the task; the orchestrator routes through the matching pipeline.
-- **6 slash commands** in `.claude/commands/` — `/start`, `/status`, `/approve`, `/review`, `/code-review`, `/ship`.
-- **3 pipeline definitions** in `.claude/workflows/` — `orchestrator.md`, `pipeline-nano.md`, `pipeline-standard.md`.
+- **14 specialized agents** in `.claude/agents/` — `planner`, `implementer`, `code-reviewer`, `qa-tester`, `unit-tester`, etc.
+- **1 slash command** in `.claude/commands/` — `/pipeline` orchestrates the end-to-end SDLC.
 - **4 hooks** in `.claude/hooks/` — pre-commit validation (lint → format → `/security-review` → `/code-review`), post-commit record, status line, plugin probe (graceful degradation when plugins are missing).
 - **Layered rules** in `.claude/rules/` — `error-handling`, `security`, `environment`, `testing` from core, plus framework-specific (e.g. `frontend`, `api`, `nextjs-conventions`) from the base, plus integration-specific (e.g. `supabase`, `tailwind`) from each integration.
 - **2 helper scripts** in `scripts/` — `check-setup.sh` (verify env + plugins), `review.sh` (manual code review).
@@ -120,27 +119,28 @@ Concrete example — `--base=nextjs-ts --integrations=supabase,tailwind,prisma` 
 
 ## Running a task
 
-`/start <description>` is the universal entry point for any change:
+`/pipeline <description>` is the universal entry point for any change:
 
 ```text
-/start add Stripe subscription billing to checkout
-/start fix the auth token expiry crash on refresh
-/start hotfix the null-pointer in payment-service
-/start refactor user service into smaller modules
+/pipeline add Stripe subscription billing to checkout
+/pipeline fix the auth token expiry crash on refresh
+/pipeline hotfix the null-pointer in payment-service
+/pipeline refactor user service into smaller modules
 ```
 
 What happens:
 
-1. The **classifier** (`.claude/agents/classifier.md`) reads the description and emits the task size (`nano | standard | full`) and the branch name (`feature/`, `bugfix/`, or `hotfix/`).
-2. The **orchestrator** (`.claude/workflows/orchestrator.md`) loads the matching pipeline:
-   - **nano** → Build lean → Review lean → done (~400 tokens)
-   - **standard** → CEO lean → Build → Review → Ship lean (~1500 tokens)
-   - **full** → CEO → Eng → [Design] → Build → Testing → Review → Ship (~4000+ tokens)
-3. Each stage stops at its gate. Use `/approve` to advance, `/status` to inspect, `/review` for an on-demand review, `/ship` to merge and tag (Review approval required first).
+1. **Classification & Setup**: The orchestrator classifies the task (nano vs standard) and asks for testing preferences.
+2. **Planning**: Dispatches `planner` (or `investigator` for bugs) to create a detailed plan.
+3. **Review & Approval**: The plan is reviewed by specialized agents (`ceo-reviewer`, `eng-reviewer`, `design-reviewer`). *You must approve the plan before execution begins.*
+4. **Execution**: Dispatches `implementer` sequentially to work through tasks on a branch, optionally using TDD.
+5. **Quality Gates**: Runs `unit-tester` and `qa-tester` to verify behavior and test coverage.
+6. **Code Review**: Analyzes the diff with `code-reviewer` and `security-reviewer`.
+7. **Ship**: Updates documentation and creates a PR.
 
-**The commit rule:** only the Review-stage agent issues `git commit`. The orchestrator rejects git commands from any other stage.
+**The commit rule:** only the **doc-writer** or final **implementer** is permitted to issue `git commit` as guided by the `/pipeline` orchestrator.
 
-For the full SDLC pipeline (workflows use the **gstack** and **superpowers** plugins for `/office-hours`, `/plan-ceo-review`, `/brainstorm`, `/plan-eng-review`, `/write-plan`, `/execute-plan`, `/ship`), see the per-stage agents in `.claude/agents/`.
+For the full SDLC pipeline, see the `core/.claude/commands/pipeline.md` definition.
 
 ---
 
@@ -176,7 +176,7 @@ The pipeline still runs if a plugin is missing — that gate just gets skipped w
 
 ```
 claude-boilerplate/
-├── core/                     ← copied to every target (8 agents, 6 commands, 4 hooks, 3 pipelines, generic rules, CLAUDE template, helper scripts)
+├── core/                     ← copied to every target (14 agents, 1 command, 4 hooks, generic rules, CLAUDE template, helper scripts)
 ├── overlays/
 │   ├── bases/                ← one per project (express-js, express-ts, nestjs, react-vite-ts, nextjs-ts)
 │   └── integrations/         ← zero or more per project (supabase, firebase, tailwind, prisma)
