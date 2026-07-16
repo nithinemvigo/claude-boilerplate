@@ -17,6 +17,9 @@ core/                              ← copied into every target project, untouch
   .claude/workflows/                pipeline definitions (orchestrator, pipeline-nano, pipeline-standard)
   .claude/hooks/                    pre-commit + post-commit + statusline + plugin-probe
   .claude/rules/                    generic rules (error-handling, security, environment, testing)
+  .claude/skills/                   shared skill definitions copied to target projects
+  .claude/CHANGELOG.md              changelog for rules, hooks, and commands in the boilerplate
+  .claude/review-prompt.md          prompt used by the post-commit review hook
   scripts/                          target-side helpers (check-setup.sh, review.sh)
   CLAUDE.template.md                4 placeholders: {{STACK}}, {{COMMANDS}}, {{ARCHITECTURE}}, {{ANTIPATTERNS}}
 overlays/bases/<name>/             ← pick exactly one per target
@@ -26,6 +29,7 @@ examples/express-demo/             ← runnable demo (deliberate bugs for the se
 docs/                              ← documentation site (HTML, no build step)
 scripts/apply.sh                   ← the composer for new project directories
 scripts/apply-to-existing.sh       ← safe-merge wrapper for existing repos
+package.json                       ← npm publish manifest for `npx create-claude-js-boilerplate`
 create.sh, bin/create.js           ← friendly wrappers (bash + npx)
 ```
 
@@ -117,7 +121,7 @@ Quick checks while iterating:
 - **DON'T** edit files under `core/.claude/hooks/` without testing — they fire on every commit in *every* target project. A broken hook there breaks everyone.
 - **DON'T** add stack-specific content to `core/CLAUDE.template.md`. Use `{{STACK}}` / `{{COMMANDS}}` / `{{ARCHITECTURE}}` / `{{ANTIPATTERNS}}` placeholders instead.
 - **DON'T** ship starter code in integrations by default — keep them rules + env + architecture. Starter code drifts when SDKs change. (A `--starter` flag is reserved for v2.)
-- **DON'T** assume the boilerplate repo itself is a Node project. There's no root `package.json`. `examples/express-demo/` is the demo Node project; the repo around it is just a delivery vehicle.
+- **DON'T** add runtime or dev dependencies to the root `package.json`. It exists solely as the npm publish manifest for `npx create-claude-js-boilerplate` (the `bin/create.js` entry point). `examples/express-demo/` is the demo Node project with its own `package.json`.
 
 ## Hooks on this repo
 
